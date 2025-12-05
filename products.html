@@ -1,207 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products - Healing Root Agro Ventures</title>
-    <link rel="stylesheet" href="css/style.css">
-
-    <style>
-        body {
-            background: #f5f7fa;
-            font-family: Arial, sans-serif;
-        }
-
-        .products {
-            padding: 50px 0;
-        }
-
-        h2 {
-            text-align: center;
-            margin-bottom: 40px;
-            font-size: 32px;
-            color: #2c5e1a;
-            font-weight: 800;
-            letter-spacing: 1px;
-        }
-
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-        }
-
-        .product-card {
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            padding: 20px;
-            transition: 0.3s ease;
-        }
-
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-        }
-
-        .product-card img {
-            width: 100%;
-            height: 200px;
-            border-radius: 10px;
-            object-fit: cover;
-            margin-bottom: 15px;
-        }
-
-        .product-card h3 {
-            margin-bottom: 10px;
-            font-size: 22px;
-            color: #156b2c;
-        }
-
-        .product-card p {
-            color: #333;
-            line-height: 1.6;
-            font-size: 15px;
-        }
-
-        footer {
-            margin-top: 40px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="cPJ3_emx8r6W7a_9249IO_Aj4NEH15CCtPq">
+<title>Products - Healing Root Agro Ventures</title>
+<style>
+    body { background: #f5f7fa; font-family: Arial, sans-serif; margin:0; padding:0; }
+    header { background:#4CAF50; color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; }
+    header nav a { color:white; margin-left:15px; text-decoration:none; font-weight:bold; }
+    header .buttons a { margin-left:10px; background:white; color:#4CAF50; padding:8px 12px; border-radius:5px; text-decoration:none; font-weight:bold; }
+    .logo { font-size:22px; font-weight:bold; }
+    .cart-icon { position:relative; }
+    .cart-count { position:absolute; top:-8px; right:-8px; background:red; color:white; font-size:12px; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+    .products { padding:50px 20px; max-width:1200px; margin:auto; }
+    h2 { text-align:center; margin-bottom:40px; font-size:32px; color:#2c5e1a; font-weight:800; letter-spacing:1px; }
+    .products-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:25px; }
+    .product-card { background:#fff; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); padding:20px; transition:0.3s ease; }
+    .product-card:hover { transform: translateY(-5px); box-shadow:0 6px 15px rgba(0,0,0,0.15); }
+    .product-card img { width:100%; height:200px; border-radius:10px; object-fit:cover; margin-bottom:15px; }
+    .product-card h3 { margin-bottom:10px; font-size:22px; color:#156b2c; }
+    .product-card p { color:#333; line-height:1.6; font-size:15px; }
+    .product-card button { margin-top:10px; background:#4CAF50; color:white; border:none; padding:10px 15px; border-radius:5px; cursor:pointer; font-weight:bold; transition:0.3s; }
+    .product-card button:hover { background:#388E3C; }
+    #cart-modal { position:fixed; top:0; right:-400px; width:350px; height:100%; background:white; box-shadow:-3px 0 10px rgba(0,0,0,0.2); transition:0.3s; padding:20px; overflow-y:auto; z-index:1000; }
+    #cart-modal h3 { margin-top:0; }
+    #cart-modal ul { list-style:none; padding:0; }
+    #cart-modal ul li { display:flex; justify-content:space-between; margin-bottom:10px; }
+    #cart-modal button { background:red; color:white; border:none; padding:5px 8px; border-radius:5px; cursor:pointer; }
+    #close-cart { background:#4CAF50; color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer; margin-bottom:10px; }
+    footer { background:#4CAF50; color:white; text-align:center; padding:20px; margin-top:40px; }
+    footer a { color:white; text-decoration:none; font-weight:bold; }
+</style>
 </head>
-
 <body>
-    <header>
-        <div class="container">
-            <h1 class="logo">Healing Root Agro Ventures</h1>
-            <nav>
-                <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="about.html">About Us</a></li>
-                    <li><a href="products.html" class="active">Products</a></li>
-                    <li><a href="services.html">Services</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                </ul>
-            </nav>
+
+<header>
+    <div class="logo">HEALING ROOT AGRO VENTURES</div>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="products.html" style="text-decoration:underline;">Products</a>
+        <a href="services.html">Services</a>
+        <a href="contact.html">Contact</a>
+    </nav>
+    <div class="buttons">
+        <a href="tel:08153729342">Call</a>
+        <a href="https://wa.me/09138938301" target="_blank">WhatsApp</a>
+        <div class="cart-icon">
+            <a href="#" onclick="toggleCart()">🛒 Cart</a>
+            <div class="cart-count" id="cart-count">0</div>
         </div>
-    </header>
+    </div>
+</header>
 
-    <section class="products">
-        <div class="container">
-            <h2>Our Premium Agricultural Products</h2>
-
-            <div class="products-grid">
-
-                <!-- Cassava -->
-                <div class="product-card">
-                    <img src="images/cassava.JPG" alt="Cassava stems">
-                    <h3>Cassava Stems (TME419, TMS30572, Agric & Yellow Root)</h3>
-                    <p>
-                        Our cassava stems are sourced from improved high-yield varieties including TME419, TMS30572, Agric and Yellow Root. 
-                        These varieties are known for fast maturity, excellent starch content, resistance to major diseases, and outstanding 
-                        productivity under different climate conditions. Perfect for both commercial and small-scale farmers.  
-                        <br><br><b>Price:</b> ₦1,000 per bundle (35 stems).
-                    </p>
-                </div>
-
-                <!-- Hybrid Plantain -->
-                <div class="product-card">
-                    <img src="images/plantain.JPG" alt="Plantain">
-                    <h3>Hybrid Giant Plantain Suckers</h3>
-                    <p>
-                        These vigorous suckers are bred for fast growth, strong adaptability, and exceptional bunch size. 
-                        They produce larger fingers and heavier bunches compared to local varieties, making them ideal for commercial plantations.
-                        <br><br><b>Price:</b> ₦350 per sucker.
-                    </p>
-                </div>
-
-                <!-- Hybrid Banana -->
-                <div class="product-card">
-                    <img src="images/giant_banana.JPG" alt="Banana">
-                    <h3>Hybrid Giant Banana Suckers</h3>
-                    <p>
-                        Highly productive hybrid bananas known for early fruiting, excellent cluster size, and resistance to common pests. 
-                        Perfect for farmers aiming for continuous harvest and steady market demand.
-                        <br><br><b>Price:</b> ₦300 per sucker.
-                    </p>
-                </div>
-
-                <!-- Oil Palm -->
-                <div class="product-card">
-                    <img src="images/oilpalm.JPG" alt="Oil Palm">
-                    <h3>Tenera Oil Palm Seedlings</h3>
-                    <p>
-                        Our Tenera oil palm seedlings are sourced from genetically improved parent materials, offering high oil-to-bunch ratio, 
-                        disease resistance, and faster fruiting. Suitable for large estates and small farms.
-                        <br><br><b>Price:</b> ₦1,000 per seedling.
-                    </p>
-                </div>
-
-                <!-- Coconut -->
-                <div class="product-card">
-                    <img src="images/coconut.JPG" alt="Coconut">
-                    <h3>Hybrid Coconut Seedlings</h3>
-                    <p>
-                        Available varieties include Malaysian Dwarf, West African Tall, and Improved Hybrid Coconut.  
-                        These varieties offer faster fruiting, high water content, and excellent nut size.
-                        <br><br><b>Price:</b> ₦4,500 per seedling.
-                    </p>
-                </div>
-
-                <!-- Pineapple -->
-                <div class="product-card">
-                    <img src="images/pineapple.JPG" alt="Pineapple">
-                    <h3>Pineapple Suckers</h3>
-                    <p>
-                        We supply MD2, Smooth Cayenne, and Queen Pineapple varieties known for sweetness, firmness, and long shelf life. 
-                        Suitable for commercial plantations and export growers.
-                        <br><br><b>Price:</b> ₦500 per sucker.
-                    </p>
-                </div>
-
-                <!-- Fertilizers -->
-                <div class="product-card">
-                    <img src="images/fertilizer.JPG" alt="Fertilizer">
-                    <h3>NPK & Other Fertilizers</h3>
-                    <p>
-                        We provide high-grade fertilizers including NPK 15-15-15, NPK 20-10-10, Urea, Potassium Nitrate, and 
-                        crop-specific blends. These fertilizers ensure vigorous growth, improved yield, and healthier soil structure.
-                        <br><br><b>NPK Price:</b> ₦65,000 per sack.
-                    </p>
-                </div>
-
-                <!-- Cocoa -->
-                <div class="product-card">
-                    <img src="images/giant_cocoa.JPG" alt="Cocoa">
-                    <h3>Hybrid Cocoa Seedlings</h3>
-                    <p>
-                        We supply improved cocoa varieties including CRIN-approved hybrids.  
-                        They mature early, resist black pod disease, and produce higher bean yield per tree.
-                        <br><br><b>Price:</b> ₦500 per seedling.
-                    </p>
-                </div>
-
-                <!-- Vegetable Seeds -->
-                <div class="product-card">
-                    <img src="images/vegetables.JPG" alt="Vegetables">
-                    <h3>Vegetable Seeds (Ugu, Africa Spinach & Others)</h3>
-                    <p>
-                        We supply high-germination vegetable seeds such as Ugu, African Spinach (Gbure), Waterleaf, Okra, Celosia, and more.  
-                        Suitable for backyard gardens, commercial farming, and greenhouse growers.
-                        <br><br><b>Price:</b> ₦15,000 per Congo.
-                    </p>
-                </div>
-
-            </div>
+<section class="products">
+    <h2>Our Premium Agricultural Products</h2>
+    <div class="products-grid">
+        <!-- Cassava -->
+        <div class="product-card" data-name="Cassava Stems (TME419, TMS30572, Agric & Yellow Root)" data-price="1000">
+            <img src="images/cassava.JPG" alt="Cassava stems">
+            <h3>Cassava Stems (TME419, TMS30572, Agric & Yellow Root)</h3>
+            <p>High-yield cassava stems with fast maturity, excellent starch, and disease resistance.<br><b>₦1,000 per bundle (35 stems)</b></p>
+            <button onclick="addToCart(this)">Add to Cart</button>
         </div>
-    </section>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 Healing Root Agro Ventures. All rights reserved.</p>
-            <p>Email: <a href="mailto:olasuposegunvictor@gmail.com">olasuposegunvictor@gmail.com</a></p>
+        <!-- Plantain -->
+        <div class="product-card" data-name="Hybrid Giant Plantain Suckers" data-price="350">
+            <img src="images/plantain.JPG" alt="Plantain">
+            <h3>Hybrid Giant Plantain Suckers</h3>
+            <p>Vigorous suckers with large bunch size and high adaptability.<br><b>₦350 per sucker</b></p>
+            <button onclick="addToCart(this)">Add to Cart</button>
         </div>
-    </footer>
+
+        <!-- Hybrid Banana -->
+        <div class="product-card" data-name="Hybrid Giant Banana Suckers" data-price="300">
+            <img src="images/giant_banana.JPG" alt="Banana">
+            <h3>Hybrid Giant Banana Suckers</h3>
+            <p>Early fruiting, excellent cluster size, resistant to pests.<br><b>₦300 per sucker</b></p>
+            <button onclick="addToCart(this)">Add to Cart</button>
+        </div>
+
+        <!-- Oil Palm -->
+        <div class="product-card" data-name="Tenera Oil Palm Seedlings" data-price="1000">
+            <img src="images/oilpalm.JPG" alt="Oil Palm">
+            <h3>Tenera Oil Palm Seedlings</h3>
+            <p>Genetically improved seedlings with high oil-to-bunch ratio.<br><b>₦1,000 per seedling</b></p>
+            <button onclick="addToCart(this)">Add to Cart</button>
+        </div>
+
+        <!-- Coconut -->
+        <div class="product-card" data-name="Hybrid Coconut Seedlings" data-price="4500">
+            <img src="images/coconut.JPG" alt="Coconut">
+            <h3>Hybrid Coconut Seedlings</h3>
+            <p>Malaysian Dwarf, West African Tall, and Improved Hybrid.<br><b>₦4,500 per seedling</b></p>
+            <button onclick="addToCart(this)">Add to Cart</button>
+        </div>
+
+        <!-- Pineapple -->
+        <div class="product-card" data-name="Pineapple Suckers" data-price="500">
+            <img src="images/pineapple.JPG" alt="Pineapple">
+            <h3>Pineapple Suckers</h3>
+            <p>MD2, Smooth Cayenne, and Queen varieties with sweetness and firmness.<br><b>₦500 per sucker</b></p>
+            <button onclick="addToCart(this)">Add to Cart</button>
+        </div>
+
+        <!-- Fertilizers -->
+        <div class="product-card" data-name="NPK & Other Fertilizers" data-price="65000">
+            <img src="images/fertilizer.JPG" alt="Fertilizer">
+            <h3>NPK & Other Fertilizers</h3>
+            <p>High-grade fertilizers for vigorous growth and improved yield.<br><b>₦65,000 per sack</b></p>
+            <button onclick="addToCart(this)">Add to Cart</button>
+        </div>
+
+        <!-- Cocoa -->
+        <div class="product-card" data-name="Hybrid Cocoa Seedlings" data-price="500">
+            <img src="images/giant_cocoa.JPG" alt="Cocoa">
+            <h3>Hybrid Cocoa Seedlings</h3>
+            <p>CRIN-approved hybrids, early maturing and high yield.<br><b>₦500 per seedling</b></p>
+            <button onclick="addToCart(this)">Add to Cart</button>
+        </div>
+
+        <!-- Vegetable Seeds -->
+        <div class="product-card" data-name="Vegetable Seeds (Ugu, Africa Spinach & Others)" data-price="15000">
+            <img src="images/vegetables.JPG" alt="Vegetables">
+            <h3>Vegetable Seeds (Ugu, Africa Spinach & Others)</h3>
+            <p>High-germination seeds suitable for backyard gardens and commercial farms.<br><b>₦15,000 per Congo</b></p>
+            <button onclick="addToCart(this)">Add to Cart</button>
+        </div>
+
+    </div>
+</section>
+
+<div id="cart-modal">
+    <button id="close-cart" onclick="toggleCart()">Close</button>
+    <h3>Cart</h3>
+    <ul id="cart-items"></ul>
+    <p><b>Total: ₦<span id="cart-total">0</span></b></p>
+    <a id="checkout-btn" href="#" target="_blank" style="display:block;margin-top:10px;background:#4CAF50;color:white;text-align:center;padding:10px;border-radius:5px;text-decoration:none;">Order via WhatsApp</a>
+</div>
+
+<footer>
+    <p>&copy; 2025 Healing Root Agro Ventures. All rights reserved.</p>
+    <p>Email: <a href="mailto:olasuposegunvictor@gmail.com">olasuposegunvictor@gmail.com</a></p>
+</footer>
+
+<script>
+let cart = [];
+function addToCart(button){
+    let card = button.parentElement;
+    let name = card.getAttribute("data-name");
+    let price = parseInt(card.getAttribute("data-price"));
+    cart.push({name, price});
+    updateCart();
+}
+function updateCart(){
+    let itemsContainer = document.getElementById("cart-items");
+    let totalEl = document.getElementById("cart-total");
+    itemsContainer.innerHTML = "";
+    let total = 0;
+    cart.forEach((item, index)=>{
+        total += item.price;
+        let li = document.createElement("li");
+        li.textContent = item.name + " - ₦" + item.price;
+        let removeBtn = document.createElement("button");
+        removeBtn.textContent = "X";
+        removeBtn.onclick = ()=>{ cart.splice(index,1); updateCart(); }
+        li.appendChild(removeBtn);
+        itemsContainer.appendChild(li);
+    });
+    totalEl.textContent = total;
+    document.getElementById("cart-count").textContent = cart.length;
+    document.getElementById("checkout-btn").href = "https://wa.me/09138938301?text=I%20want%20to%20order%20these%20items%3A%20" + encodeURIComponent(cart.map(i=>i.name).join(", "));
+}
+function toggleCart(){
+    let modal = document.getElementById("cart-modal");
+    if(modal.style.right === "0px"){ modal.style.right="-400px"; }
+    else{ modal.style.right="0px"; }
+}
+</script>
 
 </body>
 </html>
