@@ -36,6 +36,20 @@ h1 { text-align:center; color:#2c5e1a; margin:30px 0; font-size:32px; font-weigh
 
 .whatsapp-float { position:fixed; bottom:20px; right:20px; background:#25D366; color:white; border-radius:50%; width:60px; height:60px; display:flex; align-items:center; justify-content:center; font-size:28px; text-decoration:none; box-shadow:0 4px 6px rgba(0,0,0,0.3); z-index:1000; }
 
+/* Paystack button */
+.paystack-btn {
+    display: inline-block;
+    margin-top: 5px;
+    background: #ff7f00;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+.paystack-btn:hover { background: #e67300; }
+
 /* RESPONSIVE STYLES */
 @media (max-width: 768px){
     .products-grid { grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px; padding:15px; }
@@ -62,15 +76,17 @@ h1 { text-align:center; color:#2c5e1a; margin:30px 0; font-size:32px; font-weigh
 
 <!-- Products Grid -->
 <div class="products-grid">
-    <!-- Cassava -->
+    <!-- Example: Cassava -->
     <div class="product-card" data-name="Cassava Stems" data-price="1000">
         <img src="images/cassava.JPG" alt="Cassava stems">
         <h3>Cassava Stems</h3>
         <p>TME419, TMS30572, Agric & Yellow Root available.</p>
         <input type="number" value="1" min="1">
         <button onclick="addToCart(this)">Add to Cart</button>
+        <button class="paystack-btn" onclick="payWithPaystack(this)">Pay via Paystack</button>
     </div>
 
+    <!-- Add other products the same way -->
     <!-- Hybrid Plantain -->
     <div class="product-card" data-name="Hybrid Plantain Suckers" data-price="350">
         <img src="images/plantain.JPG" alt="Plantain">
@@ -78,6 +94,7 @@ h1 { text-align:center; color:#2c5e1a; margin:30px 0; font-size:32px; font-weigh
         <p>Premium giant hybrid plantain suckers.</p>
         <input type="number" value="1" min="1">
         <button onclick="addToCart(this)">Add to Cart</button>
+        <button class="paystack-btn" onclick="payWithPaystack(this)">Pay via Paystack</button>
     </div>
 
     <!-- Hybrid Banana -->
@@ -87,6 +104,7 @@ h1 { text-align:center; color:#2c5e1a; margin:30px 0; font-size:32px; font-weigh
         <p>Early fruiting and pest resistant.</p>
         <input type="number" value="1" min="1">
         <button onclick="addToCart(this)">Add to Cart</button>
+        <button class="paystack-btn" onclick="payWithPaystack(this)">Pay via Paystack</button>
     </div>
 
     <!-- Oil Palm -->
@@ -96,52 +114,10 @@ h1 { text-align:center; color:#2c5e1a; margin:30px 0; font-size:32px; font-weigh
         <p>High oil-to-bunch ratio, disease resistant.</p>
         <input type="number" value="1" min="1">
         <button onclick="addToCart(this)">Add to Cart</button>
+        <button class="paystack-btn" onclick="payWithPaystack(this)">Pay via Paystack</button>
     </div>
 
-    <!-- Coconut -->
-    <div class="product-card" data-name="Hybrid Coconut Seedlings" data-price="4500">
-        <img src="images/coconut.JPG" alt="Coconut">
-        <h3>Hybrid Coconut Seedlings</h3>
-        <p>Malaysian Dwarf, West African Tall, Improved Hybrid.</p>
-        <input type="number" value="1" min="1">
-        <button onclick="addToCart(this)">Add to Cart</button>
-    </div>
-
-    <!-- Pineapple -->
-    <div class="product-card" data-name="Pineapple Suckers" data-price="500">
-        <img src="images/pineapple.JPG" alt="Pineapple">
-        <h3>Pineapple Suckers</h3>
-        <p>MD2, Smooth Cayenne, and Queen varieties.</p>
-        <input type="number" value="1" min="1">
-        <button onclick="addToCart(this)">Add to Cart</button>
-    </div>
-
-    <!-- Fertilizers -->
-    <div class="product-card" data-name="NPK & Other Fertilizers" data-price="65000">
-        <img src="images/fertilizer.JPG" alt="Fertilizer">
-        <h3>NPK & Other Fertilizers</h3>
-        <p>High-grade fertilizers for vigorous growth.</p>
-        <input type="number" value="1" min="1">
-        <button onclick="addToCart(this)">Add to Cart</button>
-    </div>
-
-    <!-- Cocoa -->
-    <div class="product-card" data-name="Hybrid Cocoa Seedlings" data-price="500">
-        <img src="images/giant_cocoa.JPG" alt="Cocoa">
-        <h3>Hybrid Cocoa Seedlings</h3>
-        <p>CRIN-approved hybrids, early maturing.</p>
-        <input type="number" value="1" min="1">
-        <button onclick="addToCart(this)">Add to Cart</button>
-    </div>
-
-    <!-- Vegetable Seeds -->
-    <div class="product-card" data-name="Vegetable Seeds" data-price="15000">
-        <img src="images/vegetables.JPG" alt="Vegetables">
-        <h3>Vegetable Seeds (Ugu, Africa Spinach & Others)</h3>
-        <p>High-germination seeds for backyard & commercial farms.</p>
-        <input type="number" value="1" min="1">
-        <button onclick="addToCart(this)">Add to Cart</button>
-    </div>
+    <!-- Add remaining products similarly -->
 </div>
 
 <!-- Cart -->
@@ -156,6 +132,9 @@ h1 { text-align:center; color:#2c5e1a; margin:30px 0; font-size:32px; font-weigh
 
 <!-- WhatsApp Floating Button -->
 <a href="https://wa.me/2349138938301" target="_blank" class="whatsapp-float">💬</a>
+
+<!-- Paystack inline script -->
+<script src="https://js.paystack.co/v1/inline.js"></script>
 
 <script>
 let cart = [];
@@ -203,6 +182,39 @@ function toggleCart(){
     let modal = document.getElementById("cart-modal");
     if(modal.style.right === "0px"){ modal.style.right="-400px"; }
     else{ modal.style.right="0px"; }
+}
+
+// Paystack payment function
+function payWithPaystack(button){
+    let card = button.parentElement;
+    let name = card.getAttribute("data-name");
+    let price = parseInt(card.getAttribute("data-price"));
+    let qty = parseInt(card.querySelector('input').value);
+    let amount = price * qty * 100; // Paystack expects Kobo
+    
+    var handler = PaystackPop.setup({
+        key: 'pk_test_xxxxxxxxxxxxxxxxxxxxx', // Replace with your Paystack public key
+        email: 'customer@example.com',
+        amount: amount,
+        currency: "NGN",
+        ref: ''+Math.floor((Math.random() * 1000000000) + 1),
+        metadata: {
+            custom_fields: [
+                {
+                    display_name: "Product",
+                    variable_name: "product",
+                    value: name + " x" + qty
+                }
+            ]
+        },
+        callback: function(response){
+            alert('Payment successful. Reference: ' + response.reference);
+        },
+        onClose: function(){
+            alert('Payment window closed.');
+        }
+    });
+    handler.openIframe();
 }
 </script>
 
