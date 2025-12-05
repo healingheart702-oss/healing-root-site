@@ -5,7 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products - Healing Root Agro Ventures</title>
     <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        body {
+            background: #f5f7fa;
+            font-family: Arial, sans-serif;
+        }
+
+        .products {
+            padding: 50px 0;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 32px;
+            color: #2c5e1a;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .product-card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            transition: 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 200px;
+            border-radius: 10px;
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+
+        .product-card h3 {
+            margin-bottom: 10px;
+            font-size: 22px;
+            color: #156b2c;
+        }
+
+        .product-card p {
+            color: #333;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        footer {
+            margin-top: 40px;
+        }
+    </style>
 </head>
+
 <body>
     <header>
         <div class="container">
@@ -14,7 +78,7 @@
                 <ul>
                     <li><a href="index.html">Home</a></li>
                     <li><a href="about.html">About Us</a></li>
-                    <li><a href="products.html">Products</a></li>
+                    <li><a href="products.html" class="active">Products</a></li>
                     <li><a href="services.html">Services</a></li>
                     <li><a href="contact.html">Contact</a></li>
                 </ul>
@@ -24,38 +88,110 @@
 
     <section class="products">
         <div class="container">
-            <h2>Our Products</h2>
+            <h2>Our Premium Agricultural Products</h2>
+
             <div class="products-grid">
+
+                <!-- Cassava -->
                 <div class="product-card">
-                    <img src="images/cassava.JPG" alt="Cassava Stems">
-                    <h3>Cassava Stems</h3>
-                    <p>TME419, TMS30572 varieties. Price: 35 pieces per bundle at ₦1,000.</p>
+                    <img src="images/cassava.JPG" alt="Cassava stems">
+                    <h3>Cassava Stems (TME419, TMS30572, Agric & Yellow Root)</h3>
+                    <p>
+                        Our cassava stems are sourced from improved high-yield varieties including TME419, TMS30572, Agric and Yellow Root. 
+                        These varieties are known for fast maturity, excellent starch content, resistance to major diseases, and outstanding 
+                        productivity under different climate conditions. Perfect for both commercial and small-scale farmers.  
+                        <br><br><b>Price:</b> ₦1,000 per bundle (35 stems).
+                    </p>
                 </div>
+
+                <!-- Hybrid Plantain -->
                 <div class="product-card">
-                    <img src="images/plantain.JPG" alt="Hybrid Plantain">
-                    <h3>Hybrid Plantain</h3>
-                    <p>Giant hybrid plantain suckers. Price: ₦400 per sucker.</p>
+                    <img src="images/plantain.JPG" alt="Plantain">
+                    <h3>Hybrid Giant Plantain Suckers</h3>
+                    <p>
+                        These vigorous suckers are bred for fast growth, strong adaptability, and exceptional bunch size. 
+                        They produce larger fingers and heavier bunches compared to local varieties, making them ideal for commercial plantations.
+                        <br><br><b>Price:</b> ₦350 per sucker.
+                    </p>
                 </div>
+
+                <!-- Hybrid Banana -->
                 <div class="product-card">
-                    <img src="images/oilpalm.JPG" alt="Oil Palm Seedlings">
+                    <img src="images/giant_banana.JPG" alt="Banana">
+                    <h3>Hybrid Giant Banana Suckers</h3>
+                    <p>
+                        Highly productive hybrid bananas known for early fruiting, excellent cluster size, and resistance to common pests. 
+                        Perfect for farmers aiming for continuous harvest and steady market demand.
+                        <br><br><b>Price:</b> ₦300 per sucker.
+                    </p>
+                </div>
+
+                <!-- Oil Palm -->
+                <div class="product-card">
+                    <img src="images/oilpalm.JPG" alt="Oil Palm">
                     <h3>Tenera Oil Palm Seedlings</h3>
-                    <p>High-yield seedlings. Price: ₦1,000 each.</p>
+                    <p>
+                        Our Tenera oil palm seedlings are sourced from genetically improved parent materials, offering high oil-to-bunch ratio, 
+                        disease resistance, and faster fruiting. Suitable for large estates and small farms.
+                        <br><br><b>Price:</b> ₦1,000 per seedling.
+                    </p>
                 </div>
+
+                <!-- Coconut -->
                 <div class="product-card">
-                    <img src="images/coconut.JPG" alt="Coconut Seedlings">
-                    <h3>Coconut & Pineapple Seedlings</h3>
-                    <p>Healthy seedlings for your farm.</p>
+                    <img src="images/coconut.JPG" alt="Coconut">
+                    <h3>Hybrid Coconut Seedlings</h3>
+                    <p>
+                        Available varieties include Malaysian Dwarf, West African Tall, and Improved Hybrid Coconut.  
+                        These varieties offer faster fruiting, high water content, and excellent nut size.
+                        <br><br><b>Price:</b> ₦4,500 per seedling.
+                    </p>
                 </div>
+
+                <!-- Pineapple -->
                 <div class="product-card">
-                    <img src="images/okra.JPG" alt="Vegetable Seeds">
-                    <h3>Okra & Vegetable Seeds</h3>
-                    <p>High-quality seeds for your garden.</p>
+                    <img src="images/pineapple.JPG" alt="Pineapple">
+                    <h3>Pineapple Suckers</h3>
+                    <p>
+                        We supply MD2, Smooth Cayenne, and Queen Pineapple varieties known for sweetness, firmness, and long shelf life. 
+                        Suitable for commercial plantations and export growers.
+                        <br><br><b>Price:</b> ₦500 per sucker.
+                    </p>
                 </div>
+
+                <!-- Fertilizers -->
                 <div class="product-card">
-                    <img src="images/npk.JPG" alt="Fertilizer">
-                    <h3>NPK Fertilizers</h3>
-                    <p>Support healthy plant growth.</p>
+                    <img src="images/fertilizer.JPG" alt="Fertilizer">
+                    <h3>NPK & Other Fertilizers</h3>
+                    <p>
+                        We provide high-grade fertilizers including NPK 15-15-15, NPK 20-10-10, Urea, Potassium Nitrate, and 
+                        crop-specific blends. These fertilizers ensure vigorous growth, improved yield, and healthier soil structure.
+                        <br><br><b>NPK Price:</b> ₦65,000 per sack.
+                    </p>
                 </div>
+
+                <!-- Cocoa -->
+                <div class="product-card">
+                    <img src="images/giant_cocoa.JPG" alt="Cocoa">
+                    <h3>Hybrid Cocoa Seedlings</h3>
+                    <p>
+                        We supply improved cocoa varieties including CRIN-approved hybrids.  
+                        They mature early, resist black pod disease, and produce higher bean yield per tree.
+                        <br><br><b>Price:</b> ₦500 per seedling.
+                    </p>
+                </div>
+
+                <!-- Vegetable Seeds -->
+                <div class="product-card">
+                    <img src="images/vegetables.JPG" alt="Vegetables">
+                    <h3>Vegetable Seeds (Ugu, Africa Spinach & Others)</h3>
+                    <p>
+                        We supply high-germination vegetable seeds such as Ugu, African Spinach (Gbure), Waterleaf, Okra, Celosia, and more.  
+                        Suitable for backyard gardens, commercial farming, and greenhouse growers.
+                        <br><br><b>Price:</b> ₦15,000 per Congo.
+                    </p>
+                </div>
+
             </div>
         </div>
     </section>
@@ -66,5 +202,6 @@
             <p>Email: <a href="mailto:olasuposegunvictor@gmail.com">olasuposegunvictor@gmail.com</a></p>
         </div>
     </footer>
+
 </body>
 </html>
