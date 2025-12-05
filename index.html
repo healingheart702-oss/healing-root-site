@@ -9,52 +9,59 @@
 <link rel="stylesheet" href="css/style.css">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
-<!-- Lightbox CSS -->
 <style>
-/* Basic Lightbox Styles */
-.lightbox {
-    display:none;
-    position:fixed;
-    z-index:999;
-    padding-top:60px;
-    left:0;
-    top:0;
-    width:100%;
-    height:100%;
-    overflow:auto;
-    background-color:rgba(0,0,0,0.9);
+/* Additional spacing for contact buttons */
+header .buttons a { margin-left: 15px; }
+
+/* Search bar styling */
+.search-container {
+    text-align:center;
+    margin:30px 0;
 }
-.lightbox-content {
-    margin:auto;
-    display:block;
-    width:80%;
-    max-width:800px;
-    border-radius:10px;
+.search-container input[type=text] {
+    width:60%;
+    padding:10px 15px;
+    border-radius:5px;
+    border:1px solid #ccc;
+    font-size:16px;
 }
-.lightbox-close {
-    position:absolute;
-    top:20px;
-    right:35px;
-    color:#fff;
-    font-size:40px;
+.search-container button {
+    padding:10px 20px;
+    background:#4CAF50;
+    color:white;
+    border:none;
+    border-radius:5px;
     font-weight:bold;
-    transition:0.3s;
     cursor:pointer;
 }
-.lightbox-close:hover { color:#bbb; }
-/* Hover Zoom Effect on Product */
-.product-card img:hover { transform:scale(1.05); transition:0.3s ease; cursor:pointer; }
+.search-container button:hover { background:#388E3C; }
+
+/* Floating WhatsApp button */
+.whatsapp-float {
+    position:fixed;
+    bottom:30px;
+    right:30px;
+    background:#25D366;
+    color:white;
+    border-radius:50%;
+    padding:15px;
+    font-size:24px;
+    text-align:center;
+    z-index:100;
+    box-shadow:0 4px 10px rgba(0,0,0,0.3);
+}
+.whatsapp-float:hover { background:#128C7E; text-decoration:none; }
 </style>
 </head>
+
 <body>
 
-<!-- HEADER -->
 <header>
     <div class="logo">
         <img src="images/logo.PNG" alt="Healing Root Agro Ventures Logo">
     </div>
     <nav>
-        <a href="index.html" class="active">Home</a>
+        <a href="index.html" style="text-decoration:underline;">Home</a>
         <a href="about.html">About</a>
         <a href="products.html">Products</a>
         <a href="gallery.html">Gallery</a>
@@ -68,139 +75,126 @@
     </div>
 </header>
 
-<!-- HERO SECTION -->
+<!-- Hero Section -->
 <section class="hero">
     <h2>Growing Qualities. Nurturing Tomorrow.</h2>
-    <p>At Healing Root Agro Ventures, we provide farmers and agripreneurs with superior quality agricultural products. From high-yield cassava stems, hybrid plantain & banana suckers, Tenera oil palm seedlings, coconut & pineapple seedlings to premium fertilizers, our mission is to enhance farm productivity, ensure sustainable practices, and deliver excellent farm consultation services. We combine expertise with quality to help you achieve maximum yield and profitability.</p>
-    <img src="images/farm_hero.JPEG" class="hero-image" alt="Healing Root Agro Ventures Farm">
-    <div class="hero-buttons">
+    <p>
+        At Healing Root Agro Ventures, we empower farmers and agripreneurs with high-quality agricultural inputs and expert guidance. 
+        From premium cassava stems, hybrid plantain and banana suckers, oil palm seedlings, coconut and pineapple seedlings to top-grade fertilizers, 
+        our mission is to increase farm productivity, ensure sustainable practices, and deliver actionable farm consultation services. 
+        We are committed to helping you achieve optimal yield, profitability, and long-term agricultural success.
+    </p>
+    <img src="images/farm_hero.JPEG" alt="Healing Root Agro Ventures Farm">
+    <div style="margin-top:20px;">
         <a href="contact.html" class="btn">Contact Us</a>
-        <a href="products.html" class="btn">Shop Products</a>
-    </div>
-
-    <!-- SEARCH BAR -->
-    <div class="search-bar">
-        <input type="text" id="productSearch" placeholder="Search products...">
-        <button onclick="searchProducts()">Search</button>
+        <a href="products.html" class="btn" style="margin-left:10px;">Shop Products</a>
+        <a href="gallery.html" class="btn" style="margin-left:10px;">View Product Gallery</a>
     </div>
 </section>
 
-<!-- PRODUCTS GRID WITH LIGHTBOX -->
+<!-- Search Bar -->
+<div class="search-container">
+    <input type="text" id="productSearch" placeholder="Search for products...">
+    <button onclick="searchProducts()">Search</button>
+</div>
+
+<!-- All Products Section -->
 <section class="products">
     <div class="products-grid">
 
         <!-- Cassava -->
         <div class="product-card">
-            <img src="images/cassava.JPG" alt="Cassava stems" onclick="openLightbox('images/cassava.JPG')">
-            <h3>Cassava Stems</h3>
-            <p>High-yield varieties: TME419, TMS30572, Agric & Yellow Root. <b>₦1,000 per bundle (35 stems)</b></p>
+            <img src="images/cassava.JPG" alt="Cassava stems">
+            <h3>Cassava Stems (TME419, TMS30572, Agric & Yellow Root)</h3>
+            <p>Our cassava stems are sourced from improved high-yield varieties. Perfect for both commercial and small-scale farmers. <b>₦1,000 per bundle (35 stems)</b></p>
         </div>
 
         <!-- Hybrid Plantain -->
         <div class="product-card">
-            <img src="images/plantain.JPG" alt="Plantain" onclick="openLightbox('images/plantain.JPG')">
+            <img src="images/plantain.JPG" alt="Plantain">
             <h3>Hybrid Giant Plantain Suckers</h3>
             <p>Vigorous suckers producing larger fingers and heavier bunches. <b>₦350 per sucker</b></p>
         </div>
 
         <!-- Hybrid Banana -->
         <div class="product-card">
-            <img src="images/giant_banana.JPG" alt="Banana" onclick="openLightbox('images/giant_banana.JPG')">
+            <img src="images/giant_banana.JPG" alt="Banana">
             <h3>Hybrid Giant Banana Suckers</h3>
-            <p>Early fruiting and pest resistant. <b>₦300 per sucker</b></p>
+            <p>Early fruiting and pest resistant. Perfect for continuous harvest. <b>₦300 per sucker</b></p>
         </div>
 
         <!-- Oil Palm -->
         <div class="product-card">
-            <img src="images/oilpalm.JPG" alt="Oil Palm" onclick="openLightbox('images/oilpalm.JPG')">
+            <img src="images/oilpalm.JPG" alt="Oil Palm">
             <h3>Tenera Oil Palm Seedlings</h3>
             <p>High oil-to-bunch ratio, disease resistant, faster fruiting. <b>₦1,000 per seedling</b></p>
         </div>
 
         <!-- Coconut -->
         <div class="product-card">
-            <img src="images/coconut.JPG" alt="Coconut" onclick="openLightbox('images/coconut.JPG')">
+            <img src="images/coconut.JPG" alt="Coconut">
             <h3>Hybrid Coconut Seedlings</h3>
-            <p>Malaysian Dwarf, West African Tall, and Improved Hybrid. <b>₦4,500 per seedling</b></p>
+            <p>Malaysian Dwarf, West African Tall, and Improved Hybrid. High water content and excellent nut size. <b>₦4,500 per seedling</b></p>
         </div>
 
         <!-- Pineapple -->
         <div class="product-card">
-            <img src="images/pineapple.JPG" alt="Pineapple" onclick="openLightbox('images/pineapple.JPG')">
+            <img src="images/pineapple.JPG" alt="Pineapple">
             <h3>Pineapple Suckers</h3>
-            <p>MD2, Smooth Cayenne, and Queen varieties. <b>₦500 per sucker</b></p>
+            <p>MD2, Smooth Cayenne, and Queen varieties known for sweetness and long shelf life. <b>₦500 per sucker</b></p>
         </div>
 
         <!-- Fertilizers -->
         <div class="product-card">
-            <img src="images/fertilizer.JPG" alt="Fertilizer" onclick="openLightbox('images/fertilizer.JPG')">
+            <img src="images/fertilizer.JPG" alt="Fertilizer">
             <h3>NPK & Other Fertilizers</h3>
             <p>High-grade fertilizers including NPK, Urea, and crop-specific blends. <b>₦65,000 per sack</b></p>
         </div>
 
         <!-- Cocoa -->
         <div class="product-card">
-            <img src="images/giant_cocoa.JPG" alt="Cocoa" onclick="openLightbox('images/giant_cocoa.JPG')">
+            <img src="images/giant_cocoa.JPG" alt="Cocoa">
             <h3>Hybrid Cocoa Seedlings</h3>
             <p>CRIN-approved hybrids, early maturing, higher yield per tree. <b>₦500 per seedling</b></p>
         </div>
 
         <!-- Vegetable Seeds -->
         <div class="product-card">
-            <img src="images/vegetables.JPG" alt="Vegetables" onclick="openLightbox('images/vegetables.JPG')">
-            <h3>Vegetable Seeds</h3>
+            <img src="images/vegetables.JPG" alt="Vegetables">
+            <h3>Vegetable Seeds (Ugu, Africa Spinach & Others)</h3>
             <p>High-germination seeds suitable for backyard gardens and commercial farms. <b>₦15,000 per Congo</b></p>
         </div>
 
     </div>
 </section>
 
-<!-- LIGHTBOX -->
-<div id="lightbox" class="lightbox" onclick="closeLightbox()">
-    <span class="lightbox-close">&times;</span>
-    <img class="lightbox-content" id="lightbox-img" src="">
-</div>
-
-<!-- CTA SECTION -->
+<!-- CTA Section -->
 <section class="cta">
     <h2>Need Agro Consultation or Bulk Supply?</h2>
     <p>
-        Call us at <a href="tel:08153729342" class="highlight">08153729342</a><br>
-        WhatsApp: <a href="https://wa.me/2349138938301" class="highlight" target="_blank">+2349138938301</a><br>
-        Facebook: <a href="https://www.facebook.com/share/1C4uebsaZX/?mibextid=wwXIfr" class="highlight">Follow Us on Facebook</a>
+        Call us at <a href="tel:08153729342" style="color:red;">08153729342</a><br>
+        WhatsApp: <a href="https://wa.me/2349138938301" style="color:red;" target="_blank">+2349138938301</a><br>
+        Facebook: <a href="https://www.facebook.com/share/1C4uebsaZX/?mibextid=wwXIfr" style="color:red;">Follow Us on Facebook</a>
     </p>
     <a href="contact.html" class="btn">Contact Us</a>
 </section>
 
-<!-- FOOTER -->
+<!-- Floating WhatsApp Button -->
+<a href="https://wa.me/2349138938301" class="whatsapp-float" target="_blank">💬</a>
+
 <footer>
     <p>&copy; 2025 Healing Root Agro Ventures. All rights reserved.</p>
-    <p>Email: <a href="mailto:olasuposegunvictor@gmail.com" class="highlight">olasuposegunvictor@gmail.com</a></p>
+    <p>Email: <a href="mailto:olasuposegunvictor@gmail.com">olasuposegunvictor@gmail.com</a></p>
 </footer>
 
-<!-- FLOATING WHATSAPP -->
-<a href="https://wa.me/2349138938301" target="_blank" class="whatsapp-float">
-    <img src="images/whatsapp_icon.png" alt="WhatsApp">
-</a>
-
-<!-- SCRIPTS -->
 <script>
 function searchProducts() {
     const input = document.getElementById('productSearch').value.toLowerCase();
     const cards = document.querySelectorAll('.product-card');
     cards.forEach(card => {
-        const text = card.innerText.toLowerCase();
-        card.style.display = text.includes(input) ? '' : 'none';
+        const title = card.querySelector('h3').textContent.toLowerCase();
+        card.style.display = title.includes(input) ? 'block' : 'none';
     });
-}
-
-// LIGHTBOX FUNCTIONS
-function openLightbox(src) {
-    document.getElementById('lightbox').style.display = 'block';
-    document.getElementById('lightbox-img').src = src;
-}
-function closeLightbox() {
-    document.getElementById('lightbox').style.display = 'none';
 }
 </script>
 
