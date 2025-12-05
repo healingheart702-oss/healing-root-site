@@ -1,201 +1,294 @@
-/* ------------------------------
-   GLOBAL STYLE
---------------------------------*/
+/* ===== GENERAL ===== */
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    font-family: "Roboto", sans-serif;
 }
 
 body {
-    background: #f8f9fa;
+    font-family: 'Roboto', sans-serif;
+    background: #f5f7fa;
     color: #333;
     line-height: 1.6;
 }
 
-/* Containers */
-.container {
-    width: 90%;
+/* ===== HEADER ===== */
+header {
+    background: #2c5e1a;
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+header .logo img {
+    height: 60px;
+}
+
+header nav {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+}
+
+header nav a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+header nav a:hover,
+header nav a.active {
+    color: #a8e6a1;
+}
+
+header .buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+header .buttons a {
+    background: white;
+    color: #2c5e1a;
+    padding: 8px 14px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+header .buttons a:hover {
+    background: #a8e6a1;
+    color: #2c5e1a;
+}
+
+/* ===== HERO SECTION ===== */
+.hero {
+    background: #e0f2f1;
+    text-align: center;
+    padding: 80px 20px 60px 20px;
+}
+
+.hero h2 {
+    font-size: 42px;
+    color: #2e7d32;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 18px;
+    max-width: 850px;
+    margin: 0 auto 30px auto;
+}
+
+.hero img.hero-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin-top: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* Hero buttons */
+.hero-buttons {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.hero-buttons .btn {
+    padding: 14px 28px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* ===== SEARCH BAR ===== */
+.search-bar {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.search-bar input[type="text"] {
+    padding: 12px 15px;
+    width: 300px;
+    border: 2px solid #2c5e1a;
+    border-radius: 5px 0 0 5px;
+    outline: none;
+    font-size: 16px;
+}
+
+.search-bar button {
+    padding: 12px 20px;
+    border: 2px solid #2c5e1a;
+    border-left: none;
+    background: #2c5e1a;
+    color: white;
+    font-weight: bold;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.search-bar button:hover {
+    background: #1b3e11;
+}
+
+/* ===== PRODUCTS GRID ===== */
+.products {
+    padding: 60px 20px;
     max-width: 1200px;
     margin: auto;
 }
 
-/* ------------------------------
-   HEADER / NAVIGATION
---------------------------------*/
-header {
-    background: #004d26;
-    color: white;
-    padding: 20px 0;
-    box-shadow: 0px 2px 8px rgba(0,0,0,0.2);
-}
-
-header .logo {
-    font-size: 26px;
-    font-weight: bold;
-}
-
-nav ul {
-    display: flex;
-    justify-content: space-between;
-    list-style: none;
-    margin-top: 10px;
-}
-
-nav ul li a {
-    color: white;
-    text-decoration: none;
-    padding: 8px 14px;
-    font-weight: 500;
-    transition: 0.3s;
-}
-
-nav ul li a:hover {
-    background: #00b359;
-    border-radius: 5px;
-}
-
-/* ------------------------------
-   HERO SECTION
---------------------------------*/
-.hero {
-    background: url("../images/farm-bg.jpg") center/cover no-repeat;
-    color: white;
-    height: 60vh;
-    display: flex;
-    align-items: center;
-    padding-left: 5%;
-    text-shadow: 2px 2px 5px black;
-}
-
-.hero h2 {
-    font-size: 40px;
-    font-weight: 700;
-}
-
-.hero p {
-    margin: 15px 0;
-    font-size: 20px;
-}
-
-.btn {
-    display: inline-block;
-    background: #00b359;
-    padding: 12px 25px;
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    transition: 0.3s;
-    font-size: 18px;
-}
-
-.btn:hover {
-    background: #00994d;
-}
-
-/* ------------------------------
-   PRODUCT GRID
---------------------------------*/
 .products-grid {
-    margin-top: 40px;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
 }
 
 .product-card {
     background: white;
-    border-radius: 10px;
-    overflow: hidden;
-    padding-bottom: 15px;
-    box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
     transition: 0.3s;
+    text-align: center;
 }
 
 .product-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0px 6px 18px rgba(0,0,0,0.25);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
 .product-card img {
     width: 100%;
     height: 220px;
+    border-radius: 12px;
     object-fit: cover;
+    margin-bottom: 15px;
 }
 
 .product-card h3 {
-    margin: 15px;
+    color: #156b2c;
     font-size: 22px;
-    color: #004d26;
+    margin-bottom: 12px;
 }
 
 .product-card p {
-    margin: 0 15px 15px 15px;
-    color: #444;
-    font-size: 16px;
+    font-size: 15px;
+    color: #333;
+    line-height: 1.6;
 }
 
-/* ------------------------------
-   CTA SECTION
---------------------------------*/
+/* ===== CTA SECTION ===== */
 .cta {
+    background: #dff0e0;
     text-align: center;
-    padding: 50px 20px;
-    background: #004d26;
-    color: white;
+    padding: 60px 20px;
+    margin-top: 50px;
+    border-radius: 12px;
 }
 
 .cta h2 {
     font-size: 30px;
+    color: #2e7d32;
+    margin-bottom: 20px;
 }
 
 .cta p {
-    margin: 15px 0;
-    font-size: 18px;
+    font-size: 17px;
 }
 
-/* ------------------------------
-   FOOTER
---------------------------------*/
+.cta a.btn {
+    margin-top: 20px;
+    display: inline-block;
+    padding: 14px 28px;
+}
+
+/* ===== FOOTER ===== */
 footer {
-    background: #00331a;
+    background: #2c5e1a;
     color: white;
-    padding: 25px 0;
     text-align: center;
-    margin-top: 40px;
+    padding: 25px 20px;
+    margin-top: 50px;
 }
 
 footer a {
-    color: #00ff99;
+    color: #ff4d4d;
+    font-weight: bold;
     text-decoration: none;
+    margin: 0 5px;
 }
 
-/* ------------------------------
-   RESPONSIVE MOBILE
---------------------------------*/
+/* ===== HIGHLIGHT LINKS ===== */
+.highlight {
+    color: #ff4d4d;
+    font-weight: bold;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+    background: #2c5e1a;
+    color: white;
+    text-decoration: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn:hover {
+    background: #1b3e11;
+}
+
+/* ===== FLOATING WHATSAPP ===== */
+.whatsapp-float {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    width: 60px;
+    height: 60px;
+}
+
+.whatsapp-float img {
+    width: 100%;
+    height: 100%;
+}
+
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-    header .logo {
-        text-align: center;
+    header {
+        flex-direction: column;
+        align-items: flex-start;
     }
     
-    nav ul {
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
+    header nav {
+        gap: 10px;
+        margin: 10px 0;
     }
-
-    .hero {
-        height: 50vh;
-        text-align: center;
-        padding: 0 20px;
+    
+    .hero h2 {
+        font-size: 32px;
     }
-}
-.products-grid img {
-    width: 100%;      /* Image fills the card width */
-    max-width: 300px; /* Prevents images from being too big */
-    height: auto;     /* Maintains aspect ratio */
-    display: block;
-    margin: 0 auto;   /* Centers image in the card */
-    border-radius: 8px; /* Optional: makes images look modern */
+    
+    .hero p {
+        font-size: 16px;
+    }
+    
+    .search-bar input[type="text"] {
+        width: 200px;
+    }
 }
