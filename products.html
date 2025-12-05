@@ -18,45 +18,17 @@ h1 { text-align:center; color:#2c5e1a; margin:30px 0; font-size:32px; font-weigh
 .product-card h3 { font-size:22px; color:#156b2c; margin-bottom:10px; }
 .product-card p { font-size:15px; color:#333; line-height:1.6; margin-bottom:10px; }
 .product-card input[type="number"] { width:60px; padding:5px; margin-bottom:10px; }
-.product-card button { background:#4CAF50; color:white; padding:8px 15px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; transition:0.3s; }
+.product-card button { background:#4CAF50; color:white; padding:8px 15px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; transition:0.3s; margin-bottom:5px; display:block; width:80%; margin-left:auto; margin-right:auto; }
 .product-card button:hover { background:#388E3C; }
-
-.call-section { text-align:center; margin:20px 0; font-size:16px; }
-.call-section a { color:#2e7d32; font-weight:bold; text-decoration:none; }
-
-.cart { position:fixed; top:10px; right:10px; background:#4CAF50; color:white; padding:10px 15px; border-radius:5px; cursor:pointer; z-index:1000; font-size:18px; }
-#cart-modal { position:fixed; top:50px; right:-400px; width:350px; height:80%; background:white; box-shadow:-3px 0 10px rgba(0,0,0,0.2); transition:0.3s; padding:20px; overflow-y:auto; z-index:1001; }
-#cart-modal h3 { margin-top:0; text-align:center; }
-#cart-items { list-style:none; padding:0; }
-#cart-items li { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; }
-#cart-items li button { background:red; border:none; color:white; padding:5px 8px; border-radius:5px; cursor:pointer; margin-top:5px; }
-#cart-items li input { width:50px; padding:5px; margin-left:5px; }
-#close-cart { background:#4CAF50; color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer; margin-bottom:10px; width:100%; font-size:16px; }
-#checkout-btn { display:block; margin-top:10px; background:#4CAF50; color:white; text-align:center; padding:10px; border-radius:5px; text-decoration:none; font-weight:bold; }
-
+.whatsapp-btn { background:#25D366; }
+.whatsapp-btn:hover { background:#128C7E; }
 .whatsapp-float { position:fixed; bottom:20px; right:20px; background:#25D366; color:white; border-radius:50%; width:60px; height:60px; display:flex; align-items:center; justify-content:center; font-size:28px; text-decoration:none; box-shadow:0 4px 6px rgba(0,0,0,0.3); z-index:1000; }
-
-/* Paystack button */
-.paystack-btn {
-    display: inline-block;
-    margin-top: 5px;
-    background: #ff7f00;
-    color: white;
-    padding: 8px 15px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-weight: bold;
-    transition: 0.3s;
-}
-.paystack-btn:hover { background: #e67300; }
 
 /* RESPONSIVE STYLES */
 @media (max-width: 768px){
     .products-grid { grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px; padding:15px; }
     .product-card img { height:180px; }
     .product-card h3 { font-size:20px; }
-    .cart { font-size:16px; padding:8px 12px; }
-    #cart-modal { width:90%; right:-100%; height:80%; top:60px; }
 }
 @media (max-width: 480px){
     .products-grid { grid-template-columns:1fr; gap:10px; padding:10px; }
@@ -69,152 +41,119 @@ h1 { text-align:center; color:#2c5e1a; margin:30px 0; font-size:32px; font-weigh
 
 <h1>HEALING ROOT AGRO VENTURES PRODUCT</h1>
 
-<!-- Call Section -->
-<div class="call-section">
-    Call: <a href="tel:08153729342">08153729342</a>
-</div>
-
 <!-- Products Grid -->
 <div class="products-grid">
-    <!-- Example: Cassava -->
-    <div class="product-card" data-name="Cassava Stems" data-price="1000">
-        <img src="images/cassava.JPG" alt="Cassava stems">
-        <h3>Cassava Stems</h3>
-        <p>TME419, TMS30572, Agric & Yellow Root available.</p>
-        <input type="number" value="1" min="1">
-        <button onclick="addToCart(this)">Add to Cart</button>
-        <button class="paystack-btn" onclick="payWithPaystack(this)">Pay via Paystack</button>
-    </div>
 
-    <!-- Add other products the same way -->
-    <!-- Hybrid Plantain -->
-    <div class="product-card" data-name="Hybrid Plantain Suckers" data-price="350">
-        <img src="images/plantain.JPG" alt="Plantain">
-        <h3>Hybrid Plantain Suckers</h3>
-        <p>Premium giant hybrid plantain suckers.</p>
-        <input type="number" value="1" min="1">
-        <button onclick="addToCart(this)">Add to Cart</button>
-        <button class="paystack-btn" onclick="payWithPaystack(this)">Pay via Paystack</button>
-    </div>
-
-    <!-- Hybrid Banana -->
-    <div class="product-card" data-name="Hybrid Giant Banana Suckers" data-price="300">
-        <img src="images/giant_banana.JPG" alt="Banana">
-        <h3>Hybrid Giant Banana Suckers</h3>
-        <p>Early fruiting and pest resistant.</p>
-        <input type="number" value="1" min="1">
-        <button onclick="addToCart(this)">Add to Cart</button>
-        <button class="paystack-btn" onclick="payWithPaystack(this)">Pay via Paystack</button>
-    </div>
-
-    <!-- Oil Palm -->
-    <div class="product-card" data-name="Tenera Oil Palm Seedlings" data-price="1000">
-        <img src="images/oilpalm.JPG" alt="Oil Palm">
-        <h3>Tenera Oil Palm Seedlings</h3>
-        <p>High oil-to-bunch ratio, disease resistant.</p>
-        <input type="number" value="1" min="1">
-        <button onclick="addToCart(this)">Add to Cart</button>
-        <button class="paystack-btn" onclick="payWithPaystack(this)">Pay via Paystack</button>
-    </div>
-
-    <!-- Add remaining products similarly -->
+<!-- Product Template Start -->
+<div class="product-card" data-name="Cassava Stems" data-price="1000">
+    <img src="images/cassava.JPG" alt="Cassava stems">
+    <h3>Cassava Stems</h3>
+    <p>TME419, TMS30572, Agric & Yellow Root available.</p>
+    <input type="number" value="1" min="1">
+    <button onclick="payWithPaystack('Cassava Stems', 1000)">Pay Now</button>
+    <button class="whatsapp-btn" onclick="orderViaWhatsApp('Cassava Stems', 1000)">Order via WhatsApp</button>
 </div>
 
-<!-- Cart -->
-<div class="cart" onclick="toggleCart()">🛒 Cart</div>
-<div id="cart-modal">
-    <button id="close-cart" onclick="toggleCart()">Close Cart</button>
-    <h3>Your Cart</h3>
-    <ul id="cart-items"></ul>
-    <p><b>Total: ₦<span id="cart-total">0</span></b></p>
-    <a id="checkout-btn" href="#" target="_blank">Order via WhatsApp</a>
+<div class="product-card" data-name="Hybrid Plantain Suckers" data-price="350">
+    <img src="images/plantain.JPG" alt="Plantain">
+    <h3>Hybrid Plantain Suckers</h3>
+    <p>Premium giant hybrid plantain suckers.</p>
+    <input type="number" value="1" min="1">
+    <button onclick="payWithPaystack('Hybrid Plantain Suckers', 350)">Pay Now</button>
+    <button class="whatsapp-btn" onclick="orderViaWhatsApp('Hybrid Plantain Suckers', 350)">Order via WhatsApp</button>
 </div>
 
-<!-- WhatsApp Floating Button -->
+<div class="product-card" data-name="Hybrid Giant Banana Suckers" data-price="300">
+    <img src="images/giant_banana.JPG" alt="Banana">
+    <h3>Hybrid Giant Banana Suckers</h3>
+    <p>Early fruiting and pest resistant.</p>
+    <input type="number" value="1" min="1">
+    <button onclick="payWithPaystack('Hybrid Giant Banana Suckers', 300)">Pay Now</button>
+    <button class="whatsapp-btn" onclick="orderViaWhatsApp('Hybrid Giant Banana Suckers', 300)">Order via WhatsApp</button>
+</div>
+
+<div class="product-card" data-name="Tenera Oil Palm Seedlings" data-price="1000">
+    <img src="images/oilpalm.JPG" alt="Oil Palm">
+    <h3>Tenera Oil Palm Seedlings</h3>
+    <p>High oil-to-bunch ratio, disease resistant.</p>
+    <input type="number" value="1" min="1">
+    <button onclick="payWithPaystack('Tenera Oil Palm Seedlings', 1000)">Pay Now</button>
+    <button class="whatsapp-btn" onclick="orderViaWhatsApp('Tenera Oil Palm Seedlings', 1000)">Order via WhatsApp</button>
+</div>
+
+<div class="product-card" data-name="Hybrid Coconut Seedlings" data-price="4500">
+    <img src="images/coconut.JPG" alt="Coconut">
+    <h3>Hybrid Coconut Seedlings</h3>
+    <p>Malaysian Dwarf, West African Tall, Improved Hybrid.</p>
+    <input type="number" value="1" min="1">
+    <button onclick="payWithPaystack('Hybrid Coconut Seedlings', 4500)">Pay Now</button>
+    <button class="whatsapp-btn" onclick="orderViaWhatsApp('Hybrid Coconut Seedlings', 4500)">Order via WhatsApp</button>
+</div>
+
+<div class="product-card" data-name="Pineapple Suckers" data-price="500">
+    <img src="images/pineapple.JPG" alt="Pineapple">
+    <h3>Pineapple Suckers</h3>
+    <p>MD2, Smooth Cayenne, and Queen varieties.</p>
+    <input type="number" value="1" min="1">
+    <button onclick="payWithPaystack('Pineapple Suckers', 500)">Pay Now</button>
+    <button class="whatsapp-btn" onclick="orderViaWhatsApp('Pineapple Suckers', 500)">Order via WhatsApp</button>
+</div>
+
+<div class="product-card" data-name="NPK & Other Fertilizers" data-price="65000">
+    <img src="images/fertilizer.JPG" alt="Fertilizer">
+    <h3>NPK & Other Fertilizers</h3>
+    <p>High-grade fertilizers for vigorous growth.</p>
+    <input type="number" value="1" min="1">
+    <button onclick="payWithPaystack('NPK & Other Fertilizers', 65000)">Pay Now</button>
+    <button class="whatsapp-btn" onclick="orderViaWhatsApp('NPK & Other Fertilizers', 65000)">Order via WhatsApp</button>
+</div>
+
+<div class="product-card" data-name="Hybrid Cocoa Seedlings" data-price="500">
+    <img src="images/giant_cocoa.JPG" alt="Cocoa">
+    <h3>Hybrid Cocoa Seedlings</h3>
+    <p>CRIN-approved hybrids, early maturing.</p>
+    <input type="number" value="1" min="1">
+    <button onclick="payWithPaystack('Hybrid Cocoa Seedlings', 500)">Pay Now</button>
+    <button class="whatsapp-btn" onclick="orderViaWhatsApp('Hybrid Cocoa Seedlings', 500)">Order via WhatsApp</button>
+</div>
+
+<div class="product-card" data-name="Vegetable Seeds" data-price="15000">
+    <img src="images/vegetables.JPG" alt="Vegetables">
+    <h3>Vegetable Seeds (Ugu, Africa Spinach & Others)</h3>
+    <p>High-germination seeds for backyard & commercial farms.</p>
+    <input type="number" value="1" min="1">
+    <button onclick="payWithPaystack('Vegetable Seeds', 15000)">Pay Now</button>
+    <button class="whatsapp-btn" onclick="orderViaWhatsApp('Vegetable Seeds', 15000)">Order via WhatsApp</button>
+</div>
+
+</div>
+
 <a href="https://wa.me/2349138938301" target="_blank" class="whatsapp-float">💬</a>
 
-<!-- Paystack inline script -->
+<!-- Paystack JS -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
-
 <script>
-let cart = [];
-function addToCart(button){
-    let card = button.parentElement;
-    let name = card.getAttribute("data-name");
-    let price = parseInt(card.getAttribute("data-price"));
-    let qty = parseInt(card.querySelector('input').value);
-    
-    let existing = cart.find(i => i.name === name);
-    if(existing){ existing.qty += qty; }
-    else{ cart.push({name, price, qty}); }
-    
-    updateCart();
-}
-
-function updateCart(){
-    let itemsContainer = document.getElementById("cart-items");
-    let totalEl = document.getElementById("cart-total");
-    itemsContainer.innerHTML = "";
-    let total = 0;
-    
-    cart.forEach((item, index)=>{
-        total += item.price * item.qty;
-        let li = document.createElement("li");
-        li.innerHTML = `${item.name} - ₦${item.price} x <input type="number" value="${item.qty}" min="1" onchange="changeQty(${index}, this.value)"> <button onclick="removeItem(${index})">X</button>`;
-        itemsContainer.appendChild(li);
-    });
-    
-    totalEl.textContent = total;
-    document.getElementById("checkout-btn").href = "https://wa.me/2349138938301?text=" + encodeURIComponent("I want to order: " + cart.map(i=>i.name + " x" + i.qty).join(", "));
-}
-
-function changeQty(index, value){
-    cart[index].qty = parseInt(value);
-    updateCart();
-}
-
-function removeItem(index){
-    cart.splice(index,1);
-    updateCart();
-}
-
-function toggleCart(){
-    let modal = document.getElementById("cart-modal");
-    if(modal.style.right === "0px"){ modal.style.right="-400px"; }
-    else{ modal.style.right="0px"; }
-}
-
-// Paystack payment function
-function payWithPaystack(button){
-    let card = button.parentElement;
-    let name = card.getAttribute("data-name");
-    let price = parseInt(card.getAttribute("data-price"));
-    let qty = parseInt(card.querySelector('input').value);
-    let amount = price * qty * 100; // Paystack expects Kobo
-    
-    var handler = PaystackPop.setup({
-        key: 'pk_test_xxxxxxxxxxxxxxxxxxxxx', // Replace with your Paystack public key
-        email: 'customer@example.com',
-        amount: amount,
+function payWithPaystack(name, price){
+    let qty = parseInt(event.target.parentElement.querySelector('input').value);
+    let handler = PaystackPop.setup({
+        key: 'pk_live_5983ea4d5d6ba95e21e715a9627178436844cb95',
+        email: prompt("Enter your email:"),
+        amount: price * qty * 100,
         currency: "NGN",
-        ref: ''+Math.floor((Math.random() * 1000000000) + 1),
-        metadata: {
-            custom_fields: [
-                {
-                    display_name: "Product",
-                    variable_name: "product",
-                    value: name + " x" + qty
-                }
-            ]
-        },
+        ref: 'HRAV' + Math.floor((Math.random() * 1000000000) + 1),
+        metadata: { custom_fields: [{ display_name: name, variable_name: "product_name", value: qty }] },
         callback: function(response){
-            alert('Payment successful. Reference: ' + response.reference);
+            alert('Payment complete! Reference: ' + response.reference);
         },
-        onClose: function(){
-            alert('Payment window closed.');
-        }
+        onClose: function(){ alert('Transaction was not completed.'); }
     });
     handler.openIframe();
+}
+
+function orderViaWhatsApp(name, price){
+    let qty = parseInt(event.target.parentElement.querySelector('input').value);
+    let msg = `I want to order: ${name} x${qty} for ₦${price*qty}`;
+    window.open("https://wa.me/2349138938301?text=" + encodeURIComponent(msg), "_blank");
 }
 </script>
 
