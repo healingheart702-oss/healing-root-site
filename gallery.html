@@ -5,26 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Google Verification -->
 <meta name="google-site-verification" content="cPJ3_emx8r6W7a_9249IO_Aj4NEH15CCtPqEgc18FN8" />
+
 <title>Healing Root Agro Ventures | Product Gallery</title>
 <link rel="stylesheet" href="css/style.css">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
-<!-- Lightbox CSS -->
 <style>
 body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background:#f5f7fa; }
-header { background:#4CAF50; color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; }
-.logo { font-size:22px; font-weight:bold; }
-.gallery-container { max-width:1200px; margin:50px auto; padding:0 20px; }
-.gallery-title { text-align:center; font-size:32px; color:#2e7d32; margin-bottom:40px; }
-.gallery-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px; }
-.gallery-grid img { width:100%; border-radius:10px; cursor:pointer; transition:0.3s; }
-.gallery-grid img:hover { transform:scale(1.05); }
-/* Lightbox */
-#lightbox { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:1000; }
-#lightbox img { max-width:90%; max-height:80%; border-radius:10px; }
-#lightbox span { position:absolute; top:20px; right:30px; font-size:40px; color:white; cursor:pointer; }
-/* Floating WhatsApp */
-.whatsapp-float { position:fixed; bottom:20px; right:20px; background:#25D366; color:white; border-radius:50%; width:60px; height:60px; display:flex; justify-content:center; align-items:center; font-size:30px; z-index:1001; text-decoration:none; box-shadow:0 4px 10px rgba(0,0,0,0.3);}
+header { background:#4CAF50; color:white; padding:15px 20px; text-align:center; }
+header .logo { font-size:22px; font-weight:bold; }
+.section-title { font-size:28px; color:#2e7d32; text-align:center; margin:40px 0 20px 0; }
+.product-card { background:#fff; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); padding:20px; margin:20px auto; max-width:1200px; }
+.product-card img { width:23%; height:150px; object-fit:cover; margin:1%; border-radius:8px; }
+.product-card h3 { font-size:24px; color:#156b2c; margin:20px 0 10px 0; }
+.product-card p { font-size:14px; line-height:1.6; color:#333; margin-bottom:10px; }
+.floating-whatsapp { position:fixed; bottom:20px; right:20px; z-index:999; }
+.floating-whatsapp img { width:60px; height:60px; }
+footer { background:#4CAF50; color:white; text-align:center; padding:20px; margin-top:40px; }
+footer a { color:red; font-weight:bold; text-decoration:none; margin:0 5px; }
 </style>
 </head>
 <body>
@@ -33,85 +31,178 @@ header { background:#4CAF50; color:white; padding:15px 20px; display:flex; justi
     <div class="logo">HEALING ROOT AGRO VENTURES</div>
 </header>
 
-<section class="gallery-container">
-    <h2 class="gallery-title">Our Product Gallery</h2>
-    
-    <div class="gallery-grid">
-        <!-- Cassava Images -->
-        <img src="images/cassava1.JPG" alt="Cassava" onclick="openLightbox(this.src)">
-        <img src="images/cassava2.JPG" alt="Cassava" onclick="openLightbox(this.src)">
-        <img src="images/cassava3.JPG" alt="Cassava" onclick="openLightbox(this.src)">
-        <img src="images/cassava4.JPG" alt="Cassava" onclick="openLightbox(this.src)">
-
-        <!-- Coconut Images -->
-        <img src="images/coconut1.JPG" alt="Coconut" onclick="openLightbox(this.src)">
-        <img src="images/coconut2.JPG" alt="Coconut" onclick="openLightbox(this.src)">
-        <img src="images/coconut3.JPG" alt="Coconut" onclick="openLightbox(this.src)">
-        <img src="images/coconut4.JPG" alt="Coconut" onclick="openLightbox(this.src)">
-
-        <!-- Fertilizer Images -->
-        <img src="images/fertilizer1.JPG" alt="Fertilizer" onclick="openLightbox(this.src)">
-        <img src="images/fertilizer2.JPG" alt="Fertilizer" onclick="openLightbox(this.src)">
-        <img src="images/fertilizer3.JPG" alt="Fertilizer" onclick="openLightbox(this.src)">
-        <img src="images/fertilizer4.JPG" alt="Fertilizer" onclick="openLightbox(this.src)">
-
-        <!-- Giant Banana Images -->
-        <img src="images/giant_banana1.JPG" alt="Giant Banana" onclick="openLightbox(this.src)">
-        <img src="images/giant_banana2.JPG" alt="Giant Banana" onclick="openLightbox(this.src)">
-        <img src="images/giant_banana3.JPG" alt="Giant Banana" onclick="openLightbox(this.src)">
-        <img src="images/giant_banana4.JPG" alt="Giant Banana" onclick="openLightbox(this.src)">
-
-        <!-- Giant Cocoa Images -->
-        <img src="images/giant_cocoa1.JPG" alt="Giant Cocoa" onclick="openLightbox(this.src)">
-        <img src="images/giant_cocoa2.JPG" alt="Giant Cocoa" onclick="openLightbox(this.src)">
-        <img src="images/giant_cocoa3.JPG" alt="Giant Cocoa" onclick="openLightbox(this.src)">
-        <img src="images/giant_cocoa4.JPG" alt="Giant Cocoa" onclick="openLightbox(this.src)">
-
-        <!-- Oil Palm Images -->
-        <img src="images/oilpalm1.JPG" alt="Oil Palm" onclick="openLightbox(this.src)">
-        <img src="images/oilpalm2.JPG" alt="Oil Palm" onclick="openLightbox(this.src)">
-        <img src="images/oilpalm3.JPG" alt="Oil Palm" onclick="openLightbox(this.src)">
-        <img src="images/oilpalm4.JPG" alt="Oil Palm" onclick="openLightbox(this.src)">
-
-        <!-- Pineapple Images -->
-        <img src="images/pineapple1.JPG" alt="Pineapple" onclick="openLightbox(this.src)">
-        <img src="images/pineapple2.JPG" alt="Pineapple" onclick="openLightbox(this.src)">
-        <img src="images/pineapple3.JPG" alt="Pineapple" onclick="openLightbox(this.src)">
-        <img src="images/pineapple4.JPG" alt="Pineapple" onclick="openLightbox(this.src)">
-
-        <!-- Plantain Images -->
-        <img src="images/plantain1.JPG" alt="Plantain" onclick="openLightbox(this.src)">
-        <img src="images/plantain2.JPG" alt="Plantain" onclick="openLightbox(this.src)">
-        <img src="images/plantain3.JPG" alt="Plantain" onclick="openLightbox(this.src)">
-        <img src="images/plantain4.JPG" alt="Plantain" onclick="openLightbox(this.src)">
-
-        <!-- Vegetables Images -->
-        <img src="images/vegetables1.JPG" alt="Vegetables" onclick="openLightbox(this.src)">
-        <img src="images/vegetables2.JPG" alt="Vegetables" onclick="openLightbox(this.src)">
-        <img src="images/vegetables3.JPG" alt="Vegetables" onclick="openLightbox(this.src)">
-        <img src="images/vegetables4.JPG" alt="Vegetables" onclick="openLightbox(this.src)">
-    </div>
+<section class="section-title">
+    <h2>Our Product Gallery</h2>
+    <p>Explore detailed information, cultivation, economic benefits, and uses of our premium agricultural products.</p>
 </section>
 
-<!-- Lightbox -->
-<div id="lightbox" onclick="closeLightbox()">
-    <span>&times;</span>
-    <img src="" alt="Expanded view">
+<div class="gallery-container">
+
+<!-- Cassava -->
+<div class="product-card">
+    <h3>Cassava Stems (TME419, TMS30572, Agric & Yellow Root)</h3>
+    <div class="images">
+        <img src="images/cassava1.JPG" alt="Cassava 1">
+        <img src="images/cassava2.JPG" alt="Cassava 2">
+        <img src="images/cassava3.JPG" alt="Cassava 3">
+        <img src="images/cassava4.JPG" alt="Cassava 4">
+    </div>
+    <p><b>Advantages:</b> Cassava thrives in marginal soils, tolerates drought, produces high-yielding roots, and resists major diseases. It provides food security, versatile industrial use, and sustainable income streams. Intercropping with other crops improves soil fertility and farm productivity, making it ideal for smallholder and commercial farmers.</p>
+    <p><b>Cultivation:</b> Plant disease-free stems in loose, well-drained soils with 1m spacing. Apply NPK and organic fertilizers, mulch for moisture retention, and intercropping with legumes enhances soil nitrogen. Regular weeding and pest monitoring ensures healthy growth.</p>
+    <p><b>Harvesting & Yield:</b> Harvest 9–12 months after planting. Roots yield 20–35 tons/ha depending on soil and management. Careful digging prevents damage. Stems can be stored for replanting, and roots should be processed promptly to maintain quality.</p>
+    <p><b>Economic Benefits:</b> Cassava supports multiple revenue streams: food staples, flour, garri, starch, animal feed, and bioethanol. Provides employment and strengthens local economies. Smallholders and large farms can profit from consistent market demand.</p>
+    <p><b>Challenges:</b> Vulnerable to pests like green mites, diseases, soil degradation, and labor-intensive management. Market fluctuations and poor storage can affect income. Requires integrated pest management and proper farming practices.</p>
+    <p><b>Uses:</b> Roots for fufu, garri, flour; leaves as vegetables; industrial applications include starch and bioethanol. Supports food security, income generation, and raw material supply for industries.</p>
+    <a href="https://wa.me/2349138938301" target="_blank" class="floating-whatsapp">
+        <img src="images/whatsapp.png" alt="Chat on WhatsApp">
+    </a>
 </div>
 
-<!-- Floating WhatsApp -->
-<a href="https://wa.me/2349138938301" class="whatsapp-float" target="_blank">&#x2709;</a>
+<!-- Coconut -->
+<div class="product-card">
+    <h3>Hybrid Coconut Seedlings</h3>
+    <div class="images">
+        <img src="images/coconut1.JPG" alt="Coconut 1">
+        <img src="images/coconut2.JPG" alt="Coconut 2">
+        <img src="images/coconut3.JPG" alt="Coconut 3">
+        <img src="images/coconut4.JPG" alt="Coconut 4">
+    </div>
+    <p><b>Advantages:</b> Fast-fruiting, high water content, large nuts, resilient to pests and diseases, suitable for commercial and small-scale farms, enhancing income and nutrition.</p>
+    <p><b>Cultivation:</b> Plant in well-drained soil, ensure adequate sunlight and spacing. Apply fertilizers, maintain irrigation, and monitor pests regularly. Mulching reduces moisture loss and enhances soil health.</p>
+    <p><b>Harvesting & Yield:</b> Fruit begins after 3–5 years. Yield depends on variety and management. Proper harvesting ensures nut quality and consistent production for fresh consumption or processing.</p>
+    <p><b>Economic Benefits:</b> Provides income from coconut water, milk, copra, oil, and coir. Industrial and domestic uses create additional revenue streams and stimulate rural economy.</p>
+    <p><b>Challenges:</b> Susceptible to rhinoceros beetle, red palm weevil, and nutrient deficiencies. Requires careful management and labor for optimal yields.</p>
+    <p><b>Uses:</b> Consumed fresh, processed into oil, milk, copra; husks for coir and crafts; leaves for weaving and livestock feed. Versatile crop supporting multiple income channels.</p>
+    <a href="https://wa.me/2349138938301" target="_blank" class="floating-whatsapp">
+        <img src="images/whatsapp.png" alt="Chat on WhatsApp">
+    </a>
+</div>
 
-<!-- Scripts -->
-<script>
-function openLightbox(src) {
-    document.getElementById('lightbox').style.display = 'flex';
-    document.querySelector('#lightbox img').src = src;
-}
-function closeLightbox() {
-    document.getElementById('lightbox').style.display = 'none';
-}
-</script>
+<!-- Fertilizer -->
+<div class="product-card">
+    <h3>NPK & Other Fertilizers</h3>
+    <div class="images">
+        <img src="images/fertilizer1.JPG" alt="Fertilizer 1">
+        <img src="images/fertilizer2.JPG" alt="Fertilizer 2">
+        <img src="images/fertilizer3.JPG" alt="Fertilizer 3">
+        <img src="images/fertilizer4.JPG" alt="Fertilizer 4">
+    </div>
+    <p><b>Advantages:</b> High-quality NPK, Urea, and blends improve soil fertility, promote healthy plant growth, and enhance crop yield across root crops, vegetables, fruits, and cereals.</p>
+    <p><b>Cultivation:</b> Apply according to crop and soil requirements. Balanced fertilization ensures optimal growth. Proper timing and dosage maximize efficiency and minimize environmental impact.</p>
+    <p><b>Harvesting & Yield:</b> Correct fertilization increases crop yield and quality. Enables continuous cropping and reduces nutrient deficiencies, improving long-term farm productivity.</p>
+    <p><b>Economic Benefits:</b> Boosts farm productivity, profitability, and food security. High-yield produce can fetch premium market prices and reduce losses from poor nutrition.</p>
+    <p><b>Challenges:</b> Overuse damages plants and soil. Requires knowledge of crop nutrient needs. Storage must be dry to preserve quality. Incorrect application reduces effectiveness.</p>
+    <p><b>Uses:</b> Fertilizers are essential for root crops, vegetables, fruits, cereals, and plantations. Promote vigorous growth, higher yields, and sustainable agriculture.</p>
+    <a href="https://wa.me/2349138938301" target="_blank" class="floating-whatsapp">
+        <img src="images/whatsapp.png" alt="Chat on WhatsApp">
+    </a>
+</div>
 
-</body>
-</html>
+<!-- Giant Banana -->
+<div class="product-card">
+    <h3>Hybrid Giant Banana Suckers</h3>
+    <div class="images">
+        <img src="images/giant_banana1.JPG" alt="Banana 1">
+        <img src="images/giant_banana2.JPG" alt="Banana 2">
+        <img src="images/giant_banana3.JPG" alt="Banana 3">
+        <img src="images/giant_banana4.JPG" alt="Banana 4">
+    </div>
+    <p><b>Advantages:</b> Early fruiting, high yield, large clusters, pest-resistant, suitable for commercial and small farms, ensuring continuous market supply.</p>
+    <p><b>Cultivation:</b> Plant in fertile, well-drained soil. Spacing of 2–3 meters, proper fertilization, irrigation, and pest control improves growth and yield.</p>
+    <p><b>Harvesting & Yield:</b> Ready 9–12 months after planting. Each plant can produce multiple harvests over its productive lifespan. Proper care ensures maximum bunch weight and quality.</p>
+    <p><b>Economic Benefits:</b> Provides income from fresh fruit sales, processing into chips, flour, and export markets. Supports smallholder and commercial farm profitability.</p>
+    <p><b>Challenges:</b> Vulnerable to pests like banana weevil, nematodes, and fungal diseases. Requires careful maintenance of irrigation and soil fertility.</p>
+    <p><b>Uses:</b> Fruit for fresh consumption, processed products, livestock feed from discarded stems. Leaves used for packaging and crafts.</p>
+    <a href="https://wa.me/2349138938301" target="_blank" class="floating-whatsapp">
+        <img src="images/whatsapp.png" alt="Chat on WhatsApp">
+    </a>
+</div>
+
+<!-- Giant Cocoa -->
+<div class="product-card">
+    <h3>Hybrid Cocoa Seedlings</h3>
+    <div class="images">
+        <img src="images/giant_cocoa1.JPG" alt="Cocoa 1">
+        <img src="images/giant_cocoa2.JPG" alt="Cocoa 2">
+        <img src="images/giant_cocoa3.JPG" alt="Cocoa 3">
+        <img src="images/giant_cocoa4.JPG" alt="Cocoa 4">
+    </div>
+    <p><b>Advantages:</b> Early maturing, high bean yield, resistant to black pod disease, suitable for smallholder and commercial plantations, and supports long-term income stability.</p>
+    <p><b>Cultivation:</b> Plant in shaded, fertile soil. Apply organic and NPK fertilizers, ensure irrigation, and monitor pests regularly. Spacing and pruning encourage optimal growth.</p>
+    <p><b>Harvesting & Yield:</b> Pods ready 3–5 years after planting. Proper harvesting maintains quality and maximizes yield per hectare. Post-harvest drying ensures premium beans.</p>
+    <p><b>Economic Benefits:</b> Cocoa beans generate income through chocolate, cocoa powder, and export markets. Supports rural livelihoods and agro-processing industries.</p>
+    <p><b>Challenges:</b> Vulnerable to pests and diseases. Requires shade management, fertilization, and irrigation. Labour-intensive harvesting and pod processing.</p>
+    <p><b>Uses:</b> Beans processed into chocolate, cocoa powder, and cocoa butter. Husks used for compost, and leaves as mulch. Supports both food and industrial uses.</p>
+    <a href="https://wa.me/2349138938301" target="_blank" class="floating-whatsapp">
+        <img src="images/whatsapp.png" alt="Chat on WhatsApp">
+    </a>
+</div>
+
+<!-- Oil Palm -->
+<div class="product-card">
+    <h3>Tenera Oil Palm Seedlings</h3>
+    <div class="images">
+        <img src="images/oilpalm1.JPG" alt="Oil Palm 1">
+        <img src="images/oilpalm2.JPG" alt="Oil Palm 2">
+        <img src="images/oilpalm3.JPG" alt="Oil Palm 3">
+        <img src="images/oilpalm4.JPG" alt="Oil Palm 4">
+    </div>
+    <p><b>Advantages:</b> High oil-to-bunch ratio, disease-resistant, early fruiting, and suitable for small and large plantations. Provides high profitability for oil production.</p>
+    <p><b>Cultivation:</b> Plant in fertile, well-drained soils with 8–9m spacing. Apply fertilizers, irrigate if necessary, and maintain weed control.</p>
+    <p><b>Harvesting & Yield:</b> Fruit harvest begins 3–4 years after planting. Yield increases with proper maintenance. Harvesting multiple times per year ensures continuous supply.</p>
+    <p><b>Economic Benefits:</b> Income from palm oil, kernels, and by-products. Supports local processing and export industries, boosting farmer income.</p>
+    <p><b>Challenges:</b> Susceptible to pests like rhinoceros beetle. Requires proper soil nutrition and plantation management. Labour-intensive harvesting.</p>
+    <p><b>Uses:</b> Palm oil for cooking, cosmetics, biofuel; kernel for oil extraction. Leaves and empty fruit bunches used as mulch and livestock feed.</p>
+    <a href="https://wa.me/2349138938301" target="_blank" class="floating-whatsapp">
+        <img src="images/whatsapp.png" alt="Chat on WhatsApp">
+    </a>
+</div>
+
+<!-- Pineapple -->
+<div class="product-card">
+    <h3>Pineapple Suckers (MD2, Smooth Cayenne, Queen)</h3>
+    <div class="images">
+        <img src="images/pineapple1.JPG" alt="Pineapple 1">
+        <img src="images/pineapple2.JPG" alt="Pineapple 2">
+        <img src="images/pineapple3.JPG" alt="Pineapple 3">
+        <img src="images/pineapple4.JPG" alt="Pineapple 4">
+    </div>
+    <p><b>Advantages:</b> Sweet, firm, long shelf life, high yield, adaptable to various climates, suitable for commercial and small farms, and resistant to common pests.</p>
+    <p><b>Cultivation:</b> Plant in well-drained soil, 30–50cm spacing. Apply fertilizers, maintain soil moisture, and control pests for optimal growth.</p>
+    <p><b>Harvesting & Yield:</b> Ready 12–18 months after planting. Proper care and timely harvest ensure high-quality fruits and maximum yield per hectare.</p>
+    <p><b>Economic Benefits:</b> Pineapples are profitable for fresh market and processing into juice, canned fruit, and export. Ensures steady farm income.</p>
+    <p><b>Challenges:</b> Susceptible to mealybugs, nematodes, and fungal diseases. Requires adequate soil fertility and pest control management.</p>
+    <p><b>Uses:</b> Fresh consumption, juices, canned fruits, jams, and animal feed from residues. Supports both commercial and household usage.</p>
+    <a href="https://wa.me/2349138938301" target="_blank" class="floating-whatsapp">
+        <img src="images/whatsapp.png" alt="Chat on WhatsApp">
+    </a>
+</div>
+
+<!-- Hybrid Plantain -->
+<div class="product-card">
+    <h3>Hybrid Giant Plantain Suckers</h3>
+    <div class="images">
+        <img src="images/plantain1.JPG" alt="Plantain 1">
+        <img src="images/plantain2.JPG" alt="Plantain 2">
+        <img src="images/plantain3.JPG" alt="Plantain 3">
+        <img src="images/plantain4.JPG" alt="Plantain 4">
+    </div>
+    <p><b>Advantages:</b> Produces larger bunches and fingers, early-maturing, pest-resistant, ideal for continuous harvest, suitable for commercial and small-scale farms.</p>
+    <p><b>Cultivation:</b> Plant in fertile, well-drained soils spaced 2–3 meters. Apply fertilizers, maintain irrigation, and control weeds and pests for optimal growth.</p>
+    <p><b>Harvesting & Yield:</b> Ready 9–12 months after planting. Proper management ensures high-quality bunches. Staggered harvest meets market demand continuously.</p>
+    <p><b>Economic Benefits:</b> Income from fresh fruit sales, processing, and export. Smallholder farmers gain reliable revenue from hybrid plantains.</p>
+    <p><b>Challenges:</b> Vulnerable to nematodes, weevils, and fungal diseases. Requires fertilization, irrigation, and pest control to maintain productivity.</p>
+    <p><b>Uses:</b> Fresh consumption, chips, flour, animal feed. Leaves used for crafts and packaging. Versatile crop for food security and income generation.</p>
+    <a href="https://wa.me/2349138938301" target="_blank" class="floating-whatsapp">
+        <img src="images/whatsapp.png" alt="Chat on WhatsApp">
+    </a>
+</div>
+
+<!-- Vegetables -->
+<div class="product-card">
+    <h3>Vegetable Seeds (Ugu, African Spinach & Others)</h3>
+    <div class="images">
+        <img src="images/vegetables1.JPG" alt="Vegetables 1">
+        <img src="images/vegetables2.JPG" alt="Vegetables 2">
+        <img src="images/vegetables3.JPG" alt="Vegetables 3">
+        <img src="images/vegetables4.JPG" alt
