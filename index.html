@@ -20,7 +20,7 @@ header .buttons a { margin-left:10px; background:white; color:#4CAF50; padding:8
 .hero p { font-size:18px; max-width:700px; margin:0 auto 20px auto; }
 .btn { background:#4CAF50; color:white; padding:12px 20px; border-radius:5px; text-decoration:none; font-weight:bold; transition:0.3s; }
 .btn:hover { background:#388E3C; }
-.products-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:25px; margin-top:40px; }
+.products-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:25px; padding:50px 20px; max-width:1200px; margin:auto; }
 .product-card { background:#fff; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); padding:20px; transition:0.3s ease; text-align:center; }
 .product-card:hover { transform:translateY(-5px); box-shadow:0 6px 15px rgba(0,0,0,0.15); }
 .product-card img { width:100%; height:200px; border-radius:10px; object-fit:cover; margin-bottom:15px; }
@@ -30,15 +30,6 @@ header .buttons a { margin-left:10px; background:white; color:#4CAF50; padding:8
 .cta h2 { font-size:28px; color:#2e7d32; margin-bottom:15px; }
 footer { background:#4CAF50; color:white; text-align:center; padding:20px; margin-top:40px; }
 footer a { color:white; font-weight:bold; text-decoration:none; margin:0 5px; }
-.cart-icon { position:relative; display:inline-block; }
-.cart-count { position:absolute; top:-8px; right:-8px; background:red; color:white; font-size:12px; width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
-#cart-modal { position:fixed; top:0; right:-400px; width:350px; height:100%; background:white; box-shadow:-3px 0 10px rgba(0,0,0,0.2); transition:0.3s; padding:20px; overflow-y:auto; z-index:1000; }
-#cart-modal h3 { margin-top:0; }
-#cart-modal ul { list-style:none; padding:0; }
-#cart-modal ul li { display:flex; justify-content:space-between; margin-bottom:10px; }
-#cart-modal button { background:red; color:white; border:none; padding:5px 8px; border-radius:5px; cursor:pointer; }
-#close-cart { background:#4CAF50; color:white; border:none; padding:8px 12px; border-radius:5px; cursor:pointer; margin-bottom:10px; }
-#checkout-btn { display:block; margin-top:10px; background:#4CAF50; color:white; text-align:center; padding:10px; border-radius:5px; text-decoration:none; }
 </style>
 </head>
 <body>
@@ -55,10 +46,7 @@ footer a { color:white; font-weight:bold; text-decoration:none; margin:0 5px; }
     <div class="buttons">
         <a href="tel:08153729342">Call</a>
         <a href="https://wa.me/09138938301" target="_blank">WhatsApp</a>
-        <div class="cart-icon">
-            <a href="#" onclick="toggleCart()">🛒 Cart</a>
-            <div class="cart-count" id="cart-count">0</div>
-        </div>
+        <a href="https://www.facebook.com/share/1C4uebsaZX/?mibextid=wwXIfr">Facebook</a>
     </div>
 </header>
 
@@ -66,39 +54,77 @@ footer a { color:white; font-weight:bold; text-decoration:none; margin:0 5px; }
 <section class="hero">
     <h2>Growing Qualities. Nurturing Tomorrow.</h2>
     <p>We supply high-quality cassava stems, hybrid plantain suckers, oil palm seedlings, coconut seedlings, fertilizers, and offer expert farm consultation.</p>
-    <a href="products.html" class="btn">Shop Products</a>
-    <a href="https://wa.me/09138938301" class="btn" style="margin-left:10px;">Chat on WhatsApp</a>
+    <a href="contact.html" class="btn">Contact Us</a>
+    <a href="products.html" class="btn" style="margin-left:10px;">Shop Products</a>
 </section>
 
-<!-- Featured Products -->
-<section class="featured">
-    <div class="container">
-        <h2>Featured Products</h2>
-        <div class="products-grid">
-            <!-- Cassava -->
-            <div class="product-card" data-name="Cassava Stems" data-price="1000">
-                <img src="images/cassava.JPG" alt="Cassava Stems">
-                <h3>Cassava Stems</h3>
-                <p>TME419, TMS30572, Agric & Yellow Root available. Healthy and high-yield stems.</p>
-                <button onclick="addToCart(this)">Add to Cart</button>
-            </div>
+<!-- All Products Section -->
+<section class="products">
+    <div class="products-grid">
 
-            <!-- Plantain -->
-            <div class="product-card" data-name="Hybrid Plantain Suckers" data-price="350">
-                <img src="images/plantain.JPG" alt="Hybrid Plantain">
-                <h3>Hybrid Plantain Suckers</h3>
-                <p>Premium giant hybrid plantain suckers for large-scale and small-scale farming.</p>
-                <button onclick="addToCart(this)">Add to Cart</button>
-            </div>
-
-            <!-- Oil Palm -->
-            <div class="product-card" data-name="Tenera Oil Palm Seedlings" data-price="1000">
-                <img src="images/oilpalm.JPG" alt="Oil Palm Seedlings">
-                <h3>Tenera Oil Palm Seedlings</h3>
-                <p>High-yield Tenera seedlings suitable for commercial palm oil production.</p>
-                <button onclick="addToCart(this)">Add to Cart</button>
-            </div>
+        <!-- Cassava -->
+        <div class="product-card">
+            <img src="images/cassava.JPG" alt="Cassava stems">
+            <h3>Cassava Stems (TME419, TMS30572, Agric & Yellow Root)</h3>
+            <p>Our cassava stems are sourced from improved high-yield varieties. Perfect for both commercial and small-scale farmers. <b>₦1,000 per bundle (35 stems)</b></p>
         </div>
+
+        <!-- Hybrid Plantain -->
+        <div class="product-card">
+            <img src="images/plantain.JPG" alt="Plantain">
+            <h3>Hybrid Giant Plantain Suckers</h3>
+            <p>Vigorous suckers producing larger fingers and heavier bunches. <b>₦350 per sucker</b></p>
+        </div>
+
+        <!-- Hybrid Banana -->
+        <div class="product-card">
+            <img src="images/giant_banana.JPG" alt="Banana">
+            <h3>Hybrid Giant Banana Suckers</h3>
+            <p>Early fruiting and pest resistant. Perfect for continuous harvest. <b>₦300 per sucker</b></p>
+        </div>
+
+        <!-- Oil Palm -->
+        <div class="product-card">
+            <img src="images/oilpalm.JPG" alt="Oil Palm">
+            <h3>Tenera Oil Palm Seedlings</h3>
+            <p>High oil-to-bunch ratio, disease resistant, faster fruiting. <b>₦1,000 per seedling</b></p>
+        </div>
+
+        <!-- Coconut -->
+        <div class="product-card">
+            <img src="images/coconut.JPG" alt="Coconut">
+            <h3>Hybrid Coconut Seedlings</h3>
+            <p>Malaysian Dwarf, West African Tall, and Improved Hybrid. High water content and excellent nut size. <b>₦4,500 per seedling</b></p>
+        </div>
+
+        <!-- Pineapple -->
+        <div class="product-card">
+            <img src="images/pineapple.JPG" alt="Pineapple">
+            <h3>Pineapple Suckers</h3>
+            <p>MD2, Smooth Cayenne, and Queen varieties known for sweetness and long shelf life. <b>₦500 per sucker</b></p>
+        </div>
+
+        <!-- Fertilizers -->
+        <div class="product-card">
+            <img src="images/fertilizer.JPG" alt="Fertilizer">
+            <h3>NPK & Other Fertilizers</h3>
+            <p>High-grade fertilizers including NPK, Urea, and crop-specific blends. <b>₦65,000 per sack</b></p>
+        </div>
+
+        <!-- Cocoa -->
+        <div class="product-card">
+            <img src="images/giant_cocoa.JPG" alt="Cocoa">
+            <h3>Hybrid Cocoa Seedlings</h3>
+            <p>CRIN-approved hybrids, early maturing, higher yield per tree. <b>₦500 per seedling</b></p>
+        </div>
+
+        <!-- Vegetable Seeds -->
+        <div class="product-card">
+            <img src="images/vegetables.JPG" alt="Vegetables">
+            <h3>Vegetable Seeds (Ugu, Africa Spinach & Others)</h3>
+            <p>High-germination seeds suitable for backyard gardens and commercial farms. <b>₦15,000 per Congo</b></p>
+        </div>
+
     </div>
 </section>
 
@@ -113,61 +139,10 @@ footer a { color:white; font-weight:bold; text-decoration:none; margin:0 5px; }
     <a href="contact.html" class="btn">Contact Us</a>
 </section>
 
-<!-- Cart Modal -->
-<div id="cart-modal">
-    <button id="close-cart" onclick="toggleCart()">Close</button>
-    <h3>Cart</h3>
-    <ul id="cart-items"></ul>
-    <p><b>Total: ₦<span id="cart-total">0</span></b></p>
-    <a id="checkout-btn" href="#" target="_blank">Order via WhatsApp</a>
-</div>
-
 <footer>
-    <div class="container">
-        <p>&copy; 2025 Healing Root Agro Ventures. All rights reserved.</p>
-        <p>Email: <a href="mailto:olasuposegunvictor@gmail.com">olasuposegunvictor@gmail.com</a></p>
-        <p>
-            <a href="https://wa.me/09138938301">WhatsApp</a> |
-            <a href="https://www.facebook.com/share/1C4uebsaZX/?mibextid=wwXIfr">Facebook</a> |
-            <a href="tel:08153729342">Call Us</a>
-        </p>
-    </div>
+    <p>&copy; 2025 Healing Root Agro Ventures. All rights reserved.</p>
+    <p>Email: <a href="mailto:olasuposegunvictor@gmail.com">olasuposegunvictor@gmail.com</a></p>
 </footer>
-
-<script>
-let cart = [];
-function addToCart(button){
-    let card = button.parentElement;
-    let name = card.getAttribute("data-name");
-    let price = parseInt(card.getAttribute("data-price"));
-    cart.push({name, price});
-    updateCart();
-}
-function updateCart(){
-    let itemsContainer = document.getElementById("cart-items");
-    let totalEl = document.getElementById("cart-total");
-    itemsContainer.innerHTML = "";
-    let total = 0;
-    cart.forEach((item, index)=>{
-        total += item.price;
-        let li = document.createElement("li");
-        li.textContent = item.name + " - ₦" + item.price;
-        let removeBtn = document.createElement("button");
-        removeBtn.textContent = "X";
-        removeBtn.onclick = ()=>{ cart.splice(index,1); updateCart(); }
-        li.appendChild(removeBtn);
-        itemsContainer.appendChild(li);
-    });
-    totalEl.textContent = total;
-    document.getElementById("cart-count").textContent = cart.length;
-    document.getElementById("checkout-btn").href = "https://wa.me/09138938301?text=I%20want%20to%20order%20these%20items%3A%20" + encodeURIComponent(cart.map(i=>i.name).join(", "));
-}
-function toggleCart(){
-    let modal = document.getElementById("cart-modal");
-    if(modal.style.right === "0px"){ modal.style.right="-400px"; }
-    else{ modal.style.right="0px"; }
-}
-</script>
 
 </body>
 </html>
