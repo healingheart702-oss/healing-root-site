@@ -12,8 +12,9 @@
 <style>
 body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background:#f5f7fa; }
 header { background:#4CAF50; color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; }
-header nav a { color:white; margin-left:15px; text-decoration:none; font-weight:bold; }
-header .buttons a { margin-left:10px; background:white; color:#4CAF50; padding:8px 12px; border-radius:5px; text-decoration:none; font-weight:bold; }
+header nav a { color:white; text-decoration:none; font-weight:bold; }
+header .buttons a { background:white; color:#4CAF50; padding:8px 12px; border-radius:5px; text-decoration:none; font-weight:bold; }
+header nav a:hover, header .buttons a:hover { opacity:0.8; }
 .logo img { height:50px; }
 .hero { background:#e0f2f1; padding:60px 20px; text-align:center; }
 .hero h2 { font-size:36px; color:#2e7d32; margin-bottom:20px; }
@@ -32,6 +33,9 @@ header .buttons a { margin-left:10px; background:white; color:#4CAF50; padding:8
 .cta a { display:inline-block; margin-top:15px; }
 footer { background:#4CAF50; color:white; text-align:center; padding:20px; margin-top:40px; }
 footer a { color:white; font-weight:bold; text-decoration:none; margin:0 5px; }
+/* New header adjustments */
+header nav { display:flex; gap:15px; }
+header .buttons { display:flex; gap:15px; }
 </style>
 </head>
 <body>
@@ -42,23 +46,15 @@ footer a { color:white; font-weight:bold; text-decoration:none; margin:0 5px; }
     </div>
     <nav>
         <a href="index.html" style="text-decoration:underline;">Home</a>
-        
-        <a href="about.html">About</a>
-        
+        <a href="about.html">About Us</a>
         <a href="products.html">Products</a>
-
-        <a href="gallery.html" class="btn">View Product Gallery</a>
-        
-    <a href="services.html">Services</a>
-        
+        <a href="gallery.html">Gallery</a>
+        <a href="services.html">Services</a>
         <a href="contact.html">Contact</a>
     </nav>
     <div class="buttons">
-        
         <a href="tel:08153729342">Call</a>
-        
         <a href="https://wa.me/2349138938301" target="_blank">WhatsApp</a>
-        
         <a href="https://www.facebook.com/share/1C4uebsaZX/?mibextid=wwXIfr">Facebook</a>
     </div>
 </header>
@@ -71,6 +67,7 @@ footer a { color:white; font-weight:bold; text-decoration:none; margin:0 5px; }
     <div style="margin-top:20px;">
         <a href="contact.html" class="btn">Contact Us</a>
         <a href="products.html" class="btn" style="margin-left:10px;">Shop Products</a>
+        <a href="gallery.html" class="btn" style="margin-left:10px;">View Product Gallery</a>
     </div>
 </section>
 
@@ -148,9 +145,9 @@ footer a { color:white; font-weight:bold; text-decoration:none; margin:0 5px; }
 <section class="cta">
     <h2>Need Agro Consultation or Bulk Supply?</h2>
     <p>
-        Call us at <a href="tel:08153729342" style="color:#00ff99;">08153729342</a><br>
-        WhatsApp: <a href="https://wa.me/2349138938301" style="color:#00ff99;" target="_blank">+2349138938301</a><br>
-        Facebook: <a href="https://www.facebook.com/share/1C4uebsaZX/?mibextid=wwXIfr" style="color:#00ff99;">Follow Us on Facebook</a>
+        Call us at <a href="tel:08153729342" style="color:yellow;">08153729342</a><br>
+        WhatsApp: <a href="https://wa.me/2349138938301" style="color:deepblue;" target="_blank">+2349138938301</a><br>
+        Facebook: <a href="https://www.facebook.com/share/1C4uebsaZX/?mibextid=wwXIfr" style="color:orange;">Follow Us on Facebook</a>
     </p>
     <a href="contact.html" class="btn">Contact Us</a>
 </section>
