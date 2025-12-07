@@ -1,133 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <!-- Google Verification -->
-  <meta name="google-site-verification" content="cPJ3_emx8r6W7a_9249IO_Aj4NEH15CCtPqEgc18FN8" />
-  <title>Healing Root Agro Ventures | Growing qualities. Nurturing tomorrow.</title>
-  <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Google Verification -->
+<meta name="google-site-verification" content="cPJ3_emx8r6W7a_9249IO_Aj4NEH15CCtPqEgc18FN8" />
+<title>Healing Root Agro Ventures | Quality Seedlings & Agro Inputs</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background:#f5f7fa; }
+header { background:#4CAF50; color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; }
+header nav a { color:white; margin-left:15px; text-decoration:none; font-weight:bold; }
+.logo img { height:50px; }
+.search-bar { margin-left:20px; flex:1; max-width:300px; }
+.search-bar input { width:100%; padding:8px 10px; border-radius:5px; border:none; }
+.hero { background:#e0f2f1; padding:60px 20px; text-align:center; }
+.hero h2 { font-size:36px; color:#2e7d32; margin-bottom:20px; }
+.hero p { font-size:18px; max-width:800px; margin:0 auto 20px auto; line-height:1.8; }
+.hero img { margin-top:30px; max-width:100%; height:auto; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+.btn { background:#4CAF50; color:white; padding:12px 20px; border-radius:5px; text-decoration:none; font-weight:bold; transition:0.3s; }
+.btn:hover { background:#388E3C; }
+.products-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:25px; padding:50px 20px; max-width:1200px; margin:auto; }
+.product-card { background:#fff; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); padding:20px; transition:0.3s ease; text-align:center; }
+.product-card:hover { transform:translateY(-5px); box-shadow:0 6px 15px rgba(0,0,0,0.15); }
+.product-card img { width:100%; height:200px; border-radius:10px; object-fit:cover; margin-bottom:15px; }
+.product-card h3 { margin-bottom:10px; font-size:22px; color:#156b2c; }
+.product-card p { color:#333; font-size:15px; line-height:1.6; }
+.cta { background:#dff0e0; padding:50px 20px; text-align:center; margin-top:50px; }
+.cta h2 { font-size:28px; color:#2e7d32; margin-bottom:15px; }
+footer { background:#4CAF50; color:white; text-align:center; padding:20px; margin-top:40px; }
+footer a { color:red; font-weight:bold; text-decoration:none; margin:0 5px; }
+.footer-contact { margin-top:10px; }
+@media (max-width:768px){ .products-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px; padding:15px;} .product-card img{height:180px;} }
+@media (max-width:480px){ .products-grid{grid-template-columns:1fr; gap:10px; padding:10px;} .product-card img{height:160px;} .hero h2{font-size:28px;} .hero p{font-size:16px;} }
+</style>
 </head>
 <body>
-  <header class="header">
-    <div class="container header-inner">
-      <div class="logo">
-        <img src="images/logo.PNG" alt="Healing Root logo">
-        <div>
-          <div class="brand-title">HEALING ROOT AGRO VENTURES</div>
-          <div style="font-size:12px;color:#4b8a56;margin-top:2px">Growing qualities. Nurturing tomorrow.</div>
-        </div>
-      </div>
 
-      <div style="display:flex;align-items:center;gap:14px">
-        <div class="search" role="search" aria-label="site search">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#2e7d32" style="opacity:.9"><path d="M21 21l-4.35-4.35"/></svg>
-          <input id="site-search" placeholder="Search products (e.g. cassava)" />
-        </div>
-
-        <div class="mobile-nav" style="display:none">
-          <a class="btn" href="products.html">Products</a>
-        </div>
-
-        <nav class="nav" aria-label="Main navigation">
-          <a href="index.html" class="active">Home</a>
-          <a href="about.html">About</a>
-          <a href="products.html">Products</a>
-          <a href="gallery.html">Gallery</a>
-          <a href="services.html">Services</a>
-          <a href="contact.html">Contact</a>
-        </nav>
-      </div>
+<header>
+    <div class="logo">
+        <img src="images/logo.PNG" alt="Healing Root Agro Ventures Logo">
     </div>
-  </header>
+    <div class="search-bar">
+        <input type="text" placeholder="Search products...">
+    </div>
+    <nav>
+        <a href="index.html" style="text-decoration:underline;">Home</a>
+        <a href="about.html">About</a>
+        <a href="products.html">Products</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="services.html">Services</a>
+        <a href="contact.html">Contact</a>
+    </nav>
+</header>
 
-  <main>
-    <section class="hero">
-      <div class="container hero-grid">
-        <div class="hero-left">
-          <h1>Growing qualities. Nurturing tomorrow.</h1>
-          <p>We supply high-quality cassava stems, hybrid plantain & banana suckers, Tenera oil palm seedlings, coconut & pineapple seedlings, vegetable seeds and fertilizers. We also offer expert agro consultation, farm setup and training to help you increase yield and profits.</p>
-          <div class="hero-cta">
-            <a class="btn" href="products.html">Shop Products</a>
-            <a class="btn secondary" href="contact.html">Contact Us</a>
-            <a class="btn secondary" href="gallery.html">View Gallery</a>
-          </div>
+<!-- Hero Section -->
+<section class="hero">
+    <h2>Growing Qualities. Nurturing Tomorrow.</h2>
+    <p>At Healing Root Agro Ventures, we provide farmers and agripreneurs with superior quality agricultural products. From high-yield cassava stems, hybrid plantain & banana suckers, Tenera oil palm seedlings, coconut & pineapple seedlings to premium fertilizers, our mission is to enhance farm productivity, ensure sustainable practices, and deliver excellent farm consultation services. We combine expertise with quality to help you achieve maximum yield and profitability.</p>
+    <img src="images/farm_hero.JPEG" alt="Healing Root Agro Ventures Farm">
+    <div style="margin-top:20px;">
+        <a href="contact.html" class="btn">Contact Us</a>
+        <a href="products.html" class="btn" style="margin-left:10px;">Shop Products</a>
+    </div>
+</section>
+
+<!-- All Products Section -->
+<section class="products">
+    <div class="products-grid">
+
+        <!-- Hybrid Banana -->
+        <div class="product-card">
+            <img src="images/giant_banana.JPG" alt="Hybrid Giant Banana Suckers">
+            <h3>Hybrid Giant Banana Suckers</h3>
+            <p>Early fruiting and pest resistant. Perfect for continuous harvest. <b>₦300 per sucker</b></p>
         </div>
 
-        <div style="flex:1;min-width:280px;text-align:right">
-          <img src="images/farm_hero.JPEG" alt="Farm" style="max-width:460px;border-radius:12px;box-shadow:0 10px 30px rgba(12,48,12,0.08)">
+        <!-- Oil Palm -->
+        <div class="product-card">
+            <img src="images/oilpalm.JPG" alt="Tenera Oil Palm Seedlings">
+            <h3>Tenera Oil Palm Seedlings</h3>
+            <p>High oil-to-bunch ratio, disease resistant, faster fruiting. <b>₦1,000 per seedling</b></p>
         </div>
-      </div>
-    </section>
 
-    <section class="container" style="padding:28px 0 48px">
-      <h2 class="section-title">Featured Products</h2>
-      <div class="products-grid">
         <!-- Cassava -->
-        <div class="card">
-          <img src="images/cassava.JPG" alt="Cassava stems">
-          <h3>Cassava Stems (TME419)</h3>
-          <p>High-yield, disease-resistant cassava stems. 35 stems per bundle. Great for commercial planting.</p>
-          <div class="price">₦1,000 / bundle</div>
-          <div class="actions"><a class="btn" href="products.html#cassava">View</a></div>
+        <div class="product-card">
+            <img src="images/cassava.JPG" alt="Cassava stems">
+            <h3>Cassava Stems</h3>
+            <p>TME419, TMS30572, Agric & Yellow Root available. <b>₦1,000 per bundle (35 stems)</b></p>
         </div>
 
-        <!-- Plantain -->
-        <div class="card">
-          <img src="images/plantain.JPG" alt="Plantain">
-          <h3>Hybrid Plantain Suckers</h3>
-          <p>Premium giant hybrid plantain suckers suitable for high-yield plantations.</p>
-          <div class="price">₦500 / sucker</div>
-          <div class="actions"><a class="btn" href="products.html#plantain">View</a></div>
+        <!-- Hybrid Plantain -->
+        <div class="product-card">
+            <img src="images/plantain.JPG" alt="Hybrid Plantain">
+            <h3>Hybrid Plantain Suckers</h3>
+            <p>Premium giant hybrid plantain suckers. <b>₦350 per sucker</b></p>
         </div>
 
-        <!-- Oil palm -->
-        <div class="card">
-          <img src="images/oilpalm.JPG" alt="Oil Palm">
-          <h3>Tenera Oil Palm Seedlings</h3>
-          <p>High oil-to-bunch ratio seedlings, ideal for commercial palm oil production.</p>
-          <div class="price">₦1,000 / seedling</div>
-          <div class="actions"><a class="btn" href="products.html#oilpalm">View</a></div>
+        <!-- Coconut -->
+        <div class="product-card">
+            <img src="images/coconut.JPG" alt="Coconut">
+            <h3>Hybrid Coconut Seedlings</h3>
+            <p>Malaysian Dwarf, West African Tall, Improved Hybrid. <b>₦4,500 per seedling</b></p>
         </div>
-      </div>
-    </section>
 
-    <section style="padding:24px 0;background:#fff;border-top:1px solid rgba(0,0,0,0.02)">
-      <div class="container">
-        <h2 class="section-title">Why farmers choose us</h2>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px">
-          <div class="card" style="padding:18px">
-            <h3 style="margin-top:0">Quality seedlings</h3>
-            <p>We source improved varieties for consistent yields and resilience.</p>
-          </div>
-          <div class="card" style="padding:18px">
-            <h3 style="margin-top:0">Expert support</h3>
-            <p>Practical farm setup guidance and training to boost productivity.</p>
-          </div>
-          <div class="card" style="padding:18px">
-            <h3 style="margin-top:0">Nationwide delivery</h3>
-            <p>We ship across Nigeria using trusted logistics partners.</p>
-          </div>
+        <!-- Pineapple -->
+        <div class="product-card">
+            <img src="images/pineapple.JPG" alt="Pineapple">
+            <h3>Pineapple Suckers</h3>
+            <p>MD2, Smooth Cayenne, and Queen varieties. <b>₦500 per sucker</b></p>
         </div>
-      </div>
-    </section>
-  </main>
 
-  <footer class="footer">
-    <div class="container foot-inner">
-      <div>
-        <strong>Healing Root Agro Ventures</strong><br>
-        Moniya, Oyo State, Nigeria<br>
-        Call: <a href="tel:08153729342">08153729342</a><br>
-        Email: <a href="mailto:olasuposegunvictor@gmail.com">olasuposegunvictor@gmail.com</a>
-      </div>
-      <div>
-        <a href="index.html">Home</a> · <a href="products.html">Products</a> · <a href="gallery.html">Gallery</a><br>
-        <a href="services.html">Services</a> · <a href="about.html">About</a> · <a href="contact.html">Contact</a>
-      </div>
+        <!-- Fertilizers -->
+        <div class="product-card">
+            <img src="images/fertilizer.JPG" alt="Fertilizer">
+            <h3>NPK & Other Fertilizers</h3>
+            <p>High-grade fertilizers for vigorous growth. <b>₦65,000 per sack</b></p>
+        </div>
+
+        <!-- Cocoa -->
+        <div class="product-card">
+            <img src="images/giant_cocoa.JPG" alt="Cocoa">
+            <h3>Hybrid Cocoa Seedlings</h3>
+            <p>CRIN-approved hybrids, early maturing. <b>₦500 per seedling</b></p>
+        </div>
+
+        <!-- Vegetable Seeds -->
+        <div class="product-card">
+            <img src="images/vegetables.JPG" alt="Vegetables">
+            <h3>Vegetable Seeds (Ugu, Africa Spinach & Others)</h3>
+            <p>High-germination seeds for backyard & commercial farms. <b>₦15,000 per Congo</b></p>
+        </div>
+
     </div>
-  </footer>
+</section>
 
-  <a class="whatsapp-float" href="https://wa.me/2349138938301" target="_blank" aria-label="WhatsApp">💬</a>
+<!-- CTA Section -->
+<section class="cta">
+    <h2>Need Agro Consultation or Bulk Supply?</h2>
+    <a href="contact.html" class="btn">Contact Us</a>
+    <a href="products.html" class="btn" style="margin-left:10px;">Shop Products</a>
+</section>
+
+<!-- Footer with contact info -->
+<footer>
+    <div class="footer-contact">
+        Call: <a href="tel:08153729342">08153729342</a> | 
+        WhatsApp: <a href="https://wa.me/2349138938301" target="_blank">+2349138938301</a> | 
+        Facebook: <a href="https://www.facebook.com/share/1C4uebsaZX/?mibextid=wwXIfr">Follow Us</a>
+    </div>
+    <p>&copy; 2025 Healing Root Agro Ventures. All rights reserved.</p>
+    <p>Email: <a href="mailto:olasuposegunvictor@gmail.com">olasuposegunvictor@gmail.com</a></p>
+</footer>
+
 </body>
 </html>
