@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="style.css">
 
   <style>
-    /* Product Grid & Card for homepage */
+    /* Product Grid & Card */
     .products-grid { 
       display:grid; 
       grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); 
@@ -30,6 +30,8 @@
       transform:translateY(-5px); 
       box-shadow:0 6px 15px rgba(0,0,0,0.15); 
     }
+
+    /* Professional image styling */
     .card img { 
       width: auto; 
       max-width: 100%; 
@@ -38,38 +40,20 @@
       border-radius:10px; 
       margin-bottom:15px; 
     }
+
+    /* Responsive image adjustments */
     @media (max-width:768px){ 
       .card img { height:180px; } 
     }
     @media (max-width:480px){ 
       .card img { height:160px; } 
     }
-
-    .hero { 
-      display:flex; 
-      flex-wrap:wrap; 
-      align-items:center; 
-      justify-content:space-between; 
-      padding:50px 20px; 
-      max-width:1200px; 
-      margin:auto; 
-    }
-    .hero-left { flex:1; min-width:280px; margin-right:20px; }
-    .hero-left h1 { color:var(--green-900); font-size:2.2rem; margin-bottom:18px; }
-    .hero-left p { margin-bottom:20px; line-height:1.5; }
-    .hero-cta { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
-    .hero img { max-width:460px; width:100%; border-radius:12px; box-shadow:0 10px 30px rgba(12,48,12,0.08); }
-
-    .section-title { text-align:center; color:var(--green-900); margin-bottom:32px; font-size:1.8rem; }
   </style>
 </head>
 <body>
   <header class="header">
     <div class="container header-inner">
-      <div class="logo">
-        <img src="images/logo.PNG" alt="logo">
-        <div class="brand-title">HEALING ROOT AGRO VENTURES</div>
-      </div>
+      <div class="logo"><img src="images/logo.PNG" alt="logo"><div class="brand-title">HEALING ROOT AGRO VENTURES</div></div>
       <nav class="nav" aria-label="Main navigation">
         <a href="index.html" class="active">Home</a>
         <a href="about.html">About</a>
@@ -81,53 +65,85 @@
     </div>
   </header>
 
-  <main>
-    <!-- Hero Section -->
-    <section class="hero">
-      <div class="hero-left">
-        <h1>Growing qualities. Nurturing tomorrow.</h1>
-        <p>We supply high-quality cassava stems, hybrid plantain & banana suckers, Tenera oil palm seedlings, coconut & pineapple seedlings, vegetable seeds, and fertilizers. Our agro consultation and farm setup services help you maximize yield and profit.</p>
-        <div class="hero-cta">
-          <a class="btn" href="products.html">Shop Products</a>
-          <a class="btn secondary" href="contact.html">Contact Us</a>
-          <a class="btn secondary" href="gallery.html">View Gallery</a>
-        </div>
-      </div>
-      <div>
-        <img src="images/farm_hero.JPEG" alt="Farm">
-      </div>
-    </section>
+  <main class="container" style="padding:24px 0 80px">
+    <h1 style="text-align:center;color:var(--green-900);margin-bottom:18px">WELCOME TO HEALING ROOT AGRO VENTURES</h1>
+    <div class="call-section" style="text-align:center;margin-bottom:16px">
+      <strong>Call:</strong> <a href="tel:08153729342">08153729342</a> · <strong>WhatsApp:</strong> <a href="https://wa.me/2349138938301" target="_blank">+2349138938301</a>
+    </div>
 
-    <!-- Featured Products -->
-    <section class="container">
-      <h2 class="section-title">Featured Products</h2>
-      <div class="products-grid">
-        <!-- Cassava -->
-        <div class="card">
-          <img src="images/cassava.JPG" alt="Cassava stems">
-          <h3>Cassava Stems (TME419)</h3>
-          <p>High-yield, disease-resistant cassava stems. 35 stems per bundle.</p>
-          <div class="price">₦1,000 / bundle</div>
-          <div class="actions"><a class="btn" href="products.html#cassava">View</a></div>
-        </div>
-        <!-- Plantain -->
-        <div class="card">
-          <img src="images/plantain.JPG" alt="Plantain">
-          <h3>Hybrid Plantain Suckers</h3>
-          <p>Premium giant hybrid plantain suckers suitable for high-yield plantations.</p>
-          <div class="price">₦400 / sucker</div>
-          <div class="actions"><a class="btn" href="products.html#plantain">View</a></div>
-        </div>
-        <!-- Oil Palm -->
-        <div class="card">
-          <img src="images/oilpalm.JPG" alt="Oil Palm">
-          <h3>Tenera Oil Palm Seedlings</h3>
-          <p>High oil-to-bunch ratio seedlings, ideal for commercial palm oil production.</p>
-          <div class="price">₦1,000 / seedling</div>
-          <div class="actions"><a class="btn" href="products.html#oilpalm">View</a></div>
-        </div>
+    <div class="products-grid">
+      <!-- Cassava -->
+      <div id="cassava" class="card" data-name="Cassava Stems" data-price="1000">
+        <img src="images/cassava.JPG" alt="Cassava stems">
+        <h3>Cassava Stems (TME419, TMS30572)</h3>
+        <p>High-yield cassava stems for commercial and smallholder farms. 35 stems per bundle.</p>
+        <div class="price">₦1,000 / bundle</div>
       </div>
-    </section>
+
+      <!-- Plantain -->
+      <div id="plantain" class="card" data-name="Hybrid Plantain Suckers" data-price="400">
+        <img src="images/plantain.JPG" alt="Plantain">
+        <h3>Hybrid Plantain Suckers</h3>
+        <p>Giant hybrid plantain suckers for high yield plantations.</p>
+        <div class="price">₦500 / sucker</div>
+      </div>
+
+      <!-- Banana -->
+      <div id="banana" class="card" data-name="Hybrid Giant Banana Suckers" data-price="300">
+        <img src="images/giant_banana.JPG" alt="Banana">
+        <h3>Hybrid Giant Banana Suckers</h3>
+        <p>Early fruiting, pest-resistant. Great for continuous harvest.</p>
+        <div class="price">₦500 / sucker</div>
+      </div>
+
+      <!-- Oil palm -->
+      <div id="oilpalm" class="card" data-name="Tenera Oil Palm Seedlings" data-price="1000">
+        <img src="images/oilpalm.JPG" alt="Oil Palm">
+        <h3>Tenera Oil Palm Seedlings</h3>
+        <p>Improved Tenera seedlings with high oil-to-bunch ratio.</p>
+        <div class="price">₦1,000 / seedling</div>
+      </div>
+
+      <!-- Coconut -->
+      <div id="coconut" class="card" data-name="Hybrid Coconut Seedlings" data-price="4500">
+        <img src="images/coconut.JPG" alt="Coconut">
+        <h3>Hybrid Coconut Seedlings</h3>
+        <p>Malaysian Dwarf, West African Tall and improved hybrids.</p>
+        <div class="price">₦4,500 / seedling</div>
+      </div>
+
+      <!-- Pineapple -->
+      <div id="pineapple" class="card" data-name="Pineapple Suckers" data-price="500">
+        <img src="images/pineapple.JPG" alt="Pineapple">
+        <h3>Pineapple Suckers</h3>
+        <p>MD2, Smooth Cayenne, and Queen varieties for quality fruits.</p>
+        <div class="price">₦500 / sucker</div>
+      </div>
+
+      <!-- Fertilizer -->
+      <div id="fertilizer" class="card" data-name="NPK & Other Fertilizers" data-price="65000">
+        <img src="images/fertilizer.JPG" alt="Fertilizer">
+        <h3>NPK & Other Fertilizers</h3>
+        <p>High-grade fertilizers recommended for higher yields.</p>
+        <div class="price">₦65,000 / sack</div>
+      </div>
+
+      <!-- Cocoa -->
+      <div id="cocoa" class="card" data-name="Hybrid Cocoa Seedlings" data-price="500">
+        <img src="images/giant_cocoa.JPG" alt="Cocoa">
+        <h3>Hybrid Cocoa Seedlings</h3>
+        <p>CRIN-approved hybrid cocoa seedlings for reliable yields.</p>
+        <div class="price">₦500 / seedling</div>
+      </div>
+
+      <!-- Vegetables -->
+      <div id="vegetables" class="card" data-name="Vegetable Seeds" data-price="15000">
+        <img src="images/vegetables.JPG" alt="Vegetables">
+        <h3>Vegetable Seeds (Ugu, African Spinach & Others)</h3>
+        <p>High germination seeds suitable for backyard and commercial cultivation.</p>
+        <div class="price">₦15,000 / pack</div>
+      </div>
+    </div>
   </main>
 
   <footer class="footer" style="margin-top:36px">
