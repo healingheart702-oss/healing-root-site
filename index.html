@@ -36,29 +36,7 @@ h1 { text-align:center; color:#2c5e1a; margin:30px 0; font-size:32px; font-weigh
 .card p { font-size:15px; color:#333; line-height:1.6; margin-bottom:10px; }
 .card .price { font-weight:bold; color:#2c5e1a; margin-bottom:12px; }
 .card img { width:auto; max-width:100%; height:200px; object-fit:cover; border-radius:10px; margin-bottom:15px; }
-.card input { width:72px; padding:8px; border-radius:8px; border:1px solid #eee; margin-bottom:6px; }
-.card button, .card .btn { background:#4CAF50; color:white; padding:8px 15px; border:none; border-radius:5px; cursor:pointer; font-weight:bold; transition:0.3s; margin:4px 0; }
-.card button:hover, .card .btn:hover { background:#388E3C; }
-
-/* Cart Modal */
-#cart-modal { position:fixed; top:0; right:0; width:350px; max-width:90%; height:100%; background:#fff; box-shadow:-4px 0 10px rgba(0,0,0,0.2); transform:translateX(100%); transition:0.3s; z-index:999; padding:20px; display:flex; flex-direction:column; }
-#cart-modal.open { transform:translateX(0); }
-#cart-modal h3 { text-align:center; color:#2c5e1a; margin-bottom:15px; }
-#cart-items { list-style:none; padding:0; margin:0; flex:1; overflow-y:auto; }
-.cart-item { display:flex; gap:10px; margin-bottom:12px; align-items:center; }
-.cart-item img { width:50px; height:50px; object-fit:cover; border-radius:6px; }
-.cart-item .meta { flex:1; font-size:14px; }
-.cart-item .meta strong { display:block; color:#156b2c; margin-bottom:4px; }
-.cart-item input { width:50px; padding:4px; border-radius:4px; border:1px solid #eee; margin-right:4px; }
-.cart-item button { background:#e74c3c; border:0; color:#fff; padding:4px 6px; border-radius:4px; cursor:pointer; }
-.total-row { display:flex; justify-content:space-between; font-weight:bold; margin-top:12px; color:#2c5e1a; }
-#checkout-whatsapp { background:#25D366; color:#fff; text-align:center; padding:10px; border-radius:6px; margin-top:12px; text-decoration:none; display:block; font-weight:bold; }
-
-/* Cart Button */
-.cart-btn { position:fixed; bottom:90px; right:20px; background:#4CAF50; color:white; border:none; padding:15px 18px; border-radius:50%; font-size:22px; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.3); z-index:1000; }
-
-/* WhatsApp Floating Button */
-.whatsapp-float { position:fixed; bottom:20px; right:20px; background:#25D366; color:white; border-radius:50%; width:60px; height:60px; display:flex; align-items:center; justify-content:center; font-size:28px; text-decoration:none; box-shadow:0 4px 6px rgba(0,0,0,0.3); z-index:1000; }
+.card .uses { font-size:14px; color:#2c5e1a; text-align:left; margin-top:10px; }
 
 /* Responsive */
 @media (max-width:768px){ .products-grid { grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:15px; padding:15px; } .card h3 { font-size:20px; } }
@@ -71,9 +49,9 @@ h1 { text-align:center; color:#2c5e1a; margin:30px 0; font-size:32px; font-weigh
 <header class="header">
   <div class="logo"><img src="images/logo.PNG" alt="logo"><div class="brand-title">HEALING ROOT AGRO VENTURES</div></div>
   <nav class="nav" aria-label="Main navigation">
-    <a href="index.html">Home</a>
+    <a href="index.html" class="active">Home</a>
     <a href="about.html">About</a>
-    <a href="products.html" class="active">Products</a>
+    <a href="products.html">Products</a>
     <a href="gallery.html">Gallery</a>
     <a href="services.html">Services</a>
     <a href="contact.html">Contact</a>
@@ -90,165 +68,141 @@ h1 { text-align:center; color:#2c5e1a; margin:30px 0; font-size:32px; font-weigh
 <div class="products-grid">
 
 <!-- Cassava -->
-<div class="card" data-name="Cassava Stems" data-price="1000">
+<div class="card">
   <img src="images/cassava.JPG" alt="Cassava stems">
   <h3>Cassava Stems (TME419, TMS30572)</h3>
   <p>High-yield cassava stems for commercial and smallholder farms. 35 stems per bundle.</p>
-  <div class="price">₦1,000 / bundle</div>
-  <input type="number" min="1" value="1">
-  <button onclick="addToCart(this)">Add to Cart</button>
+  <div class="uses">
+    <strong>Uses & Benefits:</strong>
+    <ul>
+      <li>Fast-growing, disease-resistant varieties.</li>
+      <li>High starch yield per hectare.</li>
+      <li>Suitable for commercial farming and processing.</li>
+    </ul>
+  </div>
 </div>
 
 <!-- Hybrid Plantain -->
-<div class="card" data-name="Hybrid Plantain Suckers" data-price="400">
+<div class="card">
   <img src="images/plantain.JPG" alt="Plantain">
   <h3>Hybrid Plantain Suckers</h3>
   <p>Giant hybrid plantain suckers for high yield plantations.</p>
-  <div class="price">₦400 / sucker</div>
-  <input type="number" min="1" value="1">
-  <button onclick="addToCart(this)">Add to Cart</button>
+  <div class="uses">
+    <strong>Uses & Benefits:</strong>
+    <ul>
+      <li>Produces large, high-quality fruits.</li>
+      <li>Resistant to common plantain diseases.</li>
+      <li>Fast growth for continuous harvests.</li>
+    </ul>
+  </div>
 </div>
 
 <!-- Hybrid Banana -->
-<div class="card" data-name="Hybrid Giant Banana Suckers" data-price="300">
+<div class="card">
   <img src="images/giant_banana.JPG" alt="Banana">
   <h3>Hybrid Giant Banana Suckers</h3>
   <p>Early fruiting, pest-resistant. Great for continuous harvest.</p>
-  <div class="price">₦300 / sucker</div>
-  <input type="number" min="1" value="1">
-  <button onclick="addToCart(this)">Add to Cart</button>
+  <div class="uses">
+    <strong>Uses & Benefits:</strong>
+    <ul>
+      <li>High-yield, premium-quality bananas.</li>
+      <li>Pest and disease resistant.</li>
+      <li>Ideal for commercial and backyard farming.</li>
+    </ul>
+  </div>
 </div>
 
 <!-- Tenera Oil Palm -->
-<div class="card" data-name="Tenera Oil Palm Seedlings" data-price="1000">
+<div class="card">
   <img src="images/oilpalm.JPG" alt="Oil Palm">
   <h3>Tenera Oil Palm Seedlings</h3>
   <p>Improved Tenera seedlings with high oil-to-bunch ratio.</p>
-  <div class="price">₦1,000 / seedling</div>
-  <input type="number" min="1" value="1">
-  <button onclick="addToCart(this)">Add to Cart</button>
+  <div class="uses">
+    <strong>Uses & Benefits:</strong>
+    <ul>
+      <li>High oil yield per bunch.</li>
+      <li>Early maturity variety.</li>
+      <li>Suitable for commercial plantations.</li>
+    </ul>
+  </div>
 </div>
 
 <!-- Coconut -->
-<div class="card" data-name="Hybrid Coconut Seedlings" data-price="4500">
+<div class="card">
   <img src="images/coconut.JPG" alt="Coconut">
   <h3>Hybrid Coconut Seedlings</h3>
   <p>Malaysian Dwarf, West African Tall and improved hybrids.</p>
-  <div class="price">₦4,500 / seedling</div>
-  <input type="number" min="1" value="1">
-  <button onclick="addToCart(this)">Add to Cart</button>
+  <div class="uses">
+    <strong>Uses & Benefits:</strong>
+    <ul>
+      <li>High-quality fruit production.</li>
+      <li>Early bearing and disease resistant.</li>
+      <li>Suitable for plantations and backyard gardens.</li>
+    </ul>
+  </div>
 </div>
 
 <!-- Pineapple -->
-<div class="card" data-name="Pineapple Suckers" data-price="500">
+<div class="card">
   <img src="images/pineapple.JPG" alt="Pineapple">
   <h3>Pineapple Suckers</h3>
   <p>MD2, Smooth Cayenne, and Queen varieties for quality fruits.</p>
-  <div class="price">₦500 / sucker</div>
-  <input type="number" min="1" value="1">
-  <button onclick="addToCart(this)">Add to Cart</button>
+  <div class="uses">
+    <strong>Uses & Benefits:</strong>
+    <ul>
+      <li>Produces sweet and uniform fruits.</li>
+      <li>Fast growth and early harvest.</li>
+      <li>Suitable for commercial and small-scale farms.</li>
+    </ul>
+  </div>
 </div>
 
 <!-- Fertilizers -->
-<div class="card" data-name="NPK & Other Fertilizers" data-price="65000">
+<div class="card">
   <img src="images/fertilizer.JPG" alt="Fertilizer">
   <h3>NPK & Other Fertilizers</h3>
   <p>High-grade fertilizers recommended for higher yields.</p>
-  <div class="price">₦65,000 / sack</div>
-  <input type="number" min="1" value="1">
-  <button onclick="addToCart(this)">Add to Cart</button>
+  <div class="uses">
+    <strong>Uses & Benefits:</strong>
+    <ul>
+      <li>Promotes healthy plant growth.</li>
+      <li>Increases crop yield and quality.</li>
+      <li>Suitable for all crop types.</li>
+    </ul>
+  </div>
 </div>
 
 <!-- Hybrid Cocoa -->
-<div class="card" data-name="Hybrid Cocoa Seedlings" data-price="500">
+<div class="card">
   <img src="images/giant_cocoa.JPG" alt="Cocoa">
   <h3>Hybrid Cocoa Seedlings</h3>
   <p>CRIN-approved hybrid cocoa seedlings for reliable yields.</p>
-  <div class="price">₦500 / seedling</div>
-  <input type="number" min="1" value="1">
-  <button onclick="addToCart(this)">Add to Cart</button>
+  <div class="uses">
+    <strong>Uses & Benefits:</strong>
+    <ul>
+      <li>High-yield cocoa pods.</li>
+      <li>Disease-resistant hybrids.</li>
+      <li>Ideal for commercial cocoa farms.</li>
+    </ul>
+  </div>
 </div>
 
 <!-- Vegetable Seeds -->
-<div class="card" data-name="Vegetable Seeds" data-price="15000">
+<div class="card">
   <img src="images/vegetables.JPG" alt="Vegetables">
   <h3>Vegetable Seeds (Ugu, African Spinach & Others)</h3>
   <p>High germination seeds suitable for backyard and commercial cultivation.</p>
-  <div class="price">₦15,000 / pack</div>
-  <input type="number" min="1" value="1">
-  <button onclick="addToCart(this)">Add to Cart</button>
+  <div class="uses">
+    <strong>Uses & Benefits:</strong>
+    <ul>
+      <li>Quick germination and high yield.</li>
+      <li>Ideal for home gardens and farms.</li>
+      <li>Nutritious and disease-resistant varieties.</li>
+    </ul>
+  </div>
 </div>
 
 </div>
-
-<!-- Cart button & modal -->
-<button class="cart-btn" onclick="toggleCart()">🛒</button>
-<div id="cart-modal">
-  <h3>Your Cart</h3>
-  <ul id="cart-items"></ul>
-  <div class="total-row"><div>Total:</div><div>₦<span id="cart-total">0</span></div></div>
-  <a id="checkout-whatsapp" href="#" target="_blank">Order via WhatsApp</a>
-  <button onclick="toggleCart()" style="margin-top:10px; background:#e74c3c; color:#fff; width:100%; padding:10px; border:none; border-radius:5px;">Close</button>
-</div>
-
-<!-- WhatsApp Floating Button -->
-<a href="https://wa.me/2349138938301" target="_blank" class="whatsapp-float">💬</a>
-
-<script>
-// Cart logic
-let cart = [];
-
-function addToCart(button){
-  const card = button.closest('.card');
-  const name = card.dataset.name;
-  const price = parseInt(card.dataset.price,10);
-  const qtyInput = card.querySelector('input[type="number"]');
-  let qty = parseInt(qtyInput.value || "1",10);
-  if(isNaN(qty) || qty < 1) qty = 1;
-  const existing = cart.find(i => i.name === name);
-  if(existing){ existing.qty += qty; } 
-  else { cart.push({name, price, qty}); }
-  updateCartUI();
-}
-
-function updateCartUI(){
-  const ul = document.getElementById('cart-items');
-  ul.innerHTML = '';
-  let total = 0;
-  cart.forEach((item, idx) => {
-    total += item.price * item.qty;
-    const li = document.createElement('li');
-    li.className='cart-item';
-    li.innerHTML = `
-      <img src="images/placeholder.png" onerror="this.src='images/logo.PNG'">
-      <div class="meta"><strong>${item.name}</strong><div>₦${item.price} x ${item.qty}</div></div>
-      <div>
-        <input type="number" value="${item.qty}" min="1" onchange="changeQty(${idx}, this.value)">
-        <button onclick="removeItem(${idx})">Remove</button>
-      </div>
-    `;
-    ul.appendChild(li);
-  });
-  document.getElementById('cart-total').textContent = total;
-  document.getElementById('checkout-whatsapp').href = "https://wa.me/2349138938301?text=" + encodeURIComponent("I want to order: " + cart.map(i=>i.name + " x" + i.qty).join(", "));
-}
-
-function changeQty(i, val){
-  const v = parseInt(val,10);
-  if(isNaN(v) || v < 1) return;
-  cart[i].qty = v;
-  updateCartUI();
-}
-
-function removeItem(i){
-  cart.splice(i,1);
-  updateCartUI();
-}
-
-function toggleCart(){
-  document.getElementById('cart-modal').classList.toggle('open');
-}
-</script>
 
 </body>
 </html>
