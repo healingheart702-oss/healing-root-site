@@ -19,14 +19,6 @@ h1 { text-align:center; color:#2c5e1a; margin:20px 0; font-size:32px; font-weigh
 .business-desc { max-width:900px; margin:0 auto 30px auto; padding:0 20px; text-align:center; font-size:16px; color:#333; line-height:1.7; }
 .call-section { text-align:center; margin:20px 0; font-size:16px; }
 .call-section a { color:#2e7d32; font-weight:bold; text-decoration:none; }
-
-#auth-section { max-width:400px; margin:50px auto; background:#fff; padding:25px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); text-align:center; }
-#auth-section h2 { margin-bottom:20px; color:#2c5e1a; }
-#auth-section input { width:90%; padding:10px; margin:8px 0; border-radius:5px; border:1px solid #ccc; }
-#auth-section button { width:95%; padding:10px; margin-top:10px; background:#2c5e1a; color:#fff; border:none; border-radius:5px; cursor:pointer; font-weight:bold; }
-#auth-section button:hover { background:#156b2c; }
-#auth-message { color:red; margin-top:15px; }
-
 .products-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:25px; padding:20px; max-width:1200px; margin:auto; }
 .card { background:#fff; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); padding:20px; text-align:left; display:flex; flex-direction:column; transition:0.3s ease; }
 .card:hover { transform:translateY(-5px); box-shadow:0 6px 15px rgba(0,0,0,0.15); }
@@ -36,22 +28,45 @@ h1 { text-align:center; color:#2c5e1a; margin:20px 0; font-size:32px; font-weigh
 .card .section-title { font-weight:700; color:#2c5e1a; margin-top:10px; margin-bottom:4px; }
 .card a.whatsapp-btn { display:inline-block; margin-top:10px; padding:8px 15px; background:#25D366; color:white; border-radius:5px; text-decoration:none; font-weight:bold; transition:0.3s; }
 .card a.whatsapp-btn:hover { background:#128C7E; }
-
 footer { background:#2c5e1a; color:white; padding:20px 15px; text-align:center; font-size:14px; line-height:1.6; margin-top:30px; border-top:3px solid #4CAF50; }
 #scrollUp { position:fixed; bottom:70px; right:20px; background:#4CAF50; color:white; border:none; padding:12px 15px; border-radius:50%; font-size:20px; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.3); display:none; z-index:1000; }
 @media (max-width:1024px){ .products-grid { grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px; padding:15px; } .card { padding:15px; } .card img { height:220px; } }
 @media (max-width:768px){ .products-grid { grid-template-columns:1fr; gap:15px; padding:10px; } .card img { height:200px; } .card p { font-size:14px; line-height:1.6; } }
 @media (max-width:480px){ h1 { font-size:24px; margin:15px 0; } .business-desc { font-size:14px; line-height:1.5; padding:0 15px; } .card img { height:180px; } .card p { font-size:13px; line-height:1.5; } .card h3 { font-size:16px; } .whatsapp-btn { width:100%; text-align:center; padding:8px 0; font-size:13px; } #scrollUp { bottom:60px; right:15px; padding:10px; font-size:18px; } }
 </style>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAgjMFw0dbM7CBH4S_zrmPhE69pp84Tpdo",
+  authDomain: "healing-root-farm.firebaseapp.com",
+  projectId: "healing-root-farm",
+  storageBucket: "healing-root-farm.firebasestorage.app",
+  messagingSenderId: "1042258816994",
+  appId: "1:1042258816994:web:0b6dd6b7f1c370ee7093bb"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "login.html"; // Redirect if not logged in
+  }
+});
+</script>
+
 </head>
 <body>
 
 <header class="header">
   <div class="logo"><img src="images/logo.PNG" alt="logo"><div class="brand-title">HEALING ROOT AGRO VENTURES</div></div>
   <nav class="nav" aria-label="Main navigation">
-    <a href="index.html">Home</a>
+    <a href="index.html" class="active">Home</a>
     <a href="about.html">About</a>
-    <a href="products.html" class="active">Products</a>
+    <a href="products.html">Products</a>
     <a href="gallery.html">Gallery</a>
     <a href="services.html">Services</a>
     <a href="contact.html">Contact</a>
@@ -68,43 +83,20 @@ At Healing Root Agro Ventures, we are committed to empowering farmers by providi
     Call: <a href="tel:08153729342">08153729342</a> · WhatsApp: <a href="https://wa.me/2349138938301" target="_blank">+2349138938301</a>
 </div>
 
-<!-- Authentication Section -->
-<div id="auth-section">
-  <h2>Create Account / Login</h2>
+<div class="products-grid">
 
-  <!-- Sign Up Form -->
-  <form id="signup-form">
-    <input type="text" id="signup-name" placeholder="Full Name" required>
-    <input type="email" id="signup-email" placeholder="Email" required>
-    <input type="password" id="signup-password" placeholder="Password" required>
-    <button type="submit">Sign Up</button>
-  </form>
-
-  <!-- Login Form -->
-  <form id="login-form">
-    <input type="email" id="login-email" placeholder="Email" required>
-    <input type="password" id="login-password" placeholder="Password" required>
-    <button type="submit">Login</button>
-  </form>
-
-  <p id="auth-message"></p>
+<!-- Your existing product cards go here -->
+<!-- Example for Cassava TME 419 -->
+<div class="card">
+  <img src="images/cassava.JPG" alt="Cassava stems">
+  <h3>TME 419 Cassava Stems (Improved by IITA)</h3>
+  <p class="section-title">Description:</p>
+  <p>TME 419 is a high-yield, disease-resistant cassava variety developed by the International Institute of Tropical Agriculture (IITA). It ensures faster maturity, excellent tuber quality, and adaptability across diverse soils and climates. Farmers planting TME 419 benefit from consistent sprouting, vigorous growth, and high starch content suitable for industrial processing.</p>
+  <a class="whatsapp-btn" href="https://wa.me/2349138938301?text=I want to order TME 419 Cassava Stems" target="_blank">Order via WhatsApp</a>
 </div>
 
-<!-- Products Grid (hidden by default) -->
-<div id="products-container" style="display:none;">
-  <div class="products-grid">
-    <!-- All your existing product cards copied here -->
-    <!-- Example for one product, repeat for all products in your previous HTML -->
-    <div class="card">
-      <img src="images/cassava.JPG" alt="Cassava stems">
-      <h3>TME 419 Cassava Stems (Improved by IITA)</h3>
-      <p class="section-title">Description:</p>
-      <p>TME 419 is a high-yield, disease-resistant cassava variety developed by the International Institute of Tropical Agriculture (IITA)...</p>
-      <a class="whatsapp-btn" href="https://wa.me/2349138938301?text=I want to order TME 419 Cassava Stems" target="_blank">Order via WhatsApp</a>
-    </div>
+<!-- Add all your other product cards here as in your original HTML -->
 
-    <!-- Add all other product cards here just like the original HTML -->
-  </div>
 </div>
 
 <footer>
@@ -116,68 +108,14 @@ Committed to supplying high-quality planting materials and fertilizers to boost 
 
 <button id="scrollUp" onclick="scrollTop()">↑</button>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyAgjMFw0dbM7CBH4S_zrmPhE69pp84Tpdo",
-    authDomain: "healing-root-farm.firebaseapp.com",
-    projectId: "healing-root-farm",
-    storageBucket: "healing-root-farm.firebasestorage.app",
-    messagingSenderId: "1042258816994",
-    appId: "1:1042258816994:web:0b6dd6b7f1c370ee7093bb"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  function showProducts(name) {
-    document.getElementById('auth-section').style.display = 'none';
-    document.getElementById('products-container').style.display = 'block';
-    document.getElementById('auth-message').textContent = `Welcome, ${name}!`;
-  }
-
-  // Sign-Up
-  document.getElementById('signup-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = document.getElementById('signup-name').value;
-    const email = document.getElementById('signup-email').value;
-    const password = document.getElementById('signup-password').value;
-
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        showProducts(name);
-        document.getElementById('signup-form').reset();
-      })
-      .catch((error) => {
-        document.getElementById('auth-message').textContent = error.message;
-      });
-  });
-
-  // Login
-  document.getElementById('login-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        showProducts(email.split('@')[0]);
-        document.getElementById('login-form').reset();
-      })
-      .catch((error) => {
-        document.getElementById('auth-message').textContent = error.message;
-      });
-  });
-
-  // Scroll Up logic
-  window.onscroll = function() {
-    document.getElementById('scrollUp').style.display = (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) ? 'block' : 'none';
-  };
-  function scrollTop() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+<script>
+// Scroll Up logic
+window.onscroll = function() {
+  document.getElementById('scrollUp').style.display = (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) ? 'block' : 'none';
+};
+function scrollTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 </script>
 
 </body>
