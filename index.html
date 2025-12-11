@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="google-site-verification" content="cPJ3_emx8r6W7a_9249IO_Aj4NEH15CCtPqEgc18FN8" />
-<title>HEALING ROOT AGRO VENTURES</title>
+<title>HEALING ROOT AGRO VENTURES — All in One</title>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
 body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background:#f5f7fa; }
 .header { background:#fff; padding:15px 20px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
@@ -32,13 +33,31 @@ footer { background:#2c5e1a; color:white; padding:20px 15px; text-align:center; 
 #scrollUp { position:fixed; bottom:70px; right:20px; background:#4CAF50; color:white; border:none; padding:12px 15px; border-radius:50%; font-size:20px; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.3); display:none; z-index:1000; transition:0.3s; }
 #scrollUp:hover { background:#2e7d32; }
 
-/* Auth Section */
-#auth-section, #profile-section, #admin-section { max-width:500px; margin:100px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
-#auth-section h2, #profile-section h2, #admin-section h2 { text-align:center; margin-bottom:20px; color:#2c5e1a; }
-#auth-section form, #profile-section form { display:flex; flex-direction:column; gap:10px; margin-bottom:10px; }
-#auth-section input, #profile-section input { padding:10px; border-radius:5px; border:1px solid #ccc; font-size:14px; }
-#auth-section button, #profile-section button { padding:10px; border:none; border-radius:5px; background:#25D366; color:white; font-weight:bold; cursor:pointer; }
-#auth-section button:hover, #profile-section button:hover { background:#128C7E; }
+/* Authentication Section */
+#auth-section { max-width:400px; margin:100px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+#auth-section h2 { text-align:center; margin-bottom:20px; color:#2c5e1a; }
+#auth-section form { display:flex; flex-direction:column; gap:10px; margin-bottom:10px; }
+#auth-section input { padding:10px; border-radius:5px; border:1px solid #ccc; font-size:14px; }
+#auth-section button { padding:10px; border:none; border-radius:5px; background:#25D366; color:white; font-weight:bold; cursor:pointer; }
+#auth-section button:hover { background:#128C7E; }
+#auth-message { color:red; text-align:center; margin-top:10px; }
+
+/* Profile Section */
+#profile-section { max-width:800px; margin:30px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); display:none; }
+#profile-section img { width:120px; height:120px; border-radius:50%; object-fit:cover; display:block; margin-bottom:10px; }
+#profile-section input, #profile-section textarea { width:100%; padding:10px; margin:5px 0; border-radius:5px; border:1px solid #ccc; }
+#profile-section button { padding:10px; border:none; border-radius:5px; background:#25D366; color:white; font-weight:bold; cursor:pointer; }
+#profile-section button:hover { background:#128C7E; }
+
+/* Friends Section */
+#friends-section { max-width:800px; margin:30px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); display:none; }
+.friend-card { display:flex; align-items:center; justify-content:space-between; padding:10px; border-bottom:1px solid #ccc; }
+.friend-card img { width:50px; height:50px; border-radius:50%; object-fit:cover; }
+.friend-card button { padding:5px 10px; border:none; border-radius:5px; background:#25D366; color:white; font-weight:bold; cursor:pointer; }
+.friend-card button:hover { background:#128C7E; }
+
+/* Comments Section */
+.comment-card { background:#f0f0f0; padding:10px; margin:10px 0; border-radius:5px; }
 
 /* Modal */
 .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:10000; }
@@ -49,268 +68,266 @@ footer { background:#2c5e1a; color:white; padding:20px 15px; text-align:center; 
 .modal-content button:hover { background:#128C7E; }
 .modal-close { position:absolute; top:10px; right:15px; font-size:20px; cursor:pointer; }
 
-/* Comments */
-.comments-section { margin-top:15px; }
-.comment { border-top:1px solid #ccc; padding:5px 0; }
-.comment p { margin:2px 0; font-size:14px; }
-.comment span { font-weight:bold; color:#156b2a; }
+@media (max-width:1024px){ .products-grid { grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px; padding:15px; } .card { padding:15px; } .card img { height:220px; } }
+@media (max-width:768px){ .products-grid { grid-template-columns:1fr; gap:15px; padding:10px; } .card img { height:200px; } .card p { font-size:14px; line-height:1.6; } }
+@media (max-width:480px){ h1 { font-size:24px; margin:15px 0; } .business-desc { font-size:14px; line-height:1.5; padding:0 15px; } .card img { height:180px; } .card p { font-size:13px; line-height:1.5; } .card h3 { font-size:16px; } .order-btn { width:100%; text-align:center; padding:8px 0; font-size:13px; } #scrollUp { bottom:60px; right:15px; padding:10px; font-size:18px; } }
 </style>
 </head>
 <body>
 
-<!-- AUTH SECTION -->
+<!-- Authentication Section -->
 <div id="auth-section">
-<h2>Login / Sign Up</h2>
-<form id="signup-form">
-<input type="text" id="signup-name" placeholder="Full Name" required>
-<input type="email" id="signup-email" placeholder="Email" required>
-<input type="password" id="signup-password" placeholder="Password" required>
-<button type="submit">Sign Up</button>
-</form>
+  <h2>Login or Sign Up</h2>
+  <form id="signup-form">
+    <input type="text" id="signup-name" placeholder="Full Name" required>
+    <input type="email" id="signup-email" placeholder="Email" required>
+    <input type="password" id="signup-password" placeholder="Password" required>
+    <button type="submit">Sign Up</button>
+  </form>
 
-<form id="login-form">
-<input type="email" id="login-email" placeholder="Email" required>
-<input type="password" id="login-password" placeholder="Password" required>
-<button type="submit">Login</button>
-</form>
-<p id="auth-message"></p>
+  <form id="login-form">
+    <input type="email" id="login-email" placeholder="Email" required>
+    <input type="password" id="login-password" placeholder="Password" required>
+    <button type="submit">Login</button>
+  </form>
+
+  <p id="auth-message"></p>
 </div>
 
-<!-- PROFILE SECTION -->
-<div id="profile-section" style="display:none;">
-<h2>My Profile</h2>
-<form id="profile-form">
-<img id="profile-img-preview" src="" alt="Profile Picture" style="width:100px;height:100px;border-radius:50%;object-fit:cover;margin-bottom:10px;">
-<input type="file" id="profile-img" accept="image/*">
-<input type="text" id="profile-name" placeholder="Full Name">
-<input type="text" id="profile-phone" placeholder="Phone Number">
-<button type="submit">Update Profile</button>
-</form>
-<h3>Friends</h3>
-<ul id="friends-list"></ul>
-<h3>Other Users</h3>
-<ul id="other-users-list"></ul>
-</div>
-
-<!-- PRODUCTS SECTION -->
-<div id="products-section" style="display:none;">
+<!-- Products Container -->
+<div id="products-container" style="display:none;">
 <header class="header">
-<div class="logo"><img src="images/logo.PNG" alt="logo"><div class="brand-title">HEALING ROOT AGRO VENTURES</div></div>
-<nav class="nav" aria-label="Main navigation">
-<a href="#" class="active">Home</a>
-<a href="#">About</a>
-<a href="#">Products</a>
-<a href="#">Gallery</a>
-<a href="#">Services</a>
-<a href="#">Contact</a>
-</nav>
+  <div class="logo"><img src="images/logo.PNG" alt="logo"><div class="brand-title">HEALING ROOT AGRO VENTURES</div></div>
+  <nav class="nav" aria-label="Main navigation">
+    <a href="#" class="active">Home</a>
+    <a href="#" onclick="openProfile()">Profile</a>
+    <a href="#" onclick="openFriends()">Friends</a>
+    <a href="#">Contact</a>
+  </nav>
 </header>
 
 <h1>HEALING ROOT AGRO VENTURES — PRODUCTS</h1>
 <div class="business-desc">
-We provide premium certified planting materials with high yield, disease resistance, and fast growth. Each product is delivered with detailed instructions to ensure optimal farm productivity, profitability, and sustainability across Nigeria.
+At Healing Root Agro Ventures, we provide only premium, certified planting materials carefully selected for high yield, disease resistance, and fast growth. Our products ensure your farm is productive, profitable, and sustainable. Farmers trust us for quality, reliability, and expert guidance across Nigeria. Each seedling, sucker, or stem is delivered with clear instructions to maximize growth, health, and harvest quality. Whether planting cassava, plantain, banana, oil palm, cocoa, pineapple, coconut, or yam, our materials guarantee superior results, enhanced farm productivity, and excellent marketable output. Choosing Healing Root Agro Ventures is investing in a future of high-yield, profitable, and sustainable farming practices tailored for Nigerian farmers of all scales.
 </div>
 <div class="call-section">
-Call: <a href="tel:08153729342">08153729342</a> · WhatsApp: <a href="https://wa.me/2349138938301" target="_blank">+2349138938301</a>
+    Call: <a href="tel:08153729342">08153729342</a> · WhatsApp: <a href="https://wa.me/2349138938301" target="_blank">+2349138938301</a>
 </div>
 
 <div class="products-grid" id="products-grid">
-<!-- Products will be injected here -->
-</div>
-</div>
-
-<!-- ORDER MODAL -->
-<div class="modal" id="orderModal">
-<div class="modal-content">
-<span class="modal-close" onclick="closeOrderModal()">×</span>
-<h3>Order <span id="modalProduct"></span></h3>
-<p>Price: <span id="modalPrice"></span></p>
-<input type="text" id="orderName" placeholder="Your Name" required>
-<input type="text" id="orderPhone" placeholder="Phone Number" required>
-<input type="number" id="orderQuantity" placeholder="Quantity" required>
-<textarea id="orderMessage" placeholder="Additional Message"></textarea>
-<button onclick="sendOrder()">Send Order via WhatsApp</button>
-</div>
+  <!-- Products will be inserted dynamically via JS -->
 </div>
 
-<!-- ADMIN SECTION -->
-<div id="admin-section" style="display:none;">
-<h2>Admin Dashboard</h2>
-<h3>Registered Users</h3>
-<ul id="admin-users-list"></ul>
-<h3>Pending Friend Requests</h3>
-<ul id="admin-friend-requests"></ul>
-<h3>Product Comments</h3>
-<ul id="admin-comments-list"></ul>
-</div>
+<footer>
+HEALING ROOT AGRO VENTURES<br>
+Call: 08153729342 | WhatsApp: +2349138938301 | Email: olasuposegunvictor@gmail.com<br>
+Location: Ibadan, Oyo State, Nigeria<br>
+Committed to supplying high-quality planting materials to boost farmer productivity and profitability nationwide.
+</footer>
 
 <button id="scrollUp" onclick="scrollTop()">↑</button>
 
+<!-- Order Modal -->
+<div class="modal" id="orderModal">
+  <div class="modal-content">
+    <span class="modal-close" onclick="closeOrderModal()">×</span>
+    <h3>Order <span id="modalProduct"></span></h3>
+    <p>Price: <span id="modalPrice"></span></p>
+    <input type="text" id="orderName" placeholder="Your Name" required>
+    <input type="text" id="orderPhone" placeholder="Phone Number" required>
+    <input type="number" id="orderQuantity" placeholder="Quantity" required>
+    <textarea id="orderMessage" placeholder="Additional Message"></textarea>
+    <button onclick="sendOrder()">Send Order via WhatsApp</button>
+  </div>
+</div>
+
+<!-- Profile Section -->
+<div id="profile-section">
+  <h2>Your Profile</h2>
+  <img id="profile-pic-preview" src="images/default-profile.png" alt="Profile Picture">
+  <input type="file" id="profile-pic">
+  <input type="text" id="profile-name" placeholder="Full Name">
+  <input type="email" id="profile-email" placeholder="Email" disabled>
+  <textarea id="profile-bio" placeholder="Bio"></textarea>
+  <button onclick="updateProfile()">Save Profile</button>
+</div>
+
+<!-- Friends Section -->
+<div id="friends-section">
+  <h2>Your Friends</h2>
+  <div id="friends-list"></div>
+</div>
+
 <script type="module">
-// Firebase Config
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-storage.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
+import { getDatabase, ref, set, get, child, push } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-database.js";
+import { getStorage, ref as sref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-storage.js";
 
 const firebaseConfig = {
-apiKey: "AIzaSyAgjMFw0dbM7CBH4S_zrmPhE69pp84Tpdo",
-authDomain: "healing-root-farm.firebaseapp.com",
-projectId: "healing-root-farm",
-storageBucket: "healing-root-farm.firebasestorage.app",
-messagingSenderId: "1042258816994",
-appId: "1:1042258816994:web:0b6dd6b7f1c370ee7093bb"
+  apiKey: "AIzaSyAgjMFw0dbM7CBH4S_zrmPhE69pp84Tpdo",
+  authDomain: "healing-root-farm.firebaseapp.com",
+  projectId: "healing-root-farm",
+  storageBucket: "healing-root-farm.firebasestorage.app",
+  messagingSenderId: "1042258816994",
+  appId: "1:1042258816994:web:0b6dd6b7f1c370ee7093bb",
+  databaseURL: "https://healing-root-farm-default-rtdb.firebaseio.com"
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+const db = getDatabase(app);
 const storage = getStorage(app);
 
-let currentUser = null;
+let currentUser=null;
 
-// --- PRODUCTS DATA ---
-const products = [
-{name:"TME 419 Cassava Stems",desc:"High-yield, disease-resistant cassava variety for excellent tuber quality and industrial suitability. Fast maturity ensures multiple cropping cycles. Planting TME 419 guarantees optimal growth, consistent tubers, and enhanced farm profitability. Perfect for smallholder and commercial farms looking for reliable production and high starch content suitable for food and industrial processing. Farmers benefit from strong sprouting, vigorous growth, and high adaptability across various soil types and climates. Each bundle comes disease-free and carefully cut for immediate planting.",price:"₦1,000 per bundle"},
-{name:"Hybrid Giant Plantain Sucker",desc:"Robust, fast-growing plantain with high yield, disease tolerance, and excellent fruit quality. Ideal for commercial and smallholder farms, producing consistently large bunches. Ensures continuous income and supports sustainable plantation development. Selected for uniform growth and adaptability. Comes with expert guidance for best farm results.",price:"₦500 per sucker"},
-{name:"Hybrid Dwarf Banana Sucker",desc:"Early-fruiting dwarf banana with superior growth, pest resistance, and high-quality fruit. Ideal for home and commercial farms. Ensures stable production, fast maturation, and excellent taste. Each sucker is certified disease-free and ready to plant.",price:"₦500 per sucker"},
-{name:"Tenera Oil Palm Seedlings",desc:"Improved oil palm seedlings with early bearing, high oil yield, and adaptability to Nigerian soils. Suitable for commercial plantations and smallholder farms. Provides stable income and supports sustainable oil palm production. Delivered with planting guidance for optimal yield.",price:"₦1,000 per seedling"},
-{name:"Hybrid Cocoa Nursery Plant",desc:"High-quality, disease-resistant cocoa nursery plant with early bearing and high pod yield. Suitable for plantations and intercropping. Supports cocoa processing industries and ensures profitable farming. Each plant comes with instructions for best growth and yield.",price:"₦500 per plant"},
-{name:"Pineapple Sucker",desc:"Premium pineapple suckers for high yield, uniform fruits, and disease resistance. Perfect for commercial farms and home gardens. Ensures consistent harvest and improved farm income. Delivered with planting guidance.",price:"₦400 per sucker"},
-{name:"Hybrid Dwarf Coconut Seedlings",desc:"High-yield, disease-resistant coconut seedlings selected for early fruiting and robustness. Suitable for plantations and backyard farming. Ensures reliable production and supports sustainable coconut farming. Delivered with instructions and guidance for optimal results.",price:"₦4,500 per seedling"},
-{name:"Treated Yam Setts",desc:"High-quality treated yam setts for optimal sprouting, growth, and high tuber yield. Ideal for smallholder and commercial farms. Provides reliable harvest and increased profitability. Delivered ready for planting with guidance.",price:"₦700 per sett"}
+// --- Products ---
+const productsList = [
+  { name: "TME 419 Cassava Stems", price: "₦1,000 per bundle", img: "images/cassava.JPG", desc: `TME 419 Cassava is a high-yielding...` },
+  { name: "Hybrid Giant Plantain Sucker", price: "₦500 per sucker", img: "images/plantain.JPG", desc: `Hybrid Giant Plantain description...` },
+  { name: "Hybrid Dwarf Banana Sucker", price: "₦500 per sucker", img: "images/giant_banana.JPG", desc: `Hybrid Dwarf Banana description...` },
+  { name: "Tenera Oil Palm Seedlings", price: "₦1,000 per seedling", img: "images/oilpalm.JPG", desc: `Tenera Oil Palm description...` },
+  { name: "Hybrid Cocoa Nursery Plant", price: "₦500 per plant", img: "images/giant_cocoa.JPG", desc: `Hybrid Cocoa description...` },
+  { name: "Pineapple Sucker", price: "₦400 per sucker", img: "images/pineapple.JPG", desc: `Pineapple Sucker description...` },
+  { name: "Hybrid Dwarf Coconut Seedlings", price: "₦4,500 per seedling", img: "images/coconut.JPG", desc: `Hybrid Dwarf Coconut description...` },
+  { name: "Treated Yam Setts", price: "₦700 per sett", img: "images/treated_yam.JPG", desc: `Treated Yam Setts description...` }
 ];
 
-const productsGrid = document.getElementById('products-grid');
-products.forEach(p=>{
-const card=document.createElement('div');card.className='card';
-card.innerHTML=`<img src="images/${p.name.replace(/ /g,"_").replace(/-/g,"")}.JPG" alt="${p.name}"><h3>${p.name}</h3><p class="section-title">Description:</p><p>${p.desc}</p><p class="price">Price: ${p.price}</p><a class="order-btn" onclick="openOrderModal('${p.name}','${p.price}')">Place Order</a><div class="comments-section"><h4>Comments:</h4><div id="${p.name.replace(/\s/g,'')}-comments"></div><input type="text" id="${p.name.replace(/\s/g,'')}-comment-input" placeholder="Add a comment"><button onclick="addComment('${p.name.replace(/\s/g,'')}')">Submit</button></div>`;
-productsGrid.appendChild(card);
-});
-
-// --- Auth Handlers ---
-document.getElementById('signup-form').addEventListener('submit',async e=>{
-e.preventDefault();
-const name=document.getElementById('signup-name').value;
-const email=document.getElementById('signup-email').value;
-const password=document.getElementById('signup-password').value;
-try{
-const userCredential=await createUserWithEmailAndPassword(auth,email,password);
-currentUser=userCredential.user;
-await setDoc(doc(db,'users',currentUser.uid),{name,email,friends:[],friendRequests:[],profilePic:""});
-showProfile();
-}catch(err){document.getElementById('auth-message').textContent=err.message;}
-});
-
-document.getElementById('login-form').addEventListener('submit',async e=>{
-e.preventDefault();
-const email=document.getElementById('login-email').value;
-const password=document.getElementById('login-password').value;
-try{
-const userCredential=await signInWithEmailAndPassword(auth,email,password);
-currentUser=userCredential.user;
-const userDoc=await getDoc(doc(db,'users',currentUser.uid));
-if(!userDoc.exists()){await setDoc(doc(db,'users',currentUser.uid),{name:email.split('@')[0],email,friends:[],friendRequests:[],profilePic:""});}
-if(email==='healingheart702@gmail.com'){showAdmin();}else{showProfile();}
-}catch(err){document.getElementById('auth-message').textContent=err.message;}
-});
-
-// --- Profile Functions ---
-async function showProfile(){
-document.getElementById('auth-section').style.display='none';
-document.getElementById('profile-section').style.display='block';
-document.getElementById('products-section').style.display='block';
-const docSnap=await getDoc(doc(db,'users',currentUser.uid));
-if(docSnap.exists()){
-const data=docSnap.data();
-document.getElementById('profile-name').value=data.name||'';
-document.getElementById('profile-phone').value=data.phone||'';
-document.getElementById('profile-img-preview').src=data.profilePic||'images/logo.PNG';
-loadFriendsAndUsers();
-loadComments();
-}
+function renderProducts(){
+  const container=document.getElementById('products-grid');
+  container.innerHTML='';
+  productsList.forEach(p=>{
+    const div=document.createElement('div');
+    div.className='card';
+    div.innerHTML=`<img src="${p.img}" alt="${p.name}"><h3>${p.name}</h3><p class="section-title">Description:</p><p>${p.desc}</p><p class="price">Price: ${p.price}</p><a class="order-btn" onclick="openOrderModal('${p.name}','${p.price}')">Place Order</a>`;
+    container.appendChild(div);
+  });
 }
 
-document.getElementById('profile-form').addEventListener('submit',async e=>{
-e.preventDefault();
-const name=document.getElementById('profile-name').value;
-const phone=document.getElementById('profile-phone').value;
-const file=document.getElementById('profile-img').files[0];
-let url=null;
-if(file){const storageRef=ref(storage,`profilePics/${currentUser.uid}`);await uploadBytes(storageRef,file);url=await getDownloadURL(storageRef);}
-await updateDoc(doc(db,'users',currentUser.uid),{name,phone,profilePic:url||document.getElementById('profile-img-preview').src});
-alert('Profile updated');showProfile();
-});
-
-// --- Friends ---
-async function loadFriendsAndUsers(){
-const usersSnapshot=await getDocs(collection(db,'users'));
-const friendsList=document.getElementById('friends-list');
-const otherUsersList=document.getElementById('other-users-list');
-friendsList.innerHTML='';otherUsersList.innerHTML='';
-usersSnapshot.forEach(docu=>{
-const u=docu.data();
-if(docu.id!==currentUser.uid){
-if(u.friends&&u.friends.includes(currentUser.uid)){
-const li=document.createElement('li');li.textContent=u.name;friendsList.appendChild(li);
-}else{
-const li=document.createElement('li');li.textContent=u.name;
-const btn=document.createElement('button');btn.textContent='Add Friend';btn.onclick=()=>sendFriendRequest(docu.id);
-li.appendChild(btn);otherUsersList.appendChild(li);
-}
-}
-});
-}
-
-async function sendFriendRequest(uid){
-await updateDoc(doc(db,'users',uid),{friendRequests:arrayUnion(currentUser.uid)});
-alert('Friend request sent!');showProfile();
-}
-
-// --- Comments ---
-async function addComment(product){
-const input=document.getElementById(product+'-comment-input');
-const msg=input.value.trim();
-if(!msg){alert('Enter a comment');return;}
-await updateDoc(doc(db,'products',product),{comments:arrayUnion({user:currentUser.uid,text:msg,approved:false})});
-input.value='';alert('Comment submitted for approval');
-loadComments();
-}
-
-async function loadComments(){
-for(const p of products){
-const pId=p.name.replace(/\s/g,'');
-const pDoc=await getDoc(doc(db,'products',pId));
-const commentsDiv=document.getElementById(pId+'-comments');
-commentsDiv.innerHTML='';
-if(pDoc.exists() && pDoc.data().comments){
-for(const c of pDoc.data().comments){
-if(c.approved){const userDoc=await getDoc(doc(db,'users',c.user));const userName=userDoc.exists()?userDoc.data().name:'Unknown';const div=document.createElement('div');div.className='comment';div.innerHTML=`<span>${userName}</span>: ${c.text}`;commentsDiv.appendChild(div);}
-}
-}
-}
-}
-
-// --- Admin ---
-async function showAdmin(){
-document.getElementById('auth-section').style.display='none';
-document.getElementById('admin-section').style.display='block';
-document.getElementById('products-section').style.display='block';
-const usersSnapshot=await getDocs(collection(db,'users'));
-const usersList=document.getElementById('admin-users-list');
-usersList.innerHTML='';
-usersSnapshot.forEach(docu=>{const li=document.createElement('li');li.textContent=docu.data().name+' ('+docu.data().email+')';usersList.appendChild(li);});
-}
-
-// --- Order Modal ---
-let currentProduct='',currentPrice='';
-function openOrderModal(name,price){currentProduct=name;currentPrice=price;document.getElementById('modalProduct').textContent=name;document.getElementById('modalPrice').textContent=price;document.getElementById('orderModal').style.display='flex';}
-function closeOrderModal(){document.getElementById('orderModal').style.display='none';}
-function sendOrder(){const n=document.getElementById('orderName').value;const p=document.getElementById('orderPhone').value;const q=document.getElementById('orderQuantity').value;const m=document.getElementById('orderMessage').value;if(!n||!p||!q){alert('Fill all required fields');return;}const msg=`Order: ${currentProduct}\nName: ${n}\nPhone: ${p}\nQuantity: ${q}\nMessage: ${m}`;window.open(`https://wa.me/2349138938301?text=${encodeURIComponent(msg)}`);}
-
-// --- Scroll Up ---
+// --- Scroll ---
 window.onscroll=function(){ document.getElementById('scrollUp').style.display=(document.body.scrollTop>200||document.documentElement.scrollTop>200)?'block':'none'; };
 function scrollTop(){ window.scrollTo({top:0,behavior:'smooth'}); }
 
+// --- Order Modal ---
+let currentProduct="",currentPrice="";
+function openOrderModal(name,price){
+  currentProduct=name; currentPrice=price;
+  document.getElementById('modalProduct').textContent=name;
+  document.getElementById('modalPrice').textContent=price;
+  document.getElementById('orderModal').style.display='flex';
+}
+function closeOrderModal(){ document.getElementById('orderModal').style.display='none'; }
+function sendOrder(){
+  const n=document.getElementById('orderName').value;
+  const p=document.getElementById('orderPhone').value;
+  const q=document.getElementById('orderQuantity').value;
+  const m=document.getElementById('orderMessage').value;
+  if(!n||!p||!q){ alert('Fill all required fields'); return; }
+  const msg=`Order: ${currentProduct}\nName: ${n}\nPhone: ${p}\nQuantity: ${q}\nMessage: ${m}`;
+  window.open(`https://wa.me/2349138938301?text=${encodeURIComponent(msg)}`);
+}
+
+// --- Auth ---
+document.getElementById('signup-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const name=document.getElementById('signup-name').value;
+  const email=document.getElementById('signup-email').value;
+  const password=document.getElementById('signup-password').value;
+  createUserWithEmailAndPassword(auth,email,password)
+  .then(u=>{
+    set(ref(db,'users/'+u.user.uid),{name,email,profilePic:'',bio:'',friends:[]});
+    currentUser=u.user;
+    showApp();
+  })
+  .catch(err=>{ document.getElementById('auth-message').textContent=err.message; });
+});
+
+document.getElementById('login-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const email=document.getElementById('login-email').value;
+  const password=document.getElementById('login-password').value;
+  signInWithEmailAndPassword(auth,email,password)
+  .then(u=>{
+    currentUser=u.user;
+    showApp();
+  })
+  .catch(err=>{ document.getElementById('auth-message').textContent=err.message; });
+});
+
+function showApp(){
+  document.getElementById('auth-section').style.display='none';
+  document.getElementById('products-container').style.display='block';
+  renderProducts();
+  loadProfile();
+  loadFriends();
+}
+
+// --- Profile ---
+function openProfile(){ document.getElementById('profile-section').style.display='block'; document.getElementById('friends-section').style.display='none'; }
+function openFriends(){ document.getElementById('profile-section').style.display='none'; document.getElementById('friends-section').style.display='block'; }
+
+async function loadProfile(){
+  const snapshot=await get(child(ref(db),'users/'+currentUser.uid));
+  if(snapshot.exists()){
+    const data=snapshot.val();
+    document.getElementById('profile-name').value=data.name||'';
+    document.getElementById('profile-email').value=data.email||'';
+    document.getElementById('profile-bio').value=data.bio||'';
+    if(data.profilePic) document.getElementById('profile-pic-preview').src=data.profilePic;
+  }
+}
+
+document.getElementById('profile-pic').addEventListener('change', async function(){
+  const file=this.files[0];
+  if(!file) return;
+  const picRef=sref(storage,'profilePics/'+currentUser.uid);
+  await uploadBytes(picRef,file);
+  const url=await getDownloadURL(picRef);
+  document.getElementById('profile-pic-preview').src=url;
+  set(ref(db,'users/'+currentUser.uid+'/profilePic'),url);
+});
+
+function updateProfile(){
+  set(ref(db,'users/'+currentUser.uid+'/name'),document.getElementById('profile-name').value);
+  set(ref(db,'users/'+currentUser.uid+'/bio'),document.getElementById('profile-bio').value);
+  alert('Profile updated!');
+}
+
+// --- Friends ---
+async function loadFriends(){
+  const snapshot=await get(child(ref(db),'users'));
+  const friendsList=document.getElementById('friends-list');
+  friendsList.innerHTML='';
+  snapshot.forEach(s=>{
+    if(s.key!==currentUser.uid){
+      const data=s.val();
+      const div=document.createElement('div');
+      div.className='friend-card';
+      div.innerHTML=`<img src="${data.profilePic||'images/default-profile.png'}"><span>${data.name}</span><button onclick="addFriend('${s.key}')">Add Friend</button>`;
+      friendsList.appendChild(div);
+    }
+  });
+}
+
+async function addFriend(uid){
+  const userRef=ref(db,'users/'+currentUser.uid+'/friends');
+  const snapshot=await get(userRef);
+  const friends=snapshot.val()||[];
+  if(!friends.includes(uid)){
+    friends.push(uid);
+    set(userRef,friends);
+    alert('Friend added!');
+  }
+}
+
+// --- On Auth State Changed ---
+onAuthStateChanged(auth,user=>{
+  if(user){
+    currentUser=user;
+    showApp();
+  }
+});
 </script>
+
 </body>
 </html>
