@@ -1,83 +1,116 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="google-site-verification" content="cPJ3_emx8r6W7a_9249IO_Aj4NEH15CCtPqEgc18FN8" />
-<title>HEALING ROOT AGRO VENTURES — Products</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Healing Root — Social Farm</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Google font -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-<!-- Authentication Section -->
-<div id="auth-section">
-  <h2>Login or Sign Up</h2>
-  <form id="signup-form">
-    <input type="text" id="signup-name" placeholder="Full Name" required>
-    <input type="email" id="signup-email" placeholder="Email" required>
-    <input type="password" id="signup-password" placeholder="Password" required>
-    <button type="submit">Sign Up</button>
-  </form>
-
-  <form id="login-form">
-    <input type="email" id="login-email" placeholder="Email" required>
-    <input type="password" id="login-password" placeholder="Password" required>
-    <button type="submit">Login</button>
-  </form>
-
-  <p id="auth-message"></p>
-</div>
-
-<!-- Main Container -->
-<div id="main-container" style="display:none;">
-  <header class="header">
-    <div class="logo">
-      <img src="images/logo.PNG" alt="logo">
-      <div class="brand-title">HEALING ROOT AGRO VENTURES</div>
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="brand">HEALING ROOT AGRO VENTURES</div>
+    <div id="auth-actions">
+      <button id="btn-login-open">Login / Sign up</button>
     </div>
-    <nav class="nav">
-      <a href="#" class="active">Home</a>
-      <a href="#profile-section">Profile</a>
-      <a href="#products-section">Products</a>
-      <a href="#friends-section">Friends</a>
-    </nav>
   </header>
 
-  <h1>HEALING ROOT AGRO VENTURES</h1>
-  <div class="business-desc">
-    At Healing Root Agro Ventures, we provide only premium, certified planting materials carefully selected for high yield, disease resistance, and fast growth. Our products ensure your farm is productive, profitable, and sustainable. Farmers trust us for quality, reliability, and expert guidance across Nigeria. Each seedling, sucker, or stem is delivered with clear instructions to maximize growth, health, and harvest quality.
+  <!-- Main layout: feed + sidebar -->
+  <main class="layout">
+    <section class="feed-col">
+      <!-- create post card -->
+      <div id="create-card" class="card hidden">
+        <div class="card-row">
+          <img id="mini-avatar" class="avatar-sm" src="images/default-profile.png" alt="me">
+          <textarea id="post-text" placeholder="What's happening on your farm?" rows="2"></textarea>
+        </div>
+        <div class="card-row">
+          <input type="file" id="post-image" accept="image/*">
+          <button id="btn-post">Post</button>
+        </div>
+      </div>
+
+      <!-- posts container -->
+      <div id="posts-container"></div>
+    </section>
+
+    <aside class="sidebar-col">
+      <div class="card">
+        <h3>Products — Order via WhatsApp</h3>
+        <div id="products-list"></div>
+      </div>
+
+      <div class="card">
+        <h3>Your Friends</h3>
+        <div id="friends-list"></div>
+      </div>
+
+      <div class="card">
+        <h3>Chat</h3>
+        <p>Open a chat from a friend card → chat modal.</p>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="footer">© Healing Root Agro Ventures • Call: 08153729342 • WhatsApp: <a href="https://wa.me/2349138938301" target="_blank">+2349138938301</a></footer>
+
+  <!-- AUTH MODAL -->
+  <div id="auth-modal" class="modal hidden">
+    <div class="modal-card">
+      <button class="modal-close" data-close>×</button>
+      <h2>Login or Sign Up</h2>
+
+      <div id="auth-forms">
+        <form id="signup-form" class="auth-form">
+          <input id="signup-name" placeholder="Full name" required>
+          <input id="signup-email" type="email" placeholder="Email" required>
+          <input id="signup-password" type="password" placeholder="Password" required>
+          <button type="submit">Sign up</button>
+        </form>
+
+        <hr>
+
+        <form id="login-form" class="auth-form">
+          <input id="login-email" type="email" placeholder="Email" required>
+          <input id="login-password" type="password" placeholder="Password" required>
+          <button type="submit">Log in</button>
+        </form>
+      </div>
+
+      <p id="auth-error" class="error"></p>
+    </div>
   </div>
 
-  <!-- Profile Section -->
-  <section id="profile-section">
-    <h2>Your Profile</h2>
-    <div id="profile-container">
-      <img id="profile-picture" src="images/default-profile.png" alt="Profile Picture">
-      <input type="file" id="profile-upload">
-      <p id="profile-name"></p>
-      <p id="profile-email"></p>
-      <button id="update-profile">Update Profile</button>
+  <!-- PROFILE MODAL -->
+  <div id="profile-modal" class="modal hidden">
+    <div class="modal-card">
+      <button class="modal-close" data-close>×</button>
+      <h2>My Profile</h2>
+      <img id="profile-photo" class="avatar-lg" src="images/default-profile.png" alt="profile">
+      <input id="profile-upload" type="file" accept="image/*">
+      <input id="profile-name" placeholder="Full name">
+      <input id="profile-bio" placeholder="Short bio">
+      <button id="profile-save">Save</button>
+      <button id="btn-logout" class="danger">Log out</button>
     </div>
-  </section>
+  </div>
 
-  <!-- Friends Section -->
-  <section id="friends-section">
-    <h2>Friends</h2>
-    <div id="friends-list"></div>
-  </section>
+  <!-- CHAT MODAL -->
+  <div id="chat-modal" class="modal hidden">
+    <div class="modal-card">
+      <button class="modal-close" data-close>×</button>
+      <h2>Chat</h2>
+      <div id="chat-header"></div>
+      <div id="chat-messages" class="chat-box"></div>
+      <div class="chat-input-row">
+        <input id="chat-input" placeholder="Write a message...">
+        <button id="chat-send">Send</button>
+      </div>
+    </div>
+  </div>
 
-  <!-- Products Section -->
-  <section id="products-section" class="products-grid">
-    <!-- Product cards will be injected by JS -->
-  </section>
-
-  <!-- Footer -->
-  <footer>
-    HEALING ROOT AGRO VENTURES<br>
-    Call: 08153729342 | WhatsApp: +2349138938301 | Email: olasuposegunvictor@gmail.com
-  </footer>
-</div>
-
-<script type="module" src="script.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
