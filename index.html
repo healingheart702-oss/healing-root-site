@@ -1,72 +1,73 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Healing Root — Login</title>
-<link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healing Root Agro Ventures - Login</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<header class="topbar">
-  <div class="brand">HEALING ROOT AGRO VENTURES</div>
-  <div class="actions"><button id="btn-open-auth">Login / Sign up</button></div>
-</header>
 
-<main style="max-width:700px;margin:40px auto;padding:0 12px">
-  <div class="card">
-    <h2>Welcome to Healing Root — Social Farm</h2>
-    <p>Please login or create an account to enter the community feed and chat with friends.</p>
-    <div style="display:flex;gap:8px">
-      <button id="btn-open-auth-2" class="small-btn">Login / Sign up</button>
-      <a href="products.html" style="align-self:center;margin-left:auto">Visit Shop (public)</a>
-    </div>
+<div class="auth-container">
+  <h1>Welcome to Healing Root Agro Ventures</h1>
+  
+  <div class="auth-forms">
+    <form id="signup-form">
+      <h2>Sign Up</h2>
+      <input type="text" id="signup-name" placeholder="Full Name" required>
+      <input type="email" id="signup-email" placeholder="Email" required>
+      <input type="password" id="signup-password" placeholder="Password" required>
+      <button type="submit">Sign Up</button>
+    </form>
+
+    <form id="login-form">
+      <h2>Login</h2>
+      <input type="email" id="login-email" placeholder="Email" required>
+      <input type="password" id="login-password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
   </div>
-  <div class="card">
-    <h3>Why join?</h3>
-    <ul>
-      <li>Share farm updates, ask questions, learn from other farmers</li>
-      <li>Buy seedling packs and setts from our shop</li>
-      <li>Chat privately with friends</li>
-    </ul>
-  </div>
-</main>
 
-<!-- Auth Modal -->
-<div id="auth-modal" class="modal hidden">
-  <div class="modal-card">
-    <button class="modal-close" data-close>×</button>
-    <h2>Login or Sign Up</h2>
-
-    <div style="display:flex;gap:10px">
-      <form id="signup-form" class="auth-form" style="flex:1">
-        <h3>Sign up</h3>
-        <input id="signup-username" placeholder="Username (unique, no spaces)" required>
-        <input id="signup-name" placeholder="Display name (Real name)" required>
-        <input id="signup-email" type="email" placeholder="Email" required>
-        <input id="signup-password" type="password" placeholder="Password" required>
-        <button type="submit">Create account</button>
-      </form>
-
-      <form id="login-form" class="auth-form" style="flex:1">
-        <h3>Log in</h3>
-        <input id="login-email" type="email" placeholder="Email" required>
-        <input id="login-password" type="password" placeholder="Password" required>
-        <button type="submit">Log in</button>
-      </form>
-    </div>
-    <p id="auth-error" class="error"></p>
-  </div>
+  <p id="auth-message"></p>
 </div>
 
 <script type="module">
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
-import { auth } from './firebase.js';
-import { initIndex } from './app.js';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
+import { firebaseConfig } from "./js/firebaseConfig.js";
 
-onAuthStateChanged(auth, user => {
-  if(user) window.location.href = 'feed.html';
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+function redirectToFeed() {
+    window.location.href = "feed.html";
+}
+
+document.getElementById('signup-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = document.getElementById('signup-name').value;
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+
+    createUserWithEmailAndPassword(auth, email, password)
+        .then(userCredential => {
+            // Save display name
+            userCredential.user.updateProfile({ displayName: name });
+            redirectToFeed();
+        })
+        .catch(error => { document.getElementById('auth-message').textContent = error.message; });
 });
-initIndex();
+
+document.getElementById('login-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    signInWithEmailAndPassword(auth, email, password)
+        .then(userCredential => { redirectToFeed(); })
+        .catch(error => { document.getElementById('auth-message').textContent = error.message; });
+});
 </script>
+
 </body>
 </html>
