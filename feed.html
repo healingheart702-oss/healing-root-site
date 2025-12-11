@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Healing Root — Feed</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand" id="brand-head">HEALING ROOT AGRO VENTURES</div>
+  <div class="actions" id="top-actions"></div>
+</header>
+
+<main class="layout">
+  <section class="feed-col">
+    <div id="create-card" class="card">
+      <div style="display:flex;align-items:center;gap:10px">
+        <img id="mini-avatar" class="avatar-sm" src="images/default-profile.png" alt="me">
+        <textarea id="post-text" placeholder="Share an update..." rows="2"></textarea>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+        <input type="file" id="post-image" accept="image/*">
+        <div>
+          <button id="btn-post" class="small-btn">Post</button>
+          <a href="products.html" class="small-btn" style="background:#4CAF50">Shop</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="posts-container"></div>
+  </section>
+
+  <aside class="sidebar-col">
+    <div class="card">
+      <h3>Products</h3>
+      <div id="products-list"></div>
+      <div style="margin-top:8px"><a href="products.html">Full Shop →</a></div>
+    </div>
+
+    <div class="card">
+      <h3>Friends</h3>
+      <div id="friends-preview"></div>
+      <div style="margin-top:8px"><a href="profile.html">My Profile →</a></div>
+    </div>
+  </aside>
+</main>
+
+<footer class="footer">© Healing Root Agro Ventures • WhatsApp: <a href="https://wa.me/2349138938301" target="_blank">+2349138938301</a></footer>
+
+<script type="module">
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
+import { auth } from './firebase.js';
+import { initFeed } from './app.js';
+
+onAuthStateChanged(auth, user => {
+  if(!user) window.location.href = 'index.html';
+  else initFeed();
+});
+</script>
+</body>
+</html>
