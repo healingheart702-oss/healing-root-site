@@ -26,32 +26,53 @@ h1 { text-align:center; color:#2c5e1a; margin:20px 0; font-size:32px; font-weigh
 .card p { font-size:15px; color:#333; line-height:1.7; margin-bottom:10px; }
 .card img { width:100%; max-width:100%; height:250px; object-fit:cover; border-radius:10px; margin-bottom:15px; }
 .card .section-title { font-weight:700; color:#2c5e1a; margin-top:10px; margin-bottom:4px; }
-.card a.whatsapp-btn { display:inline-block; margin-top:10px; padding:8px 15px; background:#25D366; color:white; border-radius:5px; text-decoration:none; font-weight:bold; transition:0.3s; }
-.card a.whatsapp-btn:hover { background:#128C7E; }
+.card .price { font-weight:bold; color:#2c5e1a; margin-bottom:10px; }
+.card a.order-btn { display:inline-block; margin-top:10px; padding:8px 15px; background:#25D366; color:white; border-radius:5px; text-decoration:none; font-weight:bold; cursor:pointer; transition:0.3s; }
+.card a.order-btn:hover { background:#128C7E; }
 footer { background:#2c5e1a; color:white; padding:20px 15px; text-align:center; font-size:14px; line-height:1.6; margin-top:30px; border-top:3px solid #4CAF50; }
-#scrollUp { position:fixed; bottom:70px; right:20px; background:#4CAF50; color:white; border:none; padding:12px 15px; border-radius:50%; font-size:20px; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.3); display:none; z-index:1000; }
-#auth-section { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; background:#f5f7fa; }
-#auth-section form { display:flex; flex-direction:column; gap:10px; background:white; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
-#auth-message { margin-top:10px; color:red; font-weight:bold; }
+#scrollUp { position:fixed; bottom:70px; right:20px; background:#4CAF50; color:white; border:none; padding:12px 15px; border-radius:50%; font-size:20px; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.3); display:none; z-index:1000; transition:0.3s; }
+#scrollUp:hover { background:#2e7d32; }
+#auth-section { max-width:400px; margin:100px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+#auth-section h2 { text-align:center; margin-bottom:20px; color:#2c5e1a; }
+#auth-section form { display:flex; flex-direction:column; gap:10px; margin-bottom:10px; }
+#auth-section input { padding:10px; border-radius:5px; border:1px solid #ccc; font-size:14px; }
+#auth-section button { padding:10px; border:none; border-radius:5px; background:#25D366; color:white; font-weight:bold; cursor:pointer; }
+#auth-section button:hover { background:#128C7E; }
+#auth-message { color:red; text-align:center; margin-top:10px; }
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:10000; }
+.modal-content { background:#fff; padding:20px; border-radius:10px; max-width:400px; width:90%; position:relative; }
+.modal-content h3 { margin-top:0; }
+.modal-content input, .modal-content textarea { width:100%; padding:10px; margin:5px 0; border-radius:5px; border:1px solid #ccc; }
+.modal-content button { padding:10px; border:none; border-radius:5px; background:#25D366; color:white; font-weight:bold; cursor:pointer; }
+.modal-content button:hover { background:#128C7E; }
+.modal-close { position:absolute; top:10px; right:15px; font-size:20px; cursor:pointer; }
 @media (max-width:1024px){ .products-grid { grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px; padding:15px; } .card { padding:15px; } .card img { height:220px; } }
 @media (max-width:768px){ .products-grid { grid-template-columns:1fr; gap:15px; padding:10px; } .card img { height:200px; } .card p { font-size:14px; line-height:1.6; } }
-@media (max-width:480px){ h1 { font-size:24px; margin:15px 0; } .business-desc { font-size:14px; line-height:1.5; padding:0 15px; } .card img { height:180px; } .card p { font-size:13px; line-height:1.5; } .card h3 { font-size:16px; } .whatsapp-btn { width:100%; text-align:center; padding:8px 0; font-size:13px; } #scrollUp { bottom:60px; right:15px; padding:10px; font-size:18px; } }
+@media (max-width:480px){ h1 { font-size:24px; margin:15px 0; } .business-desc { font-size:14px; line-height:1.5; padding:0 15px; } .card img { height:180px; } .card p { font-size:13px; line-height:1.5; } .card h3 { font-size:16px; } .order-btn { width:100%; text-align:center; padding:8px 0; font-size:13px; } #scrollUp { bottom:60px; right:15px; padding:10px; font-size:18px; } }
 </style>
 </head>
 <body>
 
 <!-- Authentication Section -->
 <div id="auth-section">
-  <h2>Login to Access Products</h2>
+  <h2>Login or Sign Up</h2>
+  <form id="signup-form">
+    <input type="text" id="signup-name" placeholder="Full Name" required>
+    <input type="email" id="signup-email" placeholder="Email" required>
+    <input type="password" id="signup-password" placeholder="Password" required>
+    <button type="submit">Sign Up</button>
+  </form>
+
   <form id="login-form">
     <input type="email" id="login-email" placeholder="Email" required>
     <input type="password" id="login-password" placeholder="Password" required>
     <button type="submit">Login</button>
   </form>
+
   <p id="auth-message"></p>
 </div>
 
-<!-- Products Grid (hidden by default) -->
+<!-- Products Container -->
 <div id="products-container" style="display:none;">
 <header class="header">
   <div class="logo"><img src="images/logo.PNG" alt="logo"><div class="brand-title">HEALING ROOT AGRO VENTURES</div></div>
@@ -66,112 +87,114 @@ footer { background:#2c5e1a; color:white; padding:20px 15px; text-align:center; 
 </header>
 
 <h1>HEALING ROOT AGRO VENTURES — PRODUCTS</h1>
-
 <div class="business-desc">
-At Healing Root Agro Ventures, we are committed to empowering farmers by providing high-quality planting materials and fertilizers that ensure maximum yields, sustainable agriculture, and profitable harvests. We support smallholder and commercial farmers with expert guidance, nationwide delivery, and access to products that improve food security and increase income opportunities across Nigeria.
+At Healing Root Agro Ventures, we provide only premium, certified planting materials carefully selected for high yield, disease resistance, and fast growth. Our products ensure your farm is productive, profitable, and sustainable. Farmers trust us for quality, reliability, and expert guidance across Nigeria. Each seedling, sucker, or stem is delivered with clear instructions to maximize growth, health, and harvest quality.
 </div>
-
 <div class="call-section">
     Call: <a href="tel:08153729342">08153729342</a> · WhatsApp: <a href="https://wa.me/2349138938301" target="_blank">+2349138938301</a>
 </div>
 
 <div class="products-grid">
-<!-- TME 419 Cassava -->
+<!-- Product Cards -->
 <div class="card">
   <img src="images/cassava.JPG" alt="Cassava stems">
   <h3>TME 419 Cassava Stems</h3>
   <p class="section-title">Description:</p>
-  <p>TME 419 is a high-yield, disease-resistant cassava variety developed by IITA. It offers rapid maturity, excellent tuber quality, and adaptability across diverse soils. Farmers benefit from consistent sprouting, vigorous growth, and high starch content suitable for processing. Smallholder and commercial farmers can rely on TME 419 for food security, income generation, and industrial raw material. Healing Root Agro Ventures ensures delivery of disease-free, well-cut stems with planting guidance.</p>
-  <a class="whatsapp-btn" href="https://wa.me/2349138938301?text=I want to order TME 419 Cassava Stems" target="_blank">Order via WhatsApp</a>
+  <p>High-yield, disease-resistant cassava variety for excellent tuber quality and industrial suitability. Fast maturity ensures multiple cropping cycles.</p>
+  <p class="price">Price: ₦1,000 per bundle</p>
+  <a class="order-btn" onclick="openOrderModal('TME 419 Cassava Stems','₦1,000')">Place Order</a>
 </div>
 
-<!-- Hybrid Plantain -->
 <div class="card">
   <img src="images/plantain.JPG" alt="Hybrid Plantain">
-  <h3>Hybrid Plantain Suckers</h3>
+  <h3>Hybrid Giant Plantain Sucker</h3>
   <p class="section-title">Description:</p>
-  <p>Hybrid plantain suckers are bred for rapid growth, disease resistance, and high fruit yield. Suitable for smallholder farms and commercial plantations, these suckers adapt to varying soils and climates, producing large bunches with excellent fruit quality. Customers receive healthy, strong suckers along with expert advice for maximum growth, intercropping options, and nationwide delivery for successful plantations.</p>
-  <a class="whatsapp-btn" href="https://wa.me/2349138938301?text=I want to order Hybrid Plantain Suckers" target="_blank">Order via WhatsApp</a>
+  <p>Robust, fast-growing plantain with high yield, disease tolerance, and excellent fruit quality. Perfect for commercial and smallholder farms.</p>
+  <p class="price">Price: ₦500 per sucker</p>
+  <a class="order-btn" onclick="openOrderModal('Hybrid Giant Plantain Sucker','₦500')">Place Order</a>
 </div>
 
-<!-- Hybrid Giant Banana -->
 <div class="card">
-  <img src="images/giant_banana.JPG" alt="Hybrid Giant Banana">
-  <h3>Hybrid Giant Banana Suckers</h3>
+  <img src="images/giant_banana.JPG" alt="Hybrid Banana">
+  <h3>Hybrid Dwarf Banana Sucker</h3>
   <p class="section-title">Description:</p>
-  <p>Hybrid giant banana suckers are carefully selected for early fruiting, robust growth, and resistance to pests and diseases. They thrive in multiple soils and climates, producing large, sweet bananas suitable for home consumption, local markets, and commercial sales. Healing Root Agro Ventures provides only healthy, disease-free suckers, planting guidance, and nationwide delivery to ensure maximum productivity and profitability.</p>
-  <a class="whatsapp-btn" href="https://wa.me/2349138938301?text=I want to order Hybrid Giant Banana Suckers" target="_blank">Order via WhatsApp</a>
+  <p>Early-fruiting dwarf banana with superior growth, pest resistance, and high-quality fruit. Ideal for home and commercial farms.</p>
+  <p class="price">Price: ₦500 per sucker</p>
+  <a class="order-btn" onclick="openOrderModal('Hybrid Dwarf Banana Sucker','₦500')">Place Order</a>
 </div>
 
-<!-- Tenera Oil Palm -->
 <div class="card">
   <img src="images/oilpalm.JPG" alt="Tenera Oil Palm">
   <h3>Tenera Oil Palm Seedlings</h3>
   <p class="section-title">Description:</p>
-  <p>Tenera oil palm seedlings are high-yield varieties with early bearing, high oil-to-bunch ratio, and disease tolerance. Adaptable to Nigerian soils, they ensure stable harvests. Farmers receive healthy seedlings with guidance on planting, fertilization, and disease management, ensuring maximum productivity and sustainable profits.</p>
-  <a class="whatsapp-btn" href="https://wa.me/2349138938301?text=I want to order Tenera Oil Palm Seedlings" target="_blank">Order via WhatsApp</a>
+  <p>Improved oil palm seedlings with early bearing, high oil yield, and adaptability to Nigerian soils. Suitable for commercial plantations and smallholder farms.</p>
+  <p class="price">Price: ₦1,000 per seedling</p>
+  <a class="order-btn" onclick="openOrderModal('Tenera Oil Palm Seedlings','₦1,000')">Place Order</a>
 </div>
 
-<!-- Hybrid Coconut -->
 <div class="card">
-  <img src="images/coconut.JPG" alt="Hybrid Coconut">
-  <h3>Hybrid Coconut Seedlings</h3>
+  <img src="images/giant_cocoa.JPG" alt="Cocoa Nursery Plant">
+  <h3>Hybrid Cocoa Nursery Plant</h3>
   <p class="section-title">Description:</p>
-  <p>Hybrid coconut seedlings, including Malaysian Dwarf and West African Tall varieties, are selected for high yield, disease resistance, and early fruiting. Suitable for commercial plantations and backyard farming. Healing Root Agro Ventures supplies strong seedlings with planting advice and nationwide delivery for successful coconut cultivation and income generation.</p>
-  <a class="whatsapp-btn" href="https://wa.me/2349138938301?text=I want to order Hybrid Coconut Seedlings" target="_blank">Order via WhatsApp</a>
+  <p>High-quality, disease-resistant cocoa nursery plant with early bearing and high pod yield. Suitable for plantations and intercropping.</p>
+  <p class="price">Price: ₦500 per plant</p>
+  <a class="order-btn" onclick="openOrderModal('Hybrid Cocoa Nursery Plant','₦500')">Place Order</a>
 </div>
 
-<!-- Pineapple -->
 <div class="card">
   <img src="images/pineapple.JPG" alt="Pineapple">
-  <h3>Pineapple Suckers</h3>
+  <h3>Pineapple Sucker</h3>
   <p class="section-title">Description:</p>
-  <p>High-quality pineapple suckers, including MD2 and Queen varieties, selected for superior fruit quality, uniform growth, and high productivity. Suitable for commercial farms and home gardens. Farmers receive disease-free suckers, planting guidance, and nationwide delivery for optimal growth and profitable harvests.</p>
-  <a class="whatsapp-btn" href="https://wa.me/2349138938301?text=I want to order Pineapple Suckers" target="_blank">Order via WhatsApp</a>
+  <p>Premium pineapple suckers for high yield, uniform fruits, and disease resistance. Perfect for commercial farms and home gardens.</p>
+  <p class="price">Price: ₦400 per sucker</p>
+  <a class="order-btn" onclick="openOrderModal('Pineapple Sucker','₦400')">Place Order</a>
 </div>
 
-<!-- NPK Fertilizers -->
 <div class="card">
-  <img src="images/fertilizer.JPG" alt="Fertilizers">
-  <h3>NPK & Other Fertilizers</h3>
+  <img src="images/coconut.JPG" alt="Hybrid Dwarf Coconut Seedlings">
+  <h3>Hybrid Dwarf Coconut Seedlings</h3>
   <p class="section-title">Description:</p>
-  <p>High-grade NPK fertilizers and essential nutrients for optimum plant growth and higher yields. Designed for all types of crops, these fertilizers enhance soil fertility, improve productivity, and support sustainable agriculture. Farmers receive reliable delivery and guidance for best results.</p>
-  <a class="whatsapp-btn" href="https://wa.me/2349138938301?text=I want to order NPK Fertilizers" target="_blank">Order via WhatsApp</a>
+  <p>High-yield, disease-resistant coconut seedlings selected for early fruiting and robustness. Suitable for plantations and backyard farming.</p>
+  <p class="price">Price: ₦4,500 per seedling</p>
+  <a class="order-btn" onclick="openOrderModal('Hybrid Dwarf Coconut Seedlings','₦4,500')">Place Order</a>
 </div>
 
-<!-- Hybrid Cocoa -->
 <div class="card">
-  <img src="images/giant_cocoa.JPG" alt="Hybrid Cocoa">
-  <h3>Hybrid Cocoa Seedlings</h3>
+  <img src="images/treated_yam.JPG" alt="Treated Yam Setts">
+  <h3>Treated Yam Setts</h3>
   <p class="section-title">Description:</p>
-  <p>CRIN-approved hybrid cocoa seedlings, early bearing, high yield, and disease resistant. Suitable for commercial plantations and agroforestry. Customers get healthy seedlings with planting instructions and nationwide delivery to achieve maximum cocoa production.</p>
-  <a class="whatsapp-btn" href="https://wa.me/2349138938301?text=I want to order Hybrid Cocoa Seedlings" target="_blank">Order via WhatsApp</a>
-</div>
-
-<!-- Okra & Vegetable Seeds -->
-<div class="card">
-  <img src="images/vegetables.JPG" alt="Okra & Vegetable Seeds">
-  <h3>Okra & Vegetable Seeds</h3>
-  <p class="section-title">Description:</p>
-  <p>High-quality okra and assorted vegetable seeds, selected for germination rate, disease resistance, and fast growth. Perfect for small-scale farms, home gardens, and commercial vegetable production. Healing Root Agro Ventures ensures certified seeds, planting guidance, and nationwide delivery for optimal harvests.</p>
-  <a class="whatsapp-btn" href="https://wa.me/2349138938301?text=I want to order Okra & Vegetable Seeds" target="_blank">Order via WhatsApp</a>
+  <p>High-quality treated yam setts for optimal sprouting, growth, and high tuber yield. Ideal for smallholder and commercial farms.</p>
+  <p class="price">Price: ₦700 per sett</p>
+  <a class="order-btn" onclick="openOrderModal('Treated Yam Setts','₦700')">Place Order</a>
 </div>
 
 </div>
-
 <footer>
 HEALING ROOT AGRO VENTURES<br>
 Call: 08153729342 | WhatsApp: +2349138938301 | Email: olasuposegunvictor@gmail.com<br>
 Location: Ibadan, Oyo State, Nigeria<br>
-Committed to supplying high-quality planting materials and fertilizers to boost farmer productivity and profitability nationwide.
+Committed to supplying high-quality planting materials to boost farmer productivity and profitability nationwide.
 </footer>
 
 <button id="scrollUp" onclick="scrollTop()">↑</button>
+
+<!-- Order Modal -->
+<div class="modal" id="orderModal">
+  <div class="modal-content">
+    <span class="modal-close" onclick="closeOrderModal()">×</span>
+    <h3>Order <span id="modalProduct"></span></h3>
+    <p>Price: <span id="modalPrice"></span></p>
+    <input type="text" id="orderName" placeholder="Your Name" required>
+    <input type="text" id="orderPhone" placeholder="Phone Number" required>
+    <input type="number" id="orderQuantity" placeholder="Quantity" required>
+    <textarea id="orderMessage" placeholder="Additional Message"></textarea>
+    <button onclick="sendOrder()">Send Order via WhatsApp</button>
+  </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAgjMFw0dbM7CBH4S_zrmPhE69pp84Tpdo",
@@ -185,35 +208,64 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-function showProducts() {
-  document.getElementById('auth-section').style.display = 'none';
-  document.getElementById('products-container').style.display = 'block';
+// --- Analytics ---
+const analytics={logins:[],ordersClicked:[],orderAttempts:0};
+let currentProduct="",currentPrice="";
+
+// Show products after login
+function showProducts(name){
+  document.getElementById('auth-section').style.display='none';
+  document.getElementById('products-container').style.display='block';
+  console.log('User logged in:', name);
+  if(!analytics.logins.includes(name)) analytics.logins.push(name);
+  console.log('Logged-in users so far:', analytics.logins);
 }
 
-// Login
-document.getElementById('login-form').addEventListener('submit', (e) => {
+// Sign-Up
+document.getElementById('signup-form').addEventListener('submit', e=>{
   e.preventDefault();
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
-
-  signInWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      showProducts();
-      document.getElementById('login-form').reset();
-    })
-    .catch((error) => {
-      document.getElementById('auth-message').textContent = error.message;
-    });
+  const name=document.getElementById('signup-name').value;
+  const email=document.getElementById('signup-email').value;
+  const password=document.getElementById('signup-password').value;
+  createUserWithEmailAndPassword(auth,email,password)
+  .then(userCredential=>{ showProducts(name); document.getElementById('signup-form').reset(); })
+  .catch(error=>{ document.getElementById('auth-message').textContent=error.message; });
 });
-</script>
 
-<script>
-// Scroll Up logic
-window.onscroll = function() {
-  document.getElementById('scrollUp').style.display = (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) ? 'block' : 'none';
-};
-function scrollTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+// Login
+document.getElementById('login-form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const email=document.getElementById('login-email').value;
+  const password=document.getElementById('login-password').value;
+  signInWithEmailAndPassword(auth,email,password)
+  .then(userCredential=>{ showProducts(email.split('@')[0]); document.getElementById('login-form').reset(); })
+  .catch(error=>{ document.getElementById('auth-message').textContent=error.message; });
+});
+
+// Scroll Up
+window.onscroll=function(){ document.getElementById('scrollUp').style.display=(document.body.scrollTop>200||document.documentElement.scrollTop>200)?'block':'none'; };
+function scrollTop(){ window.scrollTo({top:0,behavior:'smooth'}); }
+
+// Order Modal
+function openOrderModal(name,price){
+  currentProduct=name; currentPrice=price;
+  document.getElementById('modalProduct').textContent=name;
+  document.getElementById('modalPrice').textContent=price;
+  document.getElementById('orderModal').style.display='flex';
+  if(!analytics.ordersClicked.includes(name)) analytics.ordersClicked.push(name);
+  console.log('Products clicked for order:',analytics.ordersClicked);
+}
+function closeOrderModal(){ document.getElementById('orderModal').style.display='none'; }
+function sendOrder(){
+  const n=document.getElementById('orderName').value;
+  const p=document.getElementById('orderPhone').value;
+  const q=document.getElementById('orderQuantity').value;
+  const m=document.getElementById('orderMessage').value;
+  if(!n||!p||!q){ alert('Fill all required fields'); return; }
+  analytics.orderAttempts +=1;
+  console.log('Total order attempts:',analytics.orderAttempts);
+  const msg=`Order: ${currentProduct}\nName: ${n}\nPhone: ${p}\nQuantity: ${q}\nMessage: ${m}`;
+  window.open(`https://wa.me/2349138938301?text=${encodeURIComponent(msg)}`);
 }
 </script>
 
