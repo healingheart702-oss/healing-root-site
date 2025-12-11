@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Healing Root — Chat</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">HEALING ROOT AGRO VENTURES</div>
+  <div class="actions"><a href="feed.html" class="small-btn">Back to Feed</a></div>
+</header>
+
+<main style="max-width:1000px;margin:18px auto;padding:0 12px">
+  <div class="card">
+    <h2>Chat</h2>
+    <p>Open chat from your friends list (Feed or Profile). Chat is only allowed between mutual friends.</p>
+    <div id="chat-users"></div>
+  </div>
+</main>
+
+<script type="module">
+import { initChatPage } from './app.js';
+initChatPage();
+</script>
+</body>
+</html>
