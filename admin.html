@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Healing Root — Admin</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">HEALING ROOT ADMIN</div>
+  <div class="actions"><a href="feed.html" class="small-btn">Feed</a></div>
+</header>
+
+<main style="max-width:1200px;margin:18px auto;padding:0 12px">
+  <div class="card">
+    <h2>Admin Dashboard</h2>
+    <p>Only accessible to admin email: <strong>healingheart702@gmail.com</strong></p>
+  </div>
+
+  <div class="card">
+    <h3>Users</h3>
+    <div id="admin-users"></div>
+  </div>
+
+  <div class="card">
+    <h3>Posts</h3>
+    <div id="admin-posts"></div>
+  </div>
+
+  <div class="card">
+    <h3>Orders</h3>
+    <div id="admin-orders"></div>
+  </div>
+
+  <div class="card">
+    <h3>Chats (Recent)</h3>
+    <div id="admin-chats"></div>
+  </div>
+</main>
+
+<script type="module">
+import { initAdmin } from './app.js';
+initAdmin(); // app.js will enforce admin email check
+</script>
+</body>
+</html>
