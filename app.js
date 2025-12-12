@@ -1,13 +1,16 @@
-// Firebase initialization
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, onSnapshot } from "firebase/firestore";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
+// app.js (module)
+// IMPORTANT: Save this file as app.js in the same folder as index.html and style.css
 
-// Cloudinary config for profile pics and post images
+// Firebase modules (loaded as ESM from the firebase scripts included in index.html)
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, query, where, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+
+// Cloudinary config (unsigned)
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dd7dre9hd/upload";
 const UPLOAD_PRESET = "unsigned_upload";
 
-// Firebase config
+// Your Firebase config — keep the same you gave earlier
 const firebaseConfig = {
   apiKey: "AIzaSyAgjMFw0dbM7CBH4S_zrmPhE69pp84Tpdo",
   authDomain: "healing-root-farm.firebaseapp.com",
@@ -17,185 +20,496 @@ const firebaseConfig = {
   appId: "1:1042258816994:web:0b6dd6b7f1c370ee7093bb"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-// Admin UID
+// admin UID you provided
 const ADMIN_UID = "gKwgPDNJgsdcApIJch6NM9bKmf02";
 
-// Products data with full 2500-character professional descriptions
+// --- PRODUCTS (each description is long and professional) ---
 const products = [
   {
-    name: "Cassava Stems (TME419, TMS30572)",
+    id: "cassava",
+    name: "Cassava Stems (TME419)",
     image: "images/cassava.JPG",
-    price: 500,
-    description: `Healing root AGRO ventures stands as a trusted name in quality crop seedlings across Nigeria. We have built our reputation on reliability, clarity, and genuine agricultural knowledge that helps farmers and investors create lasting income. Our goal is simple. To deliver seedlings that give strong survival rate, high yield, and a clear path to long-term returns. Every seedling we raise is nurtured in a clean nursery environment, inspected carefully, and supplied with full guidance for establishment and expansion.
+    price: 1000,
+    description: `Healingroot AGRO ventures stands as a trusted name in quality crop seedlings across Nigeria. We have built our reputation on reliability, clarity, and genuine agricultural knowledge that helps farmers and investors create lasting income. Our goal is simple: to deliver planting materials that give strong survival rates, high yields, and a clear path to long-term returns. Every cassava stem we supply is nurtured in a clean nursery environment, inspected for disease, and packaged with planting guidance to help you succeed.
 
-Cassava is one of Nigeria’s most important staple crops, providing both food security and income for smallholder farmers. The TME419 and TMS30572 varieties are high-yield, disease-resistant, and adapted to local soil conditions. These varieties offer fast growth, strong tuber quality, and reliable harvests that maximize farm productivity.
+TME419 is one of the highest-performing cassava varieties for both food and industrial purposes. It matures early, offers excellent tuber quality and high starch content, and performs well over a variety of soils. For farmers, this translates into earlier harvests, reduced risk of crop loss, and reliable income streams. Because cassava has multiple market pathways — direct consumption, garri, flour, starch, and industrial uses (like ethanol and animal feed) — planting the right variety is a foundational decision for success.
 
-COMMON MYTHS ABOUT CASSAVA FARMING
-Many believe cassava farming is low-return and labor-intensive. However, with proper planting techniques, soil preparation, pest control, and spacing, cassava can provide consistent income and strong yields. Nigeria’s population growth ensures a continuous demand for cassava flour, gari, and starch.
+Common myths persist about cassava: some think it requires minimal skill yet yields little. The truth is that improved varieties such as TME419 need proper spacing, timely fertilizer application, pest control and good weeding. With these practices the crop yields improve dramatically. A smallholder who applies best management practices sees both strong food security benefits and consistent market-grade production.
 
-INDUSTRIAL USES OF CASSAVA
-Cassava is processed into flour, starch, ethanol, and industrial products for food, beverages, and adhesives. This strong industrial demand makes cassava a reliable investment for commercial farmers.
+Industrial demand for cassava products continues to grow. Processing plants need reliable tuber quality and volume. Planting certified stems from Healingroot gives farmers access to these higher-value supply chains. Whether you are planting for household food security or scaling to a commercial supply chain, choosing stems from a trusted nursery reduces your establishment risk and increases profitability.
 
-BENEFITS OF INVESTING IN HIGH-YIELD VARIETIES
-TME419 and TMS30572 give strong tuber size, early maturity, and resilience against pests. Farmers benefit from higher yields, reduced crop failure, and stable income streams.
-
-STARTING COST AND INVESTMENT STRUCTURE
-A starter pack of cassava stems can be acquired for small plots, and with proper farm management, it can yield high returns within 9-12 months. Large-scale plantations benefit from economies of scale and long-term profitability.
-
-EXPECTED YIELD
-Properly managed cassava stems can produce 25-35 tonnes per hectare within the first year. Continuous care, fertilization, and disease monitoring ensure sustained productivity.
-
-THE FULL POTENTIAL
-By selecting high-quality stems from Healing Root AGRO ventures, investors ensure high survival rates, healthy tuber production, and reliable market access. Cassava farming thus becomes both a secure and profitable agricultural investment for long-term wealth generation.`
+If you’re starting, begin with a manageable area and follow our guidance on spacing, fertilizer regime and early weed control. For those scaling to commercial hectares, we provide logistics and planting schedules to maximize yield and shorten time to first sale. When patients, precision, and good seed material connect, cassava becomes a repeatable source of income that supports families and builds farm value for years. Healingroot AGRO Ventures is committed to supplying stems that help you harvest success, year after year.`
   },
   {
+    id: "plantain",
+    name: "Hybrid Plantain Suckers",
+    image: "images/plantain.JPG",
+    price: 500,
+    description: `Hybrid plantain suckers supplied by Healingroot AGRO Ventures are selected for their early maturity, disease tolerance, and consistent bunch size. Plantain is a staple fruit with constant consumer demand; choosing improved suckers reduces the time to harvest and increases uniformity of produce which directly improves marketability.
+
+Our hybrid plantains are raised in well-managed pre-nurseries to develop robust root systems and healthy, disease-free crowns. Before dispatch, we inspect each sucker and provide planting advice on spacing, fertilization, weeding, and pest management. Proper establishment is essential to secure early yields and minimize nursery-to-field shock.
+
+Many farmers assume plantain is only profitable over large acreages. That is not true — even small-holder plots using quality suckers deliver good yields and can support household income. Hybrid varieties are especially valuable for intercropping and mixed-farm systems where plantain supports other crops during early stages.
+
+From a market perspective, plantain is versatile: sold fresh, processed into chips, or used in local cooking. The quality uniformity of hybrids makes it easier to meet buyers’ specifications and command higher prices. For investors, plantain offers predictable cash flow with relatively lower input costs compared to other permanent crops.
+
+Healingroot AGRO Ventures not only supplies the planting material but also coaching on field practices that protect your investment: correct spacing, mulching, fertilizer timing, and efficient water management. These practices ensure suckers become productive stands that deliver steady income for seasons to come.`
+  },
+  {
+    id: "banana",
     name: "Hybrid Dwarf Banana",
     image: "images/giant_banana.JPG",
     price: 500,
-    description: `Healing root AGRO ventures provides premium Hybrid Dwarf Banana suckers for commercial and smallholder farming. Known for rapid growth, high yield, and resilience to disease, our banana plants are carefully nurtured to deliver reliable harvests for the Nigerian market.
+    description: `The Hybrid Dwarf Banana offered by Healingroot AGRO Ventures is tailored for farmers who want fast returns and ease of management. Dwarf varieties are prized because they fruit earlier and are less vulnerable to wind damage compared to tall types. Our banana suckers are selected for uniformity, vigor, and fruit quality that meets market expectations.
 
-Bananas are a highly profitable crop, offering both food security and income generation. Our hybrid dwarf variety is ideal for compact plots and high-density planting, ensuring optimal yield per hectare. The plants are selected for strong stem stability, disease resistance, and consistent fruiting.
+Bananas are a high-turnover fruit crop with consistent demand across urban and rural markets. Smallholders often see a rapid return on investment when the crop is managed properly: timely fertilization, clean planting material, and disease surveillance are critical. Our nursery process reduces disease incidence and primes the plants for immediate establishment in the field.
 
-COMMON MYTHS ABOUT BANANA FARMING
-Many assume banana farming requires huge land or intensive care. In reality, with proper spacing, irrigation, and nutrient management, dwarf hybrids can produce abundant fruits even in smaller plots.
+Economic uses of banana go beyond fresh sales: processed bananas, chips, and banana flour have emerging markets. When scaled, bananas can be a small agribusiness in themselves. The Hybrid Dwarf works well in mixed cropping systems, increasing land productivity per hectare.
 
-INDUSTRIAL AND COMMERCIAL USES
-Bananas serve as fresh fruit for local markets, processed into juice, chips, and desserts, and form part of the food processing value chain. Growing demand ensures stable market access.
-
-BENEFITS OF INVESTING IN HYBRID DWARF BANANA
-Our hybrid dwarf banana offers early fruiting, high-quality bunches, and superior marketability. Farmers enjoy low labor intensity, fast returns, and minimal risk of crop failure.
-
-STARTING COST AND STRUCTURE
-A starter pack includes quality suckers sufficient for a small farm plot. Costs scale with acreage, ensuring a flexible investment approach.
-
-EXPECTED YIELD
-Hybrid dwarf banana can yield 25-40 tonnes per hectare annually under proper farm management. This high productivity makes it an ideal choice for profitable agribusiness ventures.
-
-FULL POTENTIAL
-Investing in Hybrid Dwarf Banana from Healing Root AGRO ventures ensures strong returns, high-quality produce, and an opportunity to engage in one of Nigeria’s most lucrative agricultural sectors. The crop continues to provide income for years with proper care and management.`
+Healingroot provides planting recommendations, spacing guides, and a post-sale support path to ensure your plantation reaches full productive potential. Investing in quality suckers leads to reliable harvest cycles, improved market access, and the ability to scale operations year by year.`
   },
   {
+    id: "oilpalm",
     name: "Tenera Oil Palm Seedlings",
     image: "images/oilpalm.JPG",
-    price: 1500,
-    description: `Healing root AGRO ventures supplies high-quality Tenera oil palm seedlings that are resilient, high-yielding, and suitable for modern plantations across Nigeria. Our seedlings are nurtured to ensure strong establishment, optimal growth, and high oil production.
-
-Tenera oil palm is considered a generational wealth crop due to its long productive lifespan and consistent returns. These seedlings are ideal for farmers and investors seeking renewable, long-term income.
-
-COMMON MYTHS ABOUT OIL PALM FARMING
-Many people believe oil palm farming is expensive and slow to yield profits. With proper spacing, care, fertilization, and pest management, Tenera oil palm can begin fruiting in 3 years, providing steady revenue for decades.
-
-INDUSTRIAL USES
-Palm oil is essential for food production, cosmetics, pharmaceuticals, biodiesel, and industrial applications. Nigeria’s growing industrial base ensures strong demand.
-
-BENEFITS
-Tenera produces high oil content, consistent yields, and adapts to various soil types. One hectare can support family income for decades.
-
-STARTING COST AND INVESTMENT STRUCTURE
-Seedlings are affordable, and planting structures scale according to land size. Early care ensures strong long-term returns.
-
-EXPECTED YIELD
-Tenera can yield 4-6 tonnes per hectare in initial years, increasing with maturity. Proper plantation management ensures consistent, profitable harvests.
-
-FULL POTENTIAL
-Tenera is not just a seedling; it’s a long-term income system. Healing Root AGRO ventures provides certified seedlings, full guidance, and management support to ensure successful plantation establishment and sustained profitability.`
-  },
-  {
-    name: "Plantain Suckers",
-    image: "images/plantain.JPG",
-    price: 300,
-    description: `Healing root AGRO ventures offers high-quality Plantain suckers for commercial and smallholder farms. Our plantain varieties are selected for robust growth, disease resistance, and high yield, ensuring strong returns on investment.
-
-Plantains are a staple crop in Nigeria with consistent demand for consumption and processing. Proper management and planting practices allow for predictable harvests and income.
-
-COMMON MYTHS
-Plantain requires excessive land and care. In reality, well-spaced planting, fertilization, and pest control result in high yields and quality produce.
-
-INDUSTRIAL AND COMMERCIAL USES
-Plantains are consumed locally, processed into flour, chips, and snacks, and are part of commercial agribusiness value chains.
-
-BENEFITS
-Our plantains fruit early, yield abundantly, and are easy to manage, making them ideal for reliable agribusiness ventures.
-
-EXPECTED YIELD
-High-yield plantain varieties produce 20-30 tonnes per hectare annually, providing steady income streams.
-
-FULL POTENTIAL
-Healing Root AGRO ventures ensures superior quality plantain suckers with strong growth potential and marketable fruits, supporting both smallholder and large-scale agricultural investment.`
-  },
-  {
-    name: "Coconut Seedlings",
-    image: "images/coconut.JPG",
     price: 1000,
-    description: `Healing root AGRO ventures provides premium coconut seedlings that are disease-free, high-yielding, and ideal for long-term plantation projects. Our seedlings are carefully nurtured to ensure strong establishment and optimal growth.
+    description: `Tenera oil palm seedlings from Healingroot AGRO Ventures are a long-term agricultural investment. Tenera is the hybrid type favoured on modern plantations for its higher oil to bunch ratio and earlier productive years. These seedlings are raised to nursery standards that favour establishment, early vigour, and eventual high-yield performance.
 
-Coconut palms are versatile and provide income from nuts, copra, oil, and husks. Planting high-quality seedlings ensures strong growth and reliable harvests for years.
+Oil palm is a generational crop; a well-managed plantation gives returns for decades. It is used extensively by the food, cosmetic, and biofuel industries. Plantation establishment requires careful land preparation, early fertilization, and good planting materials; supply of robust seedlings is the first critical step.
 
-BENEFITS
-Coconut palms adapt to various soil types, produce high-quality nuts, and support sustainable income streams.
+Our seedlings come with technical guidance on spacing, weed control, nutrition, and pest management. For investors, we offer planting advice and logistics support to ensure early survival and steady canopy development — the foundation of future harvests.
 
-EXPECTED YIELD
-A well-managed coconut plantation can produce hundreds of nuts per tree annually, ensuring long-term profitability.
-
-FULL POTENTIAL
-Our coconut seedlings are prepared for easy planting and strong field performance, allowing farmers and investors to maximize long-term returns. Healing Root AGRO ventures supplies seedlings with guidance for full plantation success.`
+When managed correctly, Tenera plantations quickly move into regular fruiting cycles; the crop’s value grows with maturity. Healingroot AGRO Ventures supplies seedlings that are true-to-type and backed with practical agronomy to maximise your long-term return on investment.`
   },
   {
-    name: "Giant Cocoa Seedlings",
+    id: "coconut",
+    name: "Hybrid Dwarf Coconut Seedlings",
+    image: "images/coconut.JPG",
+    price: 4500,
+    description: `Healingroot AGRO Ventures supplies quality coconut seedlings chosen for high survival and productive potential. Coconut is a versatile tree crop producing nuts, copra, oil, and other by-products used in food, cosmetics, and industrial applications. High-quality planting material is essential for establishing a vigorous orchard that will produce for decades.
+
+Our seedlings are raised in clean nursery environments to ensure strong root systems and uniform growth. We recommend proper spacing, early irrigation, and integrated pest management to guarantee early establishment and long-term productivity.
+
+Coconut plantations are resilient income sources that provide diverse revenue streams. Healingroot provides seedlings accompanied by management recommendations that support successful plantation establishment and long-term yield optimization. High-quality seedlings reduce losses in the critical nursery-to-field phase and position growers for strong economic returns.`
+  },
+  {
+    id: "giant_cocoa",
+    name: "Hybrid Giant Cocoa Seedlings",
     image: "images/giant_cocoa.JPG",
-    price: 800,
-    description: `Healing root AGRO ventures supplies giant cocoa seedlings selected for high yield, disease resistance, and adaptability to Nigerian climates. Our cocoa seedlings ensure strong establishment, rapid growth, and profitable fruiting.
+    price: 500,
+    description: `Healingroot AGRO Ventures supplies high-quality giant cocoa seedlings for reliable cocoa production. Cocoa is a premium cash crop with strong international demand for beans used in chocolate, confectionery, and industrial products. Our seedlings are raised for strong field performance and optimized yields.
 
-Cocoa is one of Nigeria’s highest-value crops, with consistent demand in local and international chocolate and confectionery industries. High-quality seedlings provide superior harvests and long-term income potential.
+Using proven planting material reduces the risks associated with disease and poor establishment. We provide best-practice guidance for planting, shade management, and pruning to support early productivity and consistent pod quality.
 
-BENEFITS
-Giant cocoa varieties produce more pods per tree, resist diseases better, and adapt to different soil types, ensuring consistent and profitable yields.
-
-EXPECTED YIELD
-Properly nurtured cocoa seedlings can produce 1-2 tonnes of dry cocoa beans per hectare annually after maturity, generating long-term revenue.
-
-FULL POTENTIAL
-Healing Root AGRO ventures ensures that all cocoa seedlings meet high-quality standards for strong plantation performance, secure income, and sustainable agriculture practices.`
+For both smallholders and commercial growers, quality seedlings translate to better beans and improved market prices. Healingroot supports its seedlings with post-sale agronomy guidance to help farmers reach the best harvest potential.`
   },
   {
+    id: "pineapple",
     name: "Pineapple Seedlings",
     image: "images/pineapple.JPG",
     price: 400,
-    description: `Healing root AGRO ventures offers premium pineapple seedlings that are disease-resistant, fast-growing, and high-yielding. Our seedlings are nurtured in controlled nurseries to ensure quality and healthy growth.
+    description: `Premium pineapple seedlings from Healingroot AGRO Ventures deliver uniform, sweet fruits with strong resistance to common pests. Pineapple is a high-value horticultural crop; proper planting material and farm practices yield attractive returns.
 
-Pineapple is a high-value tropical fruit crop with strong local and international demand. Planting healthy seedlings guarantees quality fruits and reliable market access.
+Our seedlings are ideal for commercial growers and smallholders who want predictable fruit quality and shorter time-to-harvest. We provide recommendations on variety selection, planting density, fertilization, and pest control to maximize harvest quality and quantity.
 
-BENEFITS
-Seedlings fruit early, produce large, uniform pineapples, and have strong resistance to pests and diseases, ensuring high returns.
-
-EXPECTED YIELD
-A hectare of well-managed pineapple plants can produce 30-50 tonnes annually, providing significant income for investors and farmers.
-
-FULL POTENTIAL
-Healing Root AGRO ventures supports investors with high-quality seedlings, planting guidance, and best practices for sustainable and profitable pineapple farming.`
+Pineapple products are consumed fresh and processed into canned fruit, juices, and value-added goods. For growers, this creates multiple market channels and income opportunities. Healingroot provides seedlings and practical guidance to help farmers tap into these markets profitably.`
   },
   {
-    name: "Yam Setts",
+    id: "yam",
+    name: "Treated Yam Setts",
     image: "images/Yamsett.JPG",
-    price: 200,
-    description: `Healing root AGRO ventures provides premium yam setts for high-yield, disease-resistant yam cultivation. Our setts are carefully selected to ensure strong sprouting, robust tubers, and predictable harvests.
+    price: 700,
+    description: `Healingroot AGRO Ventures supplies treated yam setts selected from high-yielding, disease-free mother tubers to ensure rapid sprouting and strong tuber development. Yam is an important staple for food security and income in many regions. Quality setts and correct field techniques are important for reliable yields.
 
-Yams are staple crops in Nigeria, essential for food security and income generation. Quality setts ensure high productivity and better market value.
+Our treated setts are processed to reduce rot and increase sprouting success, giving farmers higher establishment rates and more uniform yields. We advise on staking, fertilizer programs, and harvest timing for peak market quality.
 
-BENEFITS
-Our yam setts sprout quickly, resist rot, and produce uniform tubers with excellent market quality.
-
-EXPECTED YIELD
-A hectare of properly managed yams can yield 15-25 tonnes per season, depending on variety and care.
-
-FULL POTENTIAL
-By using Healing Root AGRO ventures yam setts, farmers and investors secure high-quality planting material that maximizes yield, ensures reliability, and delivers profitable agricultural investment outcomes.`
+Using treated setts reduces risk and increases predictability of returns. Farmers who adopt proper plant materials and practices gain better marketable tubers and higher income stability. Healingroot AGRO Ventures supports growers with good planting materials and guidance to realize strong farm performance.`
   }
 ];
 
-// --- Add additional app.js logic here for social feed, profile picture uploads, friends, chat, admin deletion, and WhatsApp order ---
+// ---------------------- DOM helpers ----------------------
+const $ = selector => document.querySelector(selector);
+const $$ = selector => Array.from(document.querySelectorAll(selector));
+
+// simple element creation helper
+function el(tag, attrs = {}, innerHTML = '') {
+  const e = document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v]) => e.setAttribute(k,v));
+  e.innerHTML = innerHTML;
+  return e;
+}
+
+// ---------------------- AUTH UI ----------------------
+const authModal = $('#auth-modal');
+const signupForm = $('#signup-form');
+const loginForm = $('#login-form');
+const authMessage = $('#auth-message');
+const logoutBtn = $('#logout-btn');
+const navAdmin = $('#nav-admin');
+
+let currentUser = null;
+
+// show/hide views
+function showView(id){
+  $$('.view').forEach(v => v.style.display = 'none');
+  const v = $('#'+id+'-view');
+  if(v) v.style.display = 'block';
+}
+
+function showAuthModal(show){
+  authModal.style.display = show ? 'flex' : 'none';
+}
+
+// ---------------------- AUTH ACTIONS ----------------------
+signupForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  authMessage.textContent = '';
+  const name = $('#signup-name').value.trim();
+  const email = $('#signup-email').value.trim();
+  const password = $('#signup-password').value;
+  if(!name || !email || !password){ authMessage.textContent = 'Fill all fields'; return; }
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    // create user doc
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      name, email, createdAt: serverTimestamp()
+    });
+    authMessage.textContent = 'Account created — signed in';
+  } catch (err) {
+    authMessage.textContent = err.message;
+  }
+});
+
+loginForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  authMessage.textContent = '';
+  const email = $('#login-email').value.trim();
+  const password = $('#login-password').value;
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    authMessage.textContent = err.message;
+  }
+});
+
+logoutBtn?.addEventListener('click', async () => {
+  await signOut(auth);
+});
+
+// ---------------------- AUTH STATE ----------------------
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  if(user){
+    // hide modal, show nav
+    showAuthModal(false);
+    $('#logout-btn').style.display = 'inline-block';
+    $('#nav-feed').click(); // show feed
+    // show admin nav if admin
+    navAdmin.style.display = (user.uid === ADMIN_UID) ? 'inline-block' : 'none';
+    // load UI
+    await renderAll();
+  } else {
+    // show modal
+    showAuthModal(true);
+    $('#logout-btn').style.display = 'none';
+    navAdmin.style.display = 'none';
+    showView('feed'); // hide content behind modal still
+  }
+});
+
+// ---------------------- RENDER PRODUCTS & FEED ----------------------
+async function renderProducts(){
+  const container = $('#product-list');
+  container.innerHTML = '';
+  products.forEach(p => {
+    const card = el('div', { class: 'card product' }, `
+      <img src="${p.image}" alt="${p.name}">
+      <h3>${p.name}</h3>
+      <p class="muted">Price: ₦${p.price.toLocaleString()}</p>
+      <p>${p.description.slice(0,350)}... <a href="#" data-id="${p.id}" class="read-more">Read more</a></p>
+      <button class="btn order" data-name="${p.name}" data-price="${p.price}">Order via WhatsApp</button>
+    `);
+    container.appendChild(card);
+  });
+  // order buttons
+  $$('.order').forEach(btn => btn.addEventListener('click', (ev) => {
+    const name = ev.currentTarget.dataset.name;
+    const price = ev.currentTarget.dataset.price;
+    const phone = '2349138938301';
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(`Hello, I want to order ${name} priced at ₦${price}.` )}`;
+    window.open(url, '_blank');
+  }));
+  // read more
+  $$('.read-more').forEach(a => a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const id = e.currentTarget.dataset.id;
+    const p = products.find(x=>x.id===id);
+    alert(p.name + "\n\n" + p.description);
+  }));
+}
+
+async function renderFeed(){
+  const feed = $('#feed');
+  feed.innerHTML = '';
+  // products first as posts
+  products.forEach(p => {
+    const card = el('div', { class: 'card post' }, `
+      <img src="${p.image}" alt="${p.name}">
+      <h3>${p.name}</h3>
+      <p class="muted">Price: ₦${p.price.toLocaleString()}</p>
+      <p>${p.description.slice(0,350)}... <a href="#" data-id="${p.id}" class="read-more-prod">Read more</a></p>
+      <button class="btn order" data-name="${p.name}" data-price="${p.price}">Order via WhatsApp</button>
+    `);
+    feed.appendChild(card);
+  });
+
+  // then user posts from Firestore collection 'posts' ordered by timestamp desc
+  try {
+    const q = query(collection(db, 'posts'), orderBy('timestamp','desc'));
+    const snap = await getDocs(q);
+    snap.forEach(docSnap => {
+      const post = docSnap.data();
+      const card = el('div', { class: 'card post' });
+      const ownerName = post.name || 'User';
+      card.innerHTML = `
+        <img src="${post.image || 'images/default_profile.png'}" alt="">
+        <h3>${ownerName}</h3>
+        <p>${post.text}</p>
+        <p class="muted">by ${post.email || 'user'}</p>
+      `;
+      // actions: delete if owner or admin, comment placeholder
+      if(currentUser && (currentUser.uid === post.uid || currentUser.uid === ADMIN_UID)){
+        const del = el('button', { class:'btn' }, 'Delete');
+        del.style.background='crimson';
+        del.addEventListener('click', async ()=> {
+          await deleteDoc(doc(db, 'posts', docSnap.id));
+          alert('Post deleted');
+          renderFeed();
+        });
+        card.appendChild(del);
+      }
+      feed.appendChild(card);
+    });
+  } catch(err){
+    console.error('Error loading posts', err);
+  }
+
+  // attach order and read more handlers as above
+  $$('.order').forEach(btn => btn.addEventListener('click', (ev) => {
+    const name = ev.currentTarget.dataset.name;
+    const price = ev.currentTarget.dataset.price;
+    const phone = '2349138938301';
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(`Hello, I want to order ${name} priced at ₦${price}.` )}`;
+    window.open(url, '_blank');
+  }));
+  $$('.read-more-prod').forEach(a => a.addEventListener('click',(e)=>{
+    e.preventDefault();
+    const id = e.currentTarget.dataset.id;
+    const p = products.find(x=>x.id===id);
+    alert(p.name + "\n\n" + p.description);
+  }));
+}
+
+// ---------------------- CREATE POST (upload to Cloudinary then add Firestore) ----------------------
+$('#post-btn')?.addEventListener('click', async () => {
+  if(!currentUser){ alert('Sign in first'); return; }
+  const text = $('#post-text').value.trim();
+  const file = $('#post-image').files[0];
+  let imageUrl = '';
+  if(file){
+    // upload to Cloudinary
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', UPLOAD_PRESET);
+    try {
+      const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: fd });
+      const data = await res.json();
+      imageUrl = data.secure_url;
+    } catch(err){ console.error('Cloud upload failed',err); alert('Image upload failed'); return; }
+  }
+  // create post doc
+  await addDoc(collection(db, 'posts'), {
+    uid: currentUser.uid,
+    email: currentUser.email,
+    name: currentUser.displayName || '',
+    text,
+    image: imageUrl,
+    timestamp: serverTimestamp()
+  });
+  $('#post-text').value = '';
+  $('#post-image').value = '';
+  alert('Posted!');
+  renderFeed();
+});
+
+// ---------------------- PROFILE: upload profile pic ----------------------
+$('#save-profile-pic')?.addEventListener('click', async () => {
+  if(!currentUser) { alert('Sign in'); return; }
+  const file = $('#profile-upload').files[0];
+  if(!file){ alert('Choose file'); return; }
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', UPLOAD_PRESET);
+  try {
+    const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: fd });
+    const data = await res.json();
+    const url = data.secure_url;
+    await setDoc(doc(db, 'users', currentUser.uid), { profilePic: url, email: currentUser.email, name: currentUser.displayName || '' }, { merge: true});
+    $('#profile-pic').src = url;
+    alert('Profile picture saved');
+  } catch(err){
+    console.error(err); alert('Upload failed');
+  }
+});
+
+// save bio
+$('#save-bio')?.addEventListener('click', async () => {
+  if(!currentUser) return alert('Sign in');
+  const bio = $('#bio').value.trim();
+  await setDoc(doc(db,'users', currentUser.uid), { bio }, { merge: true});
+  alert('Bio saved');
+});
+
+// ---------------------- FRIENDS & CHAT (basic) ----------------------
+async function renderFriends(){
+  const container = $('#friends');
+  container.innerHTML = '';
+  // list of all users except current
+  const snap = await getDocs(collection(db,'users'));
+  snap.forEach(d => {
+    const u = d.data();
+    if(d.id === currentUser.uid) return;
+    const card = el('div', { class:'card friend' });
+    card.innerHTML = `<h4>${u.name || u.email}</h4><p class="muted">${u.email||''}</p>`;
+    const btn = el('button', {}, 'Add Friend');
+    btn.className = 'btn';
+    btn.addEventListener('click', async ()=>{
+      // create friend request
+      await addDoc(collection(db,'friendRequests'), { from: currentUser.uid, to: d.id, status: 'pending', createdAt: serverTimestamp() });
+      alert('Friend request sent');
+    });
+    card.appendChild(btn);
+    container.appendChild(card);
+  });
+}
+
+// basic chat list (show pending accepted friends)
+async function renderChatFriends(){
+  const c = $('#friends-chat-list');
+  c.innerHTML = '';
+  // friends collection: store docs with {uids: [a,b], accepted:true}
+  const snap = await getDocs(collection(db,'friends'));
+  snap.forEach(d => {
+    const fr = d.data();
+    if(fr.uids && fr.uids.includes(currentUser.uid)){
+      const other = fr.uids.find(id => id !== currentUser.uid);
+      const card = el('div',{class:'card friend'}, `<h4>Friend</h4>`);
+      const chatBtn = el('button', {}, 'Open Chat');
+      chatBtn.className='btn';
+      chatBtn.addEventListener('click', ()=> openChat(other));
+      card.appendChild(chatBtn);
+      c.appendChild(card);
+    }
+  });
+}
+
+// accept friend requests: very simple manual UI — admin or user must view Firestore console to accept for now
+// For production we'd build accept buttons — kept minimal due to complexity on iPhone editing
+
+// open chat with user
+let activeChatWith = null;
+function openChat(uid){
+  activeChatWith = uid;
+  $('#chat-window').style.display = 'block';
+  $('#chat-with').textContent = 'Chat: ' + uid;
+  loadMessages(uid);
+}
+
+// send message
+$('#send-chat')?.addEventListener('click', async ()=>{
+  if(!currentUser || !activeChatWith) return alert('Select friend');
+  const msg = $('#chat-input').value.trim();
+  if(!msg) return;
+  await addDoc(collection(db,'chats'), { from: currentUser.uid, to: activeChatWith, text: msg, timestamp: serverTimestamp() });
+  $('#chat-input').value = '';
+  loadMessages(activeChatWith);
+});
+
+async function loadMessages(uid){
+  $('#messages').innerHTML = '';
+  const q = query(collection(db,'chats'), where('from','in',[currentUser.uid, uid])); // simple
+  const snap = await getDocs(q);
+  snap.forEach(d=>{
+    const m = d.data();
+    const div = el('div',{}, `<strong>${m.from===currentUser.uid ? 'You' : 'Friend'}:</strong> ${m.text}`);
+    $('#messages').appendChild(div);
+  });
+}
+
+// ---------------------- ADMIN: list users & posts ----------------------
+async function renderAdmin(){
+  if(!currentUser || currentUser.uid !== ADMIN_UID) return;
+  $('#admin-view').style.display = 'block';
+  const usersContainer = $('#admin-users');
+  usersContainer.innerHTML = '';
+  const usnap = await getDocs(collection(db,'users'));
+  usnap.forEach(d=>{
+    const u = d.data();
+    const card = el('div',{class:'card user'}, `<h4>${u.name||u.email}</h4><p>${d.id}</p>`);
+    usersContainer.appendChild(card);
+  });
+
+  const postsContainer = $('#admin-posts');
+  postsContainer.innerHTML = '';
+  const psnap = await getDocs(collection(db,'posts'));
+  psnap.forEach(async docSnap=>{
+    const p = docSnap.data();
+    const card = el('div',{class:'card post'});
+    card.innerHTML = `<h4>${p.name||p.email}</h4><p>${p.text}</p>`;
+    const del = el('button', { class:'btn' }, 'Delete');
+    del.style.background='crimson';
+    del.addEventListener('click', async ()=>{
+      await deleteDoc(doc(db,'posts', docSnap.id));
+      alert('Deleted');
+      renderAdmin();
+    });
+    card.appendChild(del);
+    postsContainer.appendChild(card);
+  });
+}
+
+// ---------------------- NAV & STARTUP ----------------------
+$('#nav-feed').addEventListener('click', ()=> { showView('feed'); showView('feed'); });
+$('#nav-products').addEventListener('click', ()=> { showView('products'); });
+$('#nav-profile').addEventListener('click', ()=> { showView('profile'); });
+$('#nav-chat').addEventListener('click', ()=> { showView('chat'); });
+$('#nav-admin').addEventListener('click', ()=> { showView('admin'); });
+
+async function renderAll(){
+  await renderProducts();
+  await renderFeed();
+  if(currentUser){
+    // load profile info
+    const udoc = await getDoc(doc(db,'users', currentUser.uid));
+    if(udoc.exists()){
+      const data = udoc.data();
+      if(data.profilePic) $('#profile-pic').src = data.profilePic;
+      if(data.bio) $('#bio').value = data.bio;
+    }
+    renderFriends();
+    renderChatFriends();
+    renderAdmin();
+  }
+}
+
+// initial render when loaded (if already signed in)
+document.addEventListener('DOMContentLoaded', async ()=>{
+  // attach login nav default
+  showView('feed');
+  // attach logout
+  $('#logout-btn').addEventListener('click', async ()=> { await signOut(auth); location.reload(); });
+});
