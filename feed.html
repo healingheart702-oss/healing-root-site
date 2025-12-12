@@ -1,62 +1,42 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Healing Root — Feed</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="css/style.css">
+<script type="module" src="js/feed.js" defer></script>
 </head>
 <body>
-<header class="topbar">
-  <div class="brand" id="brand-head">HEALING ROOT AGRO VENTURES</div>
-  <div class="actions" id="top-actions"></div>
-</header>
+  <header class="header">
+    <div class="logo"><img src="images/logo.png" alt="logo"><span>HEALING ROOT AGRO</span></div>
+    <nav>
+      <a href="feed.html" class="active">Feed</a>
+      <a href="profile.html">Profile</a>
+      <a href="chat.html">Chat</a>
+      <a href="admin.html">Admin</a>
+      <a id="logout-link" href="#">Logout</a>
+    </nav>
+  </header>
 
-<main class="layout">
-  <section class="feed-col">
-    <div id="create-card" class="card">
-      <div style="display:flex;align-items:center;gap:10px">
-        <img id="mini-avatar" class="avatar-sm" src="images/default-profile.png" alt="me">
-        <textarea id="post-text" placeholder="Share an update..." rows="2"></textarea>
+  <main class="container">
+    <section class="new-post card">
+      <textarea id="post-text" placeholder="Share something on the farm..."></textarea>
+      <input type="file" id="post-image" accept="image/*">
+      <div class="row">
+        <button id="post-btn">Post</button>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
-        <input type="file" id="post-image" accept="image/*">
-        <div>
-          <button id="btn-post" class="small-btn">Post</button>
-          <a href="products.html" class="small-btn" style="background:#4CAF50">Shop</a>
-        </div>
-      </div>
-    </div>
+    </section>
 
-    <div id="posts-container"></div>
-  </section>
+    <section class="products card">
+      <h2>Products — Starter Packs & Seedlings</h2>
+      <div id="products-grid" class="products-grid"></div>
+    </section>
 
-  <aside class="sidebar-col">
-    <div class="card">
-      <h3>Products</h3>
-      <div id="products-list"></div>
-      <div style="margin-top:8px"><a href="products.html">Full Shop →</a></div>
-    </div>
-
-    <div class="card">
-      <h3>Friends</h3>
-      <div id="friends-preview"></div>
-      <div style="margin-top:8px"><a href="profile.html">My Profile →</a></div>
-    </div>
-  </aside>
-</main>
-
-<footer class="footer">© Healing Root Agro Ventures • WhatsApp: <a href="https://wa.me/2349138938301" target="_blank">+2349138938301</a></footer>
-
-<script type="module">
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
-import { auth } from './firebase.js';
-import { initFeed } from './app.js';
-
-onAuthStateChanged(auth, user => {
-  if(!user) window.location.href = 'index.html';
-  else initFeed();
-});
-</script>
+    <section class="feed card">
+      <h2>Social Feed</h2>
+      <div id="feed-container"></div>
+    </section>
+  </main>
 </body>
 </html>
