@@ -9,8 +9,9 @@
 </head>
 <body>
   <header class="header">
-    <div class="logo"><img src="images/logo.png" alt="logo"><span>HEALING ROOT AGRO</span></div>
+    <div class="logo"><img src="images/logo.PNG" alt="logo"><span>HEALING ROOT AGRO</span></div>
     <nav>
+      <a href="products.html">Products</a>
       <a href="feed.html" class="active">Feed</a>
       <a href="profile.html">Profile</a>
       <a href="chat.html">Chat</a>
@@ -20,20 +21,17 @@
   </header>
 
   <main class="container">
-    <section class="new-post card">
-      <textarea id="post-text" placeholder="Share something on the farm..."></textarea>
-      <input type="file" id="post-image" accept="image/*">
+    <section class="card new-post">
+      <h2>Create Post</h2>
+      <textarea id="post-text" placeholder="Share something..."></textarea>
+      <input id="post-image" type="file" accept="image/*">
       <div class="row">
         <button id="post-btn">Post</button>
+        <span id="post-status" class="small"></span>
       </div>
     </section>
 
-    <section class="products card">
-      <h2>Products — Starter Packs & Seedlings</h2>
-      <div id="products-grid" class="products-grid"></div>
-    </section>
-
-    <section class="feed card">
+    <section class="card feed" id="feed-card">
       <h2>Social Feed</h2>
       <div id="feed-container"></div>
     </section>
