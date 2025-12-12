@@ -1,0 +1,70 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f9f9f9;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+header {
+  background: #006400; /* Deep Farm Green */
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+}
+
+header .logo {
+  height: 50px;
+}
+
+nav button {
+  background: #fff;
+  color: #006400;
+  border: none;
+  padding: 8px 12px;
+  margin-left: 5px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+main {
+  padding: 20px;
+}
+
+section {
+  margin-bottom: 40px;
+}
+
+#feed-container, #products-container, #user-posts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.feed-item, .product-item, .user-post {
+  border: 1px solid #ccc;
+  padding: 10px;
+  background: #fff;
+  border-radius: 5px;
+  width: 300px;
+}
+
+.feed-item img, .product-item img, .user-post img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin-bottom: 10px;
+}
+
+#friend-list li {
+  margin-bottom: 8px;
+}
+
+#notifications {
+  background: #e0ffe0;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
