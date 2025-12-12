@@ -1,1 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healing Root Agro Ventures | Profile</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <h1>Profile</h1>
+  <button id="logoutBtn">Logout</button>
+</header>
 
+<section class="container profile-section">
+  <div class="profile-info">
+    <img id="profilePic" src="images/default_profile.png" alt="Profile Pic" class="profile-pic" />
+    <h2 id="profileName">Name</h2>
+    <textarea id="profileBio" placeholder="Bio..."></textarea>
+    <button id="profileActionBtn">Add Friend / Respond / Chat</button>
+  </div>
+
+  <div class="user-posts">
+    <h3>Posts</h3>
+    <div id="myPosts"></div>
+  </div>
+</section>
+
+<script type="module" src="js/app.js"></script>
+<script type="module">
+import { _healingRoot } from './js/app.js';
+_healingRoot.renderProfilePage();
+</script>
+</body>
+</html>
