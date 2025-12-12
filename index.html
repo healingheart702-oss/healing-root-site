@@ -3,64 +3,80 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Healing Root Agro Ventures | Login</title>
-<link rel="stylesheet" href="css/style.css">
+<title>healingroot AGRO Ventures</title>
+<link rel="stylesheet" href="style.css">
+<script type="module" src="app.js" defer></script>
 </head>
 <body>
-<div class="container auth-container">
-  <h1>Healing Root AGRO</h1>
+<header>
+  <img src="logo.jpg" alt="healingroot AGRO Ventures" class="logo">
+  <nav id="nav-auth">
+    <button id="login-btn">Login</button>
+    <button id="signup-btn">Sign Up</button>
+  </nav>
+  <nav id="nav-logout" style="display:none;">
+    <button id="logout-btn">Logout</button>
+  </nav>
+</header>
 
-  <div id="loginForm">
-    <h2>Login</h2>
-    <input type="email" id="loginEmail" placeholder="Email" />
-    <input type="password" id="loginPassword" placeholder="Password" />
-    <button id="loginBtn">Login</button>
-    <p>Don't have an account? <span id="showSignup" class="link-btn">Sign Up</span></p>
-  </div>
+<main>
+  <!-- Login / Signup Section -->
+  <section id="auth-section">
+    <div id="login-form">
+      <h2>Login</h2>
+      <input type="email" id="login-email" placeholder="Email">
+      <input type="password" id="login-password" placeholder="Password">
+      <button id="login-submit">Login</button>
+    </div>
+    <div id="signup-form" style="display:none;">
+      <h2>Sign Up</h2>
+      <input type="text" id="signup-name" placeholder="Full Name">
+      <input type="email" id="signup-email" placeholder="Email">
+      <input type="password" id="signup-password" placeholder="Password">
+      <button id="signup-submit">Sign Up</button>
+    </div>
+  </section>
 
-  <div id="signupForm" style="display:none;">
-    <h2>Sign Up</h2>
-    <input type="text" id="signupName" placeholder="Full Name" />
-    <input type="email" id="signupEmail" placeholder="Email" />
-    <input type="password" id="signupPassword" placeholder="Password" />
-    <button id="signupBtn">Sign Up</button>
-    <p>Already have an account? <span id="showLogin" class="link-btn">Login</span></p>
-  </div>
-</div>
+  <!-- Feed Section -->
+  <section id="feed-section" style="display:none;">
+    <h2>Feed</h2>
+    <div id="notifications"><h3>📢 Notifications</h3><ul id="notification-list"></ul></div>
+    <div id="post-form">
+      <textarea id="post-text" placeholder="Share something..."></textarea>
+      <input type="file" id="post-image">
+      <button id="post-submit">Post</button>
+    </div>
+    <div id="feed-container"></div>
+  </section>
 
-<script type="module">
-import { _healingRoot } from './js/app.js';
+  <!-- Profile Section -->
+  <section id="profile-section" style="display:none;">
+    <h2>My Profile</h2>
+    <img src="default_profile.png" id="profile-pic" alt="Profile Picture">
+    <input type="file" id="profile-pic-input">
+    <button id="save-profile-pic">Save Picture</button>
+    <textarea id="profile-bio" placeholder="Write your bio..."></textarea>
+    <button id="save-bio">Save Bio</button>
+    <h3>My Posts</h3>
+    <div id="user-posts"></div>
+    <h3>Friends</h3>
+    <ul id="friend-list"></ul>
+  </section>
 
-const loginBtn = document.getElementById('loginBtn');
-const signupBtn = document.getElementById('signupBtn');
-const showSignup = document.getElementById('showSignup');
-const showLogin = document.getElementById('showLogin');
-const loginForm = document.getElementById('loginForm');
-const signupForm = document.getElementById('signupForm');
+  <!-- Products Section -->
+  <section id="products-section" style="display:none;">
+    <h2>Our Products</h2>
+    <div id="products-container"></div>
+  </section>
 
-loginBtn.addEventListener('click', async () => {
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass = document.getElementById('loginPassword').value.trim();
-  if (!email || !pass) return alert('Fill all fields');
-  try {
-    await _healingRoot.doLogin(email, pass);
-    window.location.href = 'feed.html';
-  } catch(e) { alert(e.message); }
-});
-
-signupBtn.addEventListener('click', async () => {
-  const name = document.getElementById('signupName').value.trim();
-  const email = document.getElementById('signupEmail').value.trim();
-  const pass = document.getElementById('signupPassword').value.trim();
-  if (!name || !email || !pass) return alert('Fill all fields');
-  try {
-    await _healingRoot.doSignup(name,email,pass);
-    window.location.href = 'feed.html';
-  } catch(e) { alert(e.message); }
-});
-
-showSignup.addEventListener('click', () => { loginForm.style.display='none'; signupForm.style.display='block'; });
-showLogin.addEventListener('click', () => { signupForm.style.display='none'; loginForm.style.display='block'; });
-</script>
+  <!-- Chat Section -->
+  <section id="chat-section" style="display:none;">
+    <h2>Chat</h2>
+    <select id="chat-friend-select"></select>
+    <div id="chat-window"></div>
+    <input type="text" id="chat-message" placeholder="Type a message">
+    <button id="send-message">Send</button>
+  </section>
+</main>
 </body>
 </html>
