@@ -8,30 +8,31 @@
 <script type="module" src="js/chat.js" defer></script>
 </head>
 <body>
-<header class="header">
-  <div class="logo"><img src="images/logo.png" alt="logo"><span>HEALING ROOT AGRO</span></div>
-  <nav>
-    <a href="feed.html">Feed</a>
-    <a href="profile.html">Profile</a>
-    <a href="chat.html" class="active">Chat</a>
-    <a href="admin.html">Admin</a>
-    <a id="logout-link" href="#">Logout</a>
-  </nav>
-</header>
+  <header class="header">
+    <div class="logo"><img src="images/logo.PNG" alt="logo"><span>HEALING ROOT AGRO</span></div>
+    <nav>
+      <a href="products.html">Products</a>
+      <a href="feed.html">Feed</a>
+      <a href="profile.html">Profile</a>
+      <a href="chat.html" class="active">Chat</a>
+      <a href="admin.html">Admin</a>
+      <a id="logout-link" href="#">Logout</a>
+    </nav>
+  </header>
 
-<main class="container">
-  <section class="card">
-    <h2>Friends</h2>
-    <div id="friends-for-chat"></div>
-  </section>
+  <main class="container">
+    <section class="card">
+      <h3>Your Friends</h3>
+      <div id="friends-for-chat"></div>
+    </section>
 
-  <section class="card chat-card">
-    <h2 id="chat-with">Chat</h2>
-    <div id="messages" class="messages"></div>
-    <input id="chat-input" placeholder="Type message...">
-    <input id="chat-image" type="file" accept="image/*">
-    <button id="send-chat">Send</button>
-  </section>
-</main>
+    <section class="card chat-card">
+      <h3 id="chat-with">Select a friend to chat</h3>
+      <div id="messages" class="messages"></div>
+      <input id="chat-input" placeholder="Type message...">
+      <input id="chat-image" type="file" accept="image/*">
+      <button id="send-chat">Send</button>
+    </section>
+  </main>
 </body>
 </html>
