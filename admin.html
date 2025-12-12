@@ -1,47 +1,27 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Healing Root — Admin</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="css/style.css">
+<script type="module" src="js/admin.js" defer></script>
 </head>
 <body>
-<header class="topbar">
-  <div class="brand">HEALING ROOT ADMIN</div>
-  <div class="actions"><a href="feed.html" class="small-btn">Feed</a></div>
+<header class="header">
+  <div class="logo"><img src="images/logo.png" alt="logo"><span>HEALING ROOT AGRO</span></div>
 </header>
 
-<main style="max-width:1200px;margin:18px auto;padding:0 12px">
-  <div class="card">
-    <h2>Admin Dashboard</h2>
-    <p>Only accessible to admin email: <strong>healingheart702@gmail.com</strong></p>
-  </div>
+<main class="container">
+  <section class="card">
+    <h2>Users</h2>
+    <ul id="admin-users"></ul>
+  </section>
 
-  <div class="card">
-    <h3>Users</h3>
-    <div id="admin-users"></div>
-  </div>
-
-  <div class="card">
-    <h3>Posts</h3>
-    <div id="admin-posts"></div>
-  </div>
-
-  <div class="card">
-    <h3>Orders</h3>
-    <div id="admin-orders"></div>
-  </div>
-
-  <div class="card">
-    <h3>Chats (Recent)</h3>
-    <div id="admin-chats"></div>
-  </div>
+  <section class="card">
+    <h2>Posts</h2>
+    <ul id="admin-posts"></ul>
+  </section>
 </main>
-
-<script type="module">
-import { initAdmin } from './app.js';
-initAdmin(); // app.js will enforce admin email check
-</script>
 </body>
 </html>
