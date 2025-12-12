@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Healing Root — Products</title>
+<link rel="stylesheet" href="css/style.css">
+<script type="module" src="js/products.js" defer></script>
+</head>
+<body>
+  <header class="header">
+    <div class="logo"><img src="images/logo.PNG" alt="logo"><span>HEALING ROOT AGRO</span></div>
+    <nav>
+      <a href="products.html" class="active">Products</a>
+      <a href="feed.html">Feed</a>
+      <a href="profile.html">Profile</a>
+      <a href="chat.html">Chat</a>
+      <a href="admin.html">Admin</a>
+      <a id="logout-link" href="#">Logout</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Products</h2>
+      <div id="products-grid" class="products-grid"></div>
+    </section>
+  </main>
+
+  <!-- Cart Modal -->
+  <div class="modal" id="cartModal" style="display:none">
+    <div class="modal-content">
+      <span class="modal-close" id="cartClose">×</span>
+      <h3 id="cartTitle">Order</h3>
+      <p id="cartPrice"></p>
+      <input id="cartName" placeholder="Your name" />
+      <input id="cartPhone" placeholder="Phone number (e.g. 081...)" />
+      <input id="cartQty" type="number" min="1" value="1"/>
+      <textarea id="cartMessage" placeholder="Message (optional)"></textarea>
+      <button id="cartSend">Send via WhatsApp</button>
+    </div>
+  </div>
+</body>
+</html>
