@@ -1,49 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Healing Root — Profile</title>
-<link rel="stylesheet" href="css/style.css">
-<script type="module" src="js/profile.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile - healingroot AGRO ventures</title>
+<link rel="stylesheet" href="style.css">
+<script type="module" src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+<script type="module" src="app.js"></script>
 </head>
 <body>
-  <header class="header">
-    <div class="logo"><img src="images/logo.PNG" alt="logo"><span>HEALING ROOT AGRO</span></div>
-    <nav>
-      <a href="products.html">Products</a>
-      <a href="feed.html">Feed</a>
-      <a href="profile.html" class="active">Profile</a>
-      <a href="chat.html">Chat</a>
-      <a href="admin.html">Admin</a>
-      <a id="logout-link" href="#">Logout</a>
-    </nav>
-  </header>
+<header>
+  <div class="logo">healingroot AGRO ventures</div>
+  <nav>
+    <a href="index.html">Feed</a>
+    <a href="product.html">Products</a>
+    <a href="chat.html">Chat</a>
+    <button id="logout-btn">Logout</button>
+  </nav>
+</header>
 
-  <main class="container">
-    <section class="card profile-card">
-      <img id="profile-picture" src="images/default-profile.png" class="profile-photo" alt="profile">
-      <div>
-        <input id="upload-profile" type="file" accept="image/*">
-        <button id="save-profile-pic">Save Profile Picture</button>
-      </div>
-      <h2 id="user-name">User</h2>
-      <p id="user-email" class="small muted"></p>
+<main>
+  <section id="profile-section">
+    <img id="profile-pic" src="images/default_profile.png" alt="Profile Picture">
+    <input type="file" id="profile-upload">
+    <button id="save-profile-pic">Save Picture</button>
+    <textarea id="bio" placeholder="Write your bio here..."></textarea>
+    <button id="save-bio">Save Bio</button>
+    <h3>Your Posts</h3>
+    <div id="user-posts"></div>
+    <h3>Friends</h3>
+    <div id="friends-list"></div>
+  </section>
+</main>
 
-      <h3>Bio</h3>
-      <textarea id="user-bio" placeholder="Write a short bio..."></textarea>
-      <button id="save-bio">Save Bio</button>
-    </section>
-
-    <section class="card">
-      <h3>Your Posts</h3>
-      <div id="user-posts"></div>
-    </section>
-
-    <section class="card">
-      <h3>Friends</h3>
-      <div id="friends-list"></div>
-    </section>
-  </main>
+<footer>
+  &copy; 2025 healingroot AGRO ventures
+</footer>
 </body>
 </html>
