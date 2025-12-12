@@ -1,36 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Healing Root — Login</title>
-<link rel="stylesheet" href="css/style.css">
-<script type="module" src="js/app.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>healingroot AGRO ventures</title>
+<link rel="stylesheet" href="style.css">
+<script type="module" src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js"></script>
+<script type="module" src="app.js"></script>
 </head>
 <body>
-  <main class="centered">
-    <div class="auth-box" id="auth-box">
-      <h1>HEALING ROOT AGRO VENTURES</h1>
+<header>
+  <div class="logo">healingroot AGRO ventures</div>
+  <nav>
+    <a href="index.html">Feed</a>
+    <a href="product.html">Products</a>
+    <a href="profile.html">Profile</a>
+    <a href="chat.html">Chat</a>
+    <a href="admin.html" class="admin-link">Admin</a>
+    <button id="logout-btn">Logout</button>
+  </nav>
+</header>
 
-      <form id="signup-form" class="auth-form">
-        <h2>Create account</h2>
-        <input id="signup-name" placeholder="Full name" required />
-        <input id="signup-email" placeholder="Email" type="email" required />
-        <input id="signup-password" placeholder="Password" type="password" required />
-        <button type="submit">Sign up</button>
-      </form>
+<main>
+  <section id="feed">
+    <!-- Posts & products will load dynamically from app.js -->
+  </section>
+</main>
 
-      <hr/>
-
-      <form id="login-form" class="auth-form">
-        <h2>Login</h2>
-        <input id="login-email" placeholder="Email" type="email" required />
-        <input id="login-password" placeholder="Password" type="password" required />
-        <button type="submit">Login</button>
-      </form>
-
-      <p id="auth-message" class="muted"></p>
-    </div>
-  </main>
+<footer>
+  &copy; 2025 healingroot AGRO ventures
+</footer>
 </body>
 </html>
