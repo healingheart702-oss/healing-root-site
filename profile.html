@@ -8,35 +8,42 @@
 <script type="module" src="js/profile.js" defer></script>
 </head>
 <body>
-<header class="header">
-  <div class="logo"><img src="images/logo.png" alt="logo"><span>HEALING ROOT AGRO</span></div>
-  <nav>
-    <a href="feed.html">Feed</a>
-    <a href="profile.html" class="active">Profile</a>
-    <a href="chat.html">Chat</a>
-    <a href="admin.html">Admin</a>
-    <a id="logout-link" href="#">Logout</a>
-  </nav>
-</header>
+  <header class="header">
+    <div class="logo"><img src="images/logo.PNG" alt="logo"><span>HEALING ROOT AGRO</span></div>
+    <nav>
+      <a href="products.html">Products</a>
+      <a href="feed.html">Feed</a>
+      <a href="profile.html" class="active">Profile</a>
+      <a href="chat.html">Chat</a>
+      <a href="admin.html">Admin</a>
+      <a id="logout-link" href="#">Logout</a>
+    </nav>
+  </header>
 
-<main class="container">
-  <section class="card profile-card">
-    <img id="profile-picture" src="images/default-profile.png" alt="profile" class="profile-photo">
-    <input id="upload-profile" type="file" accept="image/*">
-    <h2 id="user-name">User</h2>
-    <p id="user-email" class="muted"></p>
-    <p id="user-bio"></p>
-  </section>
+  <main class="container">
+    <section class="card profile-card">
+      <img id="profile-picture" src="images/default-profile.png" class="profile-photo" alt="profile">
+      <div>
+        <input id="upload-profile" type="file" accept="image/*">
+        <button id="save-profile-pic">Save Profile Picture</button>
+      </div>
+      <h2 id="user-name">User</h2>
+      <p id="user-email" class="small muted"></p>
 
-  <section class="card">
-    <h3>Friends</h3>
-    <ul id="friends-list"></ul>
-  </section>
+      <h3>Bio</h3>
+      <textarea id="user-bio" placeholder="Write a short bio..."></textarea>
+      <button id="save-bio">Save Bio</button>
+    </section>
 
-  <section class="card">
-    <h3>Your posts</h3>
-    <div id="user-posts"></div>
-  </section>
-</main>
+    <section class="card">
+      <h3>Your Posts</h3>
+      <div id="user-posts"></div>
+    </section>
+
+    <section class="card">
+      <h3>Friends</h3>
+      <div id="friends-list"></div>
+    </section>
+  </main>
 </body>
 </html>
