@@ -1,8 +1,7 @@
-// FINAL app.js — FULL single-file implementation (paste as-is into your repo)
-// Uses Firebase modular SDK v10.x loaded from index.html
-// Make sure index.html loads firebase modules and this file as type="module"
+// app.js — All-in-one (AUTH, PRODUCTS, FEED, PROFILE, FRIENDS, CHAT, ADMIN)
+// IMPORTANT: paste this into js/app.js and load as <script type="module" src="js/app.js"></script>
 
-// ----------------- CONFIG -----------------
+// -------------- Firebase (modular v10) imports --------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
 import {
   getAuth,
@@ -16,12 +15,12 @@ import {
   getFirestore,
   collection,
   doc,
-  setDoc,
   getDoc,
   getDocs,
+  setDoc,
   addDoc,
-  deleteDoc,
   updateDoc,
+  deleteDoc,
   query,
   where,
   orderBy,
@@ -29,703 +28,891 @@ import {
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
 
+// -------------- CONFIG --------------
 const firebaseConfig = {
   apiKey: "AIzaSyAgjMFw0dbM7CBH4S_zrmPhE69pp84Tpdo",
   authDomain: "healing-root-farm.firebaseapp.com",
   projectId: "healing-root-farm",
-  storageBucket: "healing-root-farm.appspot.com",
+  storageBucket: "healing-root-farm.firebasestorage.app",
   messagingSenderId: "1042258816994",
   appId: "1:1042258816994:web:0b6dd6b7f1c370ee7093bb"
 };
 
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dd7dre9hd/upload";
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dd7dre9hd/auto/upload"; // unsigned endpoint is same; preset used below
 const UPLOAD_PRESET = "unsigned_upload";
-const ADMIN_UID = "gKwgPDNJgsdcApIJch6NM9bKmf02";
-const WHATSAPP_NUMBER = "2349138938301";
 
-// ----------------- INIT -----------------
+const ADMIN_UID = "gKwgPDNJgsdcApIJch6NM9bKmf02";
+const WHATSAPP_NUMBER = "2349138938301"; // your WhatsApp number for orders
+
+// -------------- INITIALIZE --------------
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// ----------------- HELPERS -----------------
+// -------------- HELPERS --------------
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
-const el = (t, a = {}, html = "") => {
-  const e = document.createElement(t);
-  Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v));
-  e.innerHTML = html;
-  return e;
-};
-const uidPair = (a, b) => [a, b].sort().join("_");
 const fmt = (n) => "₦" + Number(n).toLocaleString();
+const uidPair = (a,b) => [a,b].sort().join("_");
 
-// ----------------- PRODUCTS with 2500-character professional descriptions each -----------------
-// Each description below is a lengthy professional piece (approx 2500 chars)
-const products = [
+// -------------- PRODUCTS DATA (with long descriptions) --------------
+// Prices you gave, and extended long descriptions (marketing / professional).
+// NOTE: descriptions are long-form. If your editor shows line breaks oddly, it's normal.
+const PRODUCTS = [
   {
     id: "cassava",
-    name: "Cassava Stems (TME419)",
+    name: "Cassava Stems (TME 419)",
     image: "images/cassava.JPG",
     price: 1000,
-    description: `Healingroot AGRO Ventures stands as a trusted name in quality planting materials across Nigeria. Our cassava stems (TME419) are selected from high-performing parent material, inspected, and handled under hygienic nursery conditions to ensure strong sprouting and a high survival rate on the field. Our approach combines scientific variety selection with local agronomy: we select varieties adapted to local soil and climate, we ensure pathogen-free stems through visual inspection and simple field sanitation, and we provide clear planting schedules so farmers know when and how to plant for optimal establishment.
+    description: `Healing Root AGRO Ventures stands as a trusted name in quality cassava planting materials across Nigeria. We have built our reputation on reliability, clarity and agricultural expertise that helps both smallholder and commercial farmers create lasting income.
+    
+TME 419 is one of the most widely recommended cassava varieties because of its early maturity, uniform tuber quality and high starch content. We supply well-cut, disease-free stems harvested at the correct physiological age to ensure optimal sprouting and establishment. Every batch is inspected visually for pests and rot before packing, and we provide practical planting guidance to ensure the stems perform in the field.
 
-TME419 is a proven variety with early maturity, strong tuber quality and high starch percentage. These characteristics make it suitable both for household food supplies and industrial processing. For farmers targeting gari, flour, or starch industries, variety choice is critical — TME419 ensures tuber uniformity and starch content that processors prefer. For smallholders, TME419 reduces the waiting window to harvest and improves marketability.
+Why choose our TME 419 stems? Because you get more than cuttings — you get a package of experience. We include clear spacing guidance to maximize yield per plot, starter fertilizer recommendations for vigorous early growth, and simple pest-control advice that reduces the risks of scale and mealybug damage. Smallholder farmers will notice faster returns from a crop that matures earlier; commercial processors will appreciate TME 419’s consistent starch profile.
 
-Beyond seed material, Healingroot provides actionable establishment guidance: correct spacing for your land size, fertilizer recommendations (starter application and follow-up), pest and disease watch items, and early weed control schedules. Early life-stage management is the single most important factor in realizing genetic yield potential. We also advise on harvest timing and post-harvest handling to preserve tuber quality and reduce losses.
+Common myths around cassava — that it is low-value or excessively risky — are often a result of poor planting material or bad agronomy. With certified stems and the right establishment protocol, cassava becomes one of the most dependable crops on the farm. It supports household food security, supplies processors and provides a steady income stream.
 
-Investing in certified stems is an investment in predictability. Households and commercial growers that use trusted planting material and good agronomy reduce risk and shorten the time to return. Healingroot guarantees stems true to type and supports growers with agronomic coaching and nationwide delivery. Choose TME419 stems from Healingroot AGRO Ventures for reliable establishment, consistent tuber quality, and clear market pathways — a practical foundation for turning land into a profitable, food-secure farm.`
+From planting to harvest, Healing Root supports your farm with practical tips and delivery options. Choose TME 419 stems when you want predictable establishment, solid tuber quality, and higher returns. Invest in seedlings that set your farm on a reliable growth path.`
   },
-  {
-    id: "plantain",
-    name: "Hybrid Plantain Suckers",
-    image: "images/plantain.JPG",
-    price: 500,
-    description: `Healingroot AGRO Ventures supplies hybrid plantain suckers that are meticulously selected for early establishment, disease tolerance, and predictable bunch size. Our suckers come from healthy, vigorously vegetative mother plants raised under good nursery management. We focus on strong root systems to reduce transplant shock and ensure rapid field establishment — critical when weather windows are tight or planting must follow land preparation.
 
-Hybrid plantains are an excellent crop for both smallholder and commercial systems. They fit well into intercropping models with legumes and short-term crops, providing both early income and longer-term fruit cycles. For markets, hybrid plantains produce uniform bunches ideal for fresh markets and secondary processing (chips and value-added products). We supply planting advice that includes correct spacing for intended production systems, mulching practices to conserve moisture and suppress weeds, and nutrient schedules that favour stable bunch development and fruit size.
-
-Farmers often worry about disease and pests. Our nursery techniques focus on disease-free material; we also provide early detection tips and control approaches to keep stands productive. Compared to older local varieties, modern hybrids often translate into faster yields, better uniformity and easier management. Healingroot AGRO Ventures pairs quality suckers with simple operational advice so you can move from planting to harvest with fewer setbacks and a clearer path to revenue. Choose quality suckers and you buy the confidence of stronger early yields, improved marketability, and a more reliable farm income stream.`
-  },
   {
-    id: "banana",
-    name: "Hybrid Dwarf Banana",
+    id: "giant_banana",
+    name: "Hybrid Giant Banana Suckers",
     image: "images/giant_banana.JPG",
     price: 500,
-    description: `Healingroot AGRO Ventures offers hybrid dwarf banana suckers selected for quick establishment, pest resilience, and consistent fruit quality. Dwarf hybrids are chosen for their compact form — which makes them less susceptible to wind damage — and their ability to fruit earlier compared with taller types. These plants are ideal for smallholder plots, home gardens and intensive production systems where land efficiency and harvest predictability are essential.
+    description: `Healing Root AGRO Ventures supplies hybrid giant banana suckers bred for early fruiting, superior fruit quality and robust field performance. Our suckers come from carefully selected mother plants grown under hygienic nursery conditions to ensure high survival and rapid establishment when transplanted.
 
-Banana is a versatile value crop: fresh consumption markets are large and stable while processed banana products (chips, puree, flour) are growing. For farmers, dwarf hybrids reduce the horizon to first harvest and improve management efficiency. Nursery-grown suckers undergo careful inspection and pre-conditioning so that once transplanted, they quickly build productive tillers and produce marketable bunches.
+Banana is a high-value, quick-return crop compared to many perennial systems. Giant hybrids bring larger bunch size and sweet fruit that command good market prices. We provide planting density suggestions, fertiliser schedules, and pest watchlists for nematodes and weevils to help growers maintain productive stands.
 
-Healingroot’s technical support includes guidance on spacing for your target market (dense planting for quick returns vs. wide spacing for larger bunches), fertilizer strategies that balance canopy growth and fruit load, and integrated pest management to control nematodes and weevils which are classic banana constraints. Our goal is to supply not just the suckers, but the practical know-how that turns good planting material into consistent income. With clean nursery stock and straightforward agronomy, hybrid dwarf bananas become a high-return, low-risk crop suitable for ambitious farmers.`
+Many farmers mistakenly assume banana requires large inputs to be profitable. In reality, with our nursery-raised suckers and practical management advice — mulching, balanced nutrition and simple integrated pest management — banana becomes a stable, high-yielding component of a farmer’s income portfolio. Whether you are establishing a backyard plot or scaling to a commercial block, our Giant Banana suckers make a predictable foundation for production.
+
+We also advise on post-harvest handling to retain fruit quality during transport to markets or processors. Healing Root is committed to supporting growers with quality planting material and the operational advice necessary to convert healthy suckers into steady yields and dependable income.`
   },
+
   {
     id: "oilpalm",
     name: "Tenera Oil Palm Seedlings",
     image: "images/oilpalm.JPG",
     price: 1000,
-    description: `Tenera oil palm seedlings from Healingroot AGRO Ventures are a premium planting material for farmers and investors seeking a long-term, stable income crop. Tenera is the established commercial hybrid valued for its excellent oil-to-bunch ratio and earlier onset of productive years. The seedlings we supply are raised to nursery standards that prioritise root development, vigour and disease cleanliness — critical elements for strong early survival after transplanting.
+    description: `Tenera oil palm seedlings from Healing Root AGRO Ventures represent a long-term investment in reliable income. The Tenera hybrid is the backbone of commercial oil palm production because it combines early bearing with a high oil-to-bunch ratio — factors that drive profitability for both plantation owners and smallholders.
 
-Oil palm is commonly viewed as a generational crop: once established properly, a plantation yields for decades. Healingroot packages seedlings with a practical establishment plan: spacing models for small farms vs commercial blocks, early nutrition schedules to build canopy, weed control approaches that protect young palms, and pest surveillance points for early intervention. For investors, the long-term returns from Tenera — when matched with good early care — make it a compelling agricultural asset.
+Our seedlings are raised under controlled nursery conditions to develop robust root systems and strong, healthy shoots ready for field establishment. Each batch is inspected and handled to reduce mechanical damage; we package seedlings for safe delivery and give clear transplanting guidance that improves survival rates.
 
-Industrial demand for palm oil remains high across food, cosmetics and biofuel industries. That consistent demand, combined with the longevity of oil palm, makes correct seedling selection a keystone decision for long-term success. Healingroot supplies certified seedlings and agronomy support so plantation establishment moves smoothly and the palms reach production years on schedule. Selecting proven seedlings and following a staged care plan gives the best chance of turning seedlings into a productive plantation that supports families and businesses for many years.`
+Oil palm is a generational crop. While it demands patience in the early years, a properly established Tenera block provides returns for decades. We provide practical spacing models, early nutrition schedules, weed and pest control options, and a timeline to expected first yields so investors can plan with confidence.
+
+From industrial demand to household consumption, palm oil remains in high demand — in cooking oils, soaps, cosmetics and industrial applications. By selecting certified Tenera seedlings and following an evidence-based establishment plan, farmers avoid common mistakes that reduce yield and profitability.
+
+Healing Root offers seedlings plus the practical support needed to transition from purchase to productive plantation. We align nursery quality with field success so your Tenera palms begin their yield life with the best possible start.`
   },
+
+  {
+    id: "plantain",
+    name: "Hybrid Plantain Suckers",
+    image: "images/plantain.JPG",
+    price: 500,
+    description: `Hybrid plantain suckers from Healing Root AGRO Ventures are carefully selected for vigor, uniform fruit quality and disease tolerance. Our suckers are cleaned, hardened and raised to ensure strong establishment after transplanting.
+
+Plantain is an excellent choice for growers seeking fast returns from perennial systems. Hybrids combine the benefits of improved bunch uniformity and faster time to first harvest. For farms using intercropping systems, plantain integrates well with legumes and short-duration crops, giving both food and cash flow.
+
+We support every purchase with guidance: planting distances tailored to your market objective (dense planting for faster turnover vs. wider spacing for larger bunches); fertilization schedules to balance vegetative growth and fruit load; and simple pest and disease monitoring methods.
+
+Choosing certified suckers reduces establishment risk. Healing Root pairs quality materials with practical, field-tested advice so you can move from planting to harvest with fewer setbacks and a clear path to profitability.`
+  },
+
   {
     id: "coconut",
     name: "Hybrid Dwarf Coconut Seedlings",
     image: "images/coconut.JPG",
     price: 4500,
-    description: `Healingroot AGRO Ventures supplies hybrid dwarf coconut seedlings chosen for strong establishment and early productive potential. Hybrid dwarf varieties are prized for early maturity and manageable height which makes harvesting and maintenance simpler. Our seedlings are raised in clean nursery conditions to ensure robust root systems and consistent growth performance when transplanted into the field.
+    description: `Healing Root AGRO Ventures offers hybrid dwarf coconut seedlings selected for early maturity, manageable height and strong field performance. Dwarf hybrids are popular for their ease of management and early fruiting, making them suitable for both backyard and commercial orchards.
 
-Coconuts are multipurpose: nuts for fresh sale and copra, oil extraction, husk fiber, and various value-added products. This multi-product profile gives coconut plantations diversified revenue streams. For smallholders and commercial growers alike, choosing quality seedlings reduces early loss and speeds time to economic returns.
+Our seedlings are raised in clean nursery conditions to build solid root systems and reduce transplant shock. We provide care packages that include spacing recommendations, irrigation tips in the early months, and pest management for pests that commonly affect coconut stands.
 
-The package we supply includes guidance on spacing, irrigation in the early establishment phase, integrated pest management and nutrient schedules that suit your soil type. For investors, dwarf coconut seedlings lower some operational barriers to orchard establishment and accelerate the path to early yields. Healingroot helps growers match the right variety to the farm’s goals, whether that is high-density orchard revenue or mixed production for household use plus market sales.`
+Coconut is a multi-purpose crop providing fresh fruit, copra, fiber and materials for many value-added products. The longevity and multipurpose nature of coconut plantations mean they are a long-term asset. Proper seedling selection and early management is the key to turning coconut into a high-value, long-lifecycle investment.
+
+Healing Root gives growers both high-quality seedlings and the operational guidance to manage early establishment. For investors and farmers aiming for resilient, long-term returns, hybrid dwarf coconut seedlings deliver early performance and a clear path to orchard productivity.`
   },
+
   {
     id: "giant_cocoa",
-    name: "Giant Cocoa Seedlings",
+    name: "Hybrid Cocoa Nursery Plant",
     image: "images/giant_cocoa.JPG",
-    price: 800,
-    description: `Healingroot AGRO Ventures offers giant cocoa seedlings bred for high pod yields and disease resilience. Cocoa is a high-value cash crop with steady global demand; the right planting material is the first step toward a commercially viable cocoa farm. Our seedlings are selected for field performance and raised to ensure strong root and canopy development.
+    price: 500,
+    description: `Hybrid cocoa seedlings from Healing Root AGRO Ventures are selected for early bearing, disease tolerance and strong pod yield. Cocoa remains a high-value cash crop with a stable global market; success begins with high-quality nursery material.
 
-Quality seedlings reduce establishment risk and speed time to profitable harvests. We provide plant selection that supports earlier pod development, good bean quality and improved marketability. Alongside seedlings, Healingroot offers practical planting and shade management advice, pruning schedules and early pest control measures that increase the chance of strong yields.
+Our seedlings are prepared for strong root and canopy development. We advise on shade management, pruning schedules and integrated pest management approaches that improve pod set and bean quality. Farmers who adopt improved seedlings and disciplined management achieve higher yields and more consistent bean quality.
 
-Cocoa remains one of Africa’s most important export crops. For the smallholder or investor wanting secure returns, choosing high-yield, well-managed seedlings and following proven agronomy leads to better beans, stronger prices and sustainable farm performance. Healingroot supplies both the seedlings and the practical know-how to help growers reach their harvest potential.`
+Cocoa supports export income and local processing; choosing well-managed seedlings is the first step to meeting processing quality requirements and achieving premium prices. Healing Root delivers seedlings plus the agronomic advice needed to build a sustainable, productive cocoa system.`
   },
+
   {
     id: "pineapple",
-    name: "Pineapple Seedlings",
+    name: "Pineapple Suckers",
     image: "images/pineapple.JPG",
     price: 400,
-    description: `Healingroot AGRO Ventures supplies premium pineapple seedlings selected for uniform fruit size, sweetness, and field robustness. Pineapple is a high-value fruit crop offering both fresh market and processing opportunities (canning, juice, dried fruit). By using good planting material, farmers unlock faster time-to-harvest and consistent fruit quality which improves both consumer appeal and processor contracts.
+    description: `Healing Root AGRO Ventures supplies high-quality pineapple suckers selected for strong germination, uniform fruit and high sweetness. Our seedlings are ideal for both commercial plantings and smallholder plots where rapid turnover and quality fruit are essential.
 
-Our seedlings come from nurseries where we apply clean handling and early conditioning to reduce transplant shock. We advise on fertility programs and plant spacing that balance plant population with individual fruit size goals. For commercial growers, high-density designs with careful nutrient and disease management give fast turnovers; for smallholders, quality seedlings increase household income and food security.
+Pineapple has strong local and export demand. We supply planting guidance tailored to your objective — high-density production for fast returns or lower density for larger fruits. Fertility plans and disease watchlists are provided to reduce common losses from fungal diseases and to maximize fruit quality.
 
-The commercial and processing demand for pineapples is strong and supply chains value uniformity. Healingroot’s seedlings and practical management advice aim to give growers both reliable yields and market-ready fruit that command good prices. We support farmers through planting guidance, pest and disease watch lists, and harvest timing recommendations to ensure the best returns for your effort.`
+Our nursery practices focus on disease-free starter material and early conditioning to ensure rapid establishment. Choose Healing Root pineapple suckers to secure uniform, market-ready fruit and consistent harvests.`
   },
+
   {
     id: "yam",
     name: "Treated Yam Setts",
     image: "images/Yamsett.JPG",
-    price: 700,
-    description: `Healingroot AGRO Ventures offers treated yam setts chosen from disease-free mother tubers to ensure strong sprouting, uniform growth and minimal rot. Yams are critical staples with strong local demand and healthy market prices when tuber quality is high. Treated setts improve establishment rates and produce uniform tubers which are important for both household consumption and market sale.
+    price: 500,
+    description: `Healing Root AGRO Ventures offers high-quality treated yam setts selected from disease-free mother tubers. Treated setts improve early sprouting, reduce rot and increase the likely tuber yield at harvest.
 
-Our treated setts are prepared to reduce rot and stimulate early, vigorous sprouting. We provide field guidance on mounding, staking, fertilizer application and pest control measures tailored to yam cultivation. These practices increase tuber size and reduce losses at harvest.
+Yam is a staple crop with strong local demand. Our treated setts are paired with planting guidance — ridge or mound spacing, staking methods, and fertilizer guidance — to maximise tuber size and reduce losses.
 
-Choosing good planting material is an obvious but often overlooked step. Farmers who rely on untreated or poor-quality setts face inconsistent yields and greater losses. Healingroot’s treated setts reduce that risk and form a reliable basis for improved yield stability, market readiness, and higher income potential. We pair quality setts with practical advice so farmers turn good inputs into profitable harvest outcomes.`
+Using treated setts reduces early-stage failure and improves the uniformity of tuber size — important for both household consumption and market sale. Healing Root supports each sale with practical on-farm advice to turn good planting material into dependable yields and income.`
   }
 ];
 
-// ----------------- DOM SELECTORS -----------------
-const authModal = $("#auth-modal");
-const signupForm = $("#signup-form");
-const loginForm = $("#login-form");
-const authMessage = $("#auth-message");
-const logoutBtn = $("#logout-btn");
-const navAdmin = $("#nav-admin");
+// -------------- UI ELEMENTS EXISTENCE (ensure page has these IDs) --------------
+/* This code uses these IDs/classes in your HTML:
+  - auth: #auth (sign-up inputs/buttons)
+  - login: #loginEmail, #loginPassword, #loginBtn
+  - signup: #signupName, #signupEmail, #signupPassword, #signupBtn
+  - logout: #logoutBtn
+  - feed: #feedContainer
+  - post area: #postText, #postImage, #postBtn
+  - profile modal/page: #profileModal, #profileName, #profilePic, #profileUpload, #profileBio, #saveProfileBtn, #myPosts
+  - products page: #productsContainer
+  - admin page: #adminUsers, #adminPosts
+  - chat area: #friendsChatList, #chatWindow, #chatMessages, #chatInput, #sendChatBtn
+If your HTML lists differ, adapt IDs or paste the HTML pages I provided earlier.
+*/
 
-const feedView = $("#feed-view");
-const productsView = $("#products-view");
-const profileView = $("#profile-view");
-const chatView = $("#chat-view");
-const adminView = $("#admin-view");
+// -------------- AUTH FLOW --------------
+const loginEmail = document.getElementById("loginEmail");
+const loginPassword = document.getElementById("loginPassword");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtnEl = document.getElementById("logoutBtn");
+const signupName = document.getElementById("signupName");
+const signupEmail = document.getElementById("signupEmail");
+const signupPassword = document.getElementById("signupPassword");
+const signupBtn = document.getElementById("signupBtn");
 
-const feedContainer = $("#feed");
-const productList = $("#product-list");
-const myPostsContainer = $("#my-posts");
-const friendsContainer = $("#friends");
-const friendsChatList = $("#friends-chat-list");
-const adminUsers = $("#admin-users");
-const adminPosts = $("#admin-posts");
+let currentUser = null;
 
-const postBtn = $("#post-btn");
-const postText = $("#post-text");
-const postImageInput = $("#post-image");
-
-const profilePicImg = $("#profile-pic");
-const profileUploadInput = $("#profile-upload");
-const saveProfilePicBtn = $("#save-profile-pic");
-const bioTextarea = $("#bio");
-const saveBioBtn = $("#save-bio");
-
-// NAV
-$("#nav-feed").addEventListener("click", () => showOnly("feed"));
-$("#nav-products").addEventListener("click", () => showOnly("products"));
-$("#nav-profile").addEventListener("click", () => showOnly("profile"));
-$("#nav-chat").addEventListener("click", () => showOnly("chat"));
-$("#nav-admin").addEventListener("click", () => showOnly("admin"));
-
-// ----------------- UI HELPERS -----------------
-function showOnly(section) {
-  [feedView, productsView, profileView, chatView, adminView].forEach(s => s && (s.style.display = "none"));
-  if (section === "feed") feedView.style.display = "block";
-  if (section === "products") productsView.style.display = "block";
-  if (section === "profile") profileView.style.display = "block";
-  if (section === "chat") chatView.style.display = "block";
-  if (section === "admin") adminView.style.display = "block";
-}
-function alertErr(e){ console.error(e); alert(e.message || e); }
-
-// ----------------- AUTH -----------------
-signupForm?.addEventListener("submit", async (e) => {
+// Sign up
+if (signupBtn) signupBtn.addEventListener("click", async (e) => {
   e.preventDefault();
-  authMessage.textContent = "";
-  const name = $("#signup-name").value.trim();
-  const email = $("#signup-email").value.trim();
-  const password = $("#signup-password").value;
-  if (!name || !email || !password) return authMessage.textContent = "Please fill all fields";
+  const name = signupName.value?.trim();
+  const email = signupEmail.value?.trim();
+  const password = signupPassword.value;
+  if (!name || !email || !password) return alert("Fill all signup fields");
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
+    // create user doc
     await setDoc(doc(db, "users", cred.user.uid), {
       name,
       email,
-      createdAt: serverTimestamp(),
       profilePic: "",
-      bio: ""
+      bio: "",
+      createdAt: serverTimestamp(),
+      friends: [], // array of uids
+      receivedRequests: [], // uids who sent to me
+      sentRequests: [] // uids I sent to
     });
     await updateProfile(cred.user, { displayName: name });
-    authMessage.textContent = "Account created and signed in";
-  } catch (err) { authMessage.textContent = err.message; console.error(err); }
-});
-
-loginForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  authMessage.textContent = "";
-  const email = $("#login-email").value.trim();
-  const password = $("#login-password").value;
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-  } catch (err) { authMessage.textContent = err.message; console.error(err); }
-});
-
-logoutBtn?.addEventListener("click", async () => {
-  await signOut(auth);
-  location.reload();
-});
-
-let currentUser = null;
-onAuthStateChanged(auth, async (user) => {
-  currentUser = user;
-  if (user) {
-    authModal.style.display = "none";
-    logoutBtn.style.display = "inline-block";
-    navAdmin.style.display = user.uid === ADMIN_UID ? "inline-block" : "none";
-    await afterLoginInit();
-  } else {
-    authModal.style.display = "flex";
-    logoutBtn.style.display = "none";
-    navAdmin.style.display = "none";
-    showOnly("feed");
+    alert("Account created — you are logged in");
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
   }
 });
 
-// ----------------- Cloudinary upload -----------------
-async function uploadToCloudinary(file) {
-  const fd = new FormData();
-  fd.append("file", file);
-  fd.append("upload_preset", UPLOAD_PRESET);
-  const res = await fetch(CLOUDINARY_URL, { method: "POST", body: fd });
-  if (!res.ok) throw new Error("Cloudinary upload failed");
-  const data = await res.json();
-  return data.secure_url;
-}
+// Login
+if (loginBtn) loginBtn.addEventListener("click", async (e) => {
+  e.preventDefault();
+  const email = loginEmail.value?.trim();
+  const password = loginPassword.value;
+  if (!email || !password) return alert("Fill login fields");
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    // redirect or update UI handled by onAuthStateChanged below
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+});
 
-// ----------------- PRODUCT SEED (Option 1: seed once) -----------------
+if (logoutBtnEl) logoutBtnEl.addEventListener("click", async () => {
+  await signOut(auth);
+  location.href = "index.html"; // send back to login
+});
+
+// Auth listener
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  if (user) {
+    // logged in
+    console.log("Logged in:", user.uid, user.email);
+    // seed products once (only when someone first logs in and meta doc not set)
+    await seedProductsOnce();
+    // initialize UI pieces
+    initAfterLogin();
+  } else {
+    console.log("Logged out");
+    // show login page — your HTML should handle it
+  }
+});
+
+// -------------- SEED PRODUCTS ONCE (prevents duplicates) --------------
 async function seedProductsOnce() {
   try {
-    const metaDoc = await getDoc(doc(db, "meta", "productsSeeded"));
-    if (metaDoc.exists()) return; // already seeded
-    // add products to Firestore products collection (for admin / product page)
-    for (const p of products) {
+    const metaRef = doc(db, "meta", "seed");
+    const metaSnap = await getDoc(metaRef);
+    if (metaSnap.exists()) return; // already seeded
+
+    // create product docs and product-posts in posts collection
+    for (const p of PRODUCTS) {
       await setDoc(doc(db, "products", p.id), {
         name: p.name,
         image: p.image,
         price: p.price,
-        description: p.description
+        description: p.description,
+        createdAt: serverTimestamp()
       });
-      // create a single product-post in posts so it appears in feed
+
+      // create a single system post representing the product (so it appears in feed)
       await addDoc(collection(db, "posts"), {
-        uid: "system",
-        name: p.name,
-        email: "",
-        text: p.description,
-        image: p.image,
-        isProduct: true,
+        system: true,
         productId: p.id,
+        name: p.name,
+        text: p.description,
+        image: p.image, // points to static GitHub images path in your repo
+        price: p.price,
         createdAt: serverTimestamp()
       });
     }
-    await setDoc(doc(db, "meta", "productsSeeded"), { seededAt: serverTimestamp() });
-    console.log("Products seeded once");
-  } catch (err) { console.error("seedProductsOnce", err); }
+
+    await setDoc(metaRef, { productsSeeded: true, ts: serverTimestamp() });
+    console.log("Products seeded");
+  } catch (err) {
+    console.error("seedProductsOnce error", err);
+  }
 }
 
-// ----------------- RENDER PRODUCTS (Products page) -----------------
+// -------------- INIT AFTER LOGIN --------------
+async function initAfterLogin() {
+  // Render product page & feed & profile & friends & admin
+  await renderProductsPage();
+  startFeedListener();
+  await renderProfile(currentUser.uid);
+  await renderFriendsUI();
+  await renderAdminUIIfAdmin();
+  // attach other listeners if any
+}
+
+// -------------- RENDER PRODUCTS PAGE --------------
 async function renderProductsPage() {
-  productList.innerHTML = "";
-  const snap = await getDocs(collection(db, "products"));
-  if (snap.empty) {
-    // fallback to static products array
-    products.forEach(p => {
-      const card = el("div", { class: "card product" });
-      card.innerHTML = `
-        <img src="${p.image}" alt="${p.name}">
-        <h3>${p.name}</h3>
-        <p class="muted">Price: ${fmt(p.price)}</p>
-        <p>${p.description.slice(0,400)}... <a href="#" data-id="${p.id}" class="read-more-prod">Read more</a></p>
-        <button class="btn order" data-name="${p.name}" data-price="${p.price}">Order via WhatsApp</button>
-      `;
-      productList.appendChild(card);
-    });
-  } else {
-    snap.forEach(d => {
-      const p = d.data();
-      const card = el("div", { class: "card product" });
-      card.innerHTML = `
-        <img src="${p.image}" alt="${p.name}">
-        <h3>${p.name}</h3>
-        <p class="muted">Price: ${fmt(p.price)}</p>
-        <p>${p.description.slice(0,400)}... <a href="#" data-id="${d.id}" class="read-more-prod">Read more</a></p>
-        <button class="btn order" data-name="${p.name}" data-price="${p.price}">Order via WhatsApp</button>
-      `;
-      productList.appendChild(card);
-    });
+  const container = document.getElementById("productsContainer");
+  if (!container) return;
+  container.innerHTML = ""; // clear
+  // prefer Firestore products collection
+  try {
+    const snap = await getDocs(collection(db, "products"));
+    if (!snap.empty) {
+      snap.forEach(d => {
+        const p = d.data();
+        container.appendChild(productCardFromData({ id: d.id, ...p }));
+      });
+      return;
+    }
+  } catch (err) {
+    console.warn("products collection read failed", err);
   }
 
-  // attach order handlers
-  $$(".order").forEach(b => {
-    b.onclick = (ev) => {
-      const name = ev.currentTarget.dataset.name;
-      const price = ev.currentTarget.dataset.price;
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hello, I want to order ${name} priced at ₦${price}.`)}`, "_blank");
-    };
-  });
-  $$(".read-more-prod").forEach(a => a.addEventListener("click", (e) => {
-    e.preventDefault();
-    const id = a.dataset.id;
-    // get product doc and show description
-    (async () => {
-      const pd = await getDoc(doc(db, "products", id));
-      if (pd.exists()) {
-        const p = pd.data();
-        alert(p.name + "\n\n" + p.description);
-      } else {
-        const p = products.find(x => x.id === id);
-        if (p) alert(p.name + "\n\n" + p.description);
-      }
-    })();
-  }));
+  // fallback to static PRODUCTS
+  for (const p of PRODUCTS) {
+    container.appendChild(productCardFromData({ id: p.id, ...p }));
+  }
 }
 
-// ----------------- POSTS: create and realtime feed -----------------
-postBtn?.addEventListener("click", async () => {
-  if (!currentUser) return alert("Sign in first");
-  const text = postText.value.trim();
-  const file = postImageInput.files[0];
-  if (!text && !file) return alert("Add text or image to post");
+function productCardFromData(p) {
+  const card = document.createElement("div");
+  card.className = "card product-card";
+  card.innerHTML = `
+    <img src="${p.image}" alt="${p.name}" style="width:100%;height:220px;object-fit:cover;border-radius:8px" />
+    <h3 style="margin:10px 0">${p.name}</h3>
+    <p style="font-weight:700;color:#0A5A0A">${fmt(p.price)}</p>
+    <p style="max-height:120px;overflow:hidden">${p.description}</p>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button class="btn-order">Order via WhatsApp</button>
+      <button class="btn-view" data-id="${p.id}">View</button>
+    </div>
+  `;
+  card.querySelector(".btn-order").addEventListener("click", () => {
+    const msg = `Hello, I want to order ${p.name} priced at ${fmt(p.price)}.`;
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
+  });
+  card.querySelector(".btn-view").addEventListener("click", () => openProductPage(p.id));
+  return card;
+}
+
+function openProductPage(productId) {
+  // Simple modal or navigate to product detail page; for simplicity alert for now
+  (async () => {
+    const pd = await getDoc(doc(db, "products", productId));
+    let p = pd.exists() ? pd.data() : PRODUCTS.find(x => x.id === productId);
+    if (!p) return alert("Product not found");
+    // show full details - in UI you should create a modal; here we use confirm to direct to WhatsApp
+    const ok = confirm(`${p.name}\n\nPrice: ${fmt(p.price)}\n\nShow full description?`);
+    if (ok) alert(p.description);
+  })();
+}
+
+// -------------- FEED (posts & product posts) --------------
+let feedUnsubscribe = null;
+function startFeedListener() {
+  const feedContainer = document.getElementById("feedContainer");
+  if (!feedContainer) return;
+  // listen to posts ordered by createdAt desc
+  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+  if (feedUnsubscribe) feedUnsubscribe();
+  feedUnsubscribe = onSnapshot(q, (snap) => {
+    feedContainer.innerHTML = "";
+    snap.forEach(docSnap => {
+      const post = docSnap.data();
+      const id = docSnap.id;
+      feedContainer.appendChild(postCardFromData({ id, ...post }));
+    });
+  }, (err) => console.error("feed onSnapshot", err));
+}
+
+function postCardFromData(post) {
+  const card = document.createElement("div");
+  card.className = "card post-card";
+  // clickable user area (avatar + name) — opens user profile
+  const avatar = post.profilePic || "images/default_profile.png";
+  const name = post.name || (post.system ? "Healing Root" : post.email || "User");
+  const header = document.createElement("div");
+  header.style.display = "flex";
+  header.style.gap = "12px";
+  header.style.alignItems = "center";
+  header.innerHTML = `<img src="${avatar}" style="width:60px;height:60px;border-radius:8px;object-fit:cover;cursor:pointer" data-uid="${post.uid || ''}" class="post-avatar"/>
+                      <div>
+                        <strong style="cursor:pointer" class="post-username" data-uid="${post.uid||''}">${name}</strong>
+                        <div style="color:#666;font-size:12px">${post.system ? "Product" : (new Date((post.createdAt && post.createdAt.toDate) ? post.createdAt.toDate() : Date.now())).toLocaleString()}</div>
+                      </div>`;
+  card.appendChild(header);
+
+  // main text
+  const txt = document.createElement("p");
+  txt.style.whiteSpace = "pre-wrap";
+  txt.textContent = post.text || (post.productId ? post.text : "");
+  card.appendChild(txt);
+
+  // image (if any)
+  if (post.image) {
+    const img = document.createElement("img");
+    img.src = post.image;
+    img.style.width = "100%";
+    img.style.height = "300px";
+    img.style.objectFit = "cover";
+    img.style.borderRadius = "8px";
+    img.style.marginTop = "8px";
+    card.appendChild(img);
+  }
+
+  // product price & order if product
+  if (post.productId) {
+    const priceEl = document.createElement("div");
+    priceEl.style.marginTop = "8px";
+    priceEl.innerHTML = `<strong style="color:#0A5A0A">${fmt(post.price || post.price)}</strong>
+                         <button style="margin-left:10px" class="btn-order-prod">Order via WhatsApp</button>`;
+    priceEl.querySelector(".btn-order-prod").addEventListener("click", () => {
+      const msg = `Hello, I want to order ${post.name} priced at ${fmt(post.price || post.price)}.`;
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
+    });
+    card.appendChild(priceEl);
+  }
+
+  // actions (delete if owner or admin), comment button (simple)
+  const actions = document.createElement("div");
+  actions.style.marginTop = "8px";
+  actions.style.display = "flex";
+  actions.style.gap = "8px";
+
+  // Delete button (owner or admin)
+  if (currentUser && (currentUser.uid === post.uid || currentUser.uid === ADMIN_UID)) {
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "Delete";
+    delBtn.style.background = "crimson";
+    delBtn.style.color = "white";
+    delBtn.addEventListener("click", async () => {
+      if (!confirm("Delete this post?")) return;
+      try {
+        await deleteDoc(doc(db, "posts", post.id || post._id || ""));
+        alert("Deleted");
+      } catch (err) {
+        console.error("delete post error", err);
+        alert("Unable to delete");
+      }
+    });
+    actions.appendChild(delBtn);
+  }
+
+  // Add Friend / Chat depending on relation (show buttons only for non-system posts with uid)
+  if (post.uid && currentUser && post.uid !== currentUser.uid) {
+    const btn = document.createElement("button");
+    // we need to check friendship status
+    (async () => {
+      const meRef = doc(db, "users", currentUser.uid);
+      const meSnap = await getDoc(meRef);
+      const meData = meSnap.exists() ? meSnap.data() : {};
+      const friends = meData.friends || [];
+      const sent = meData.sentRequests || [];
+      const received = meData.receivedRequests || [];
+
+      if (friends.includes(post.uid)) {
+        btn.textContent = "Chat 💬";
+        btn.addEventListener("click", () => openChatWith(post.uid));
+      } else if (sent.includes(post.uid)) {
+        btn.textContent = "Requested";
+        btn.disabled = true;
+      } else if (received.includes(post.uid)) {
+        btn.textContent = "Respond";
+        btn.addEventListener("click", () => openUserProfile(post.uid));
+      } else {
+        btn.textContent = "Add Friend";
+        btn.addEventListener("click", () => sendFriendRequest(post.uid));
+      }
+    })();
+    actions.appendChild(btn);
+  }
+
+  // Comment UI — minimal: open prompt to add comment saved under posts/<postId>/comments
+  const commentBtn = document.createElement("button");
+  commentBtn.textContent = "Comment";
+  commentBtn.addEventListener("click", async () => {
+    if (!currentUser) return alert("Login to comment");
+    const comment = prompt("Write comment:");
+    if (!comment) return;
+    try {
+      await addDoc(collection(db, "posts", post.id, "comments"), {
+        uid: currentUser.uid,
+        name: currentUser.displayName || currentUser.email,
+        text: comment,
+        createdAt: serverTimestamp()
+      });
+      alert("Comment posted");
+    } catch (err) {
+      console.error("comment error", err);
+      alert("Cannot comment");
+    }
+  });
+  actions.appendChild(commentBtn);
+
+  card.appendChild(actions);
+
+  // clickable avatar & name to open profile
+  card.querySelectorAll(".post-avatar, .post-username").forEach(elm => {
+    elm.addEventListener("click", () => {
+      const targetUid = elm.dataset.uid;
+      if (!targetUid) return;
+      openUserProfile(targetUid);
+    });
+  });
+
+  return card;
+}
+
+// -------------- CREATE POST (text + image via Cloudinary) --------------
+const postBtnEl = document.getElementById("postBtn");
+if (postBtnEl) postBtnEl.addEventListener("click", async () => {
+  if (!currentUser) return alert("Login first");
+  const textEl = document.getElementById("postText");
+  const fileEl = document.getElementById("postImage");
+  const text = textEl?.value?.trim() || "";
+  const file = fileEl?.files?.[0] || null;
+  if (!text && !file) return alert("Add text or image");
+
+  let imageUrl = "";
+  if (file) {
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("upload_preset", UPLOAD_PRESET);
+      const res = await fetch(CLOUDINARY_URL, { method: "POST", body: form });
+      const data = await res.json();
+      imageUrl = data.secure_url;
+    } catch (err) {
+      console.error("cloudinary upload error", err);
+      alert("Image upload failed");
+      return;
+    }
+  }
+
   try {
-    let imageUrl = "";
-    if (file) imageUrl = await uploadToCloudinary(file);
     await addDoc(collection(db, "posts"), {
       uid: currentUser.uid,
-      name: currentUser.displayName || "",
-      email: currentUser.email || "",
+      name: currentUser.displayName || currentUser.email,
+      email: currentUser.email,
+      profilePic: (currentUser.photoURL || ""),
       text,
       image: imageUrl,
       createdAt: serverTimestamp()
     });
-    postText.value = "";
-    postImageInput.value = "";
-    alert("Posted successfully");
-  } catch (err) { alertErr(err); }
+    if (textEl) textEl.value = "";
+    if (fileEl) fileEl.value = "";
+    alert("Posted");
+  } catch (err) {
+    console.error("create post error", err);
+    alert("Unable to post");
+  }
 });
 
-// feed listener (products + posts)
-function startFeed() {
-  // products are seeded as posts in seedProductsOnce (system posts)
-  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-  onSnapshot(q, (snapshot) => {
-    feedContainer.innerHTML = "";
-    // build feed from snapshot docs
-    snapshot.forEach(docSnap => {
-      const post = docSnap.data();
-      const id = docSnap.id;
-      const card = el("div", { class: "card post", "data-id": id });
-      const headerHTML = `
-        <div style="display:flex;gap:12px;align-items:center">
-          <img src="${post.image || 'images/default_profile.png'}" style="width:80px;height:80px;object-fit:cover;border-radius:8px" alt="">
-          <div>
-            <h3>${post.name || (post.productId ? post.name : (post.email || "User"))}</h3>
-            <p class="muted">${post.isProduct ? "Product" : (post.email || "")}</p>
-          </div>
-        </div>
-      `;
-      card.innerHTML = headerHTML + `<p style="margin-top:10px">${(post.text||"").slice(0,2000)}</p>`;
-      if (post.image && !post.isProduct) {
-        const big = el("img", { src: post.image, style: "width:100%;margin-top:8px;border-radius:8px" });
-        card.appendChild(big);
-      }
-      // actions
-      const actions = el("div", {});
-      // delete if owner or admin
-      if (currentUser && (currentUser.uid === post.uid || currentUser.uid === ADMIN_UID)) {
-        const del = el("button", { class: "btn" }, "Delete");
-        del.style.background = "crimson";
-        del.addEventListener("click", async () => {
-          if (!confirm("Delete this post?")) return;
-          await deleteDoc(doc(db, "posts", id));
-        });
-        actions.appendChild(del);
-      }
-      card.appendChild(actions);
-      feedContainer.appendChild(card);
-    });
-  }, (err) => console.error("feed snapshot", err));
-}
+// -------------- PROFILE view / edit --------------
+async function renderProfile(uid) {
+  const profileNameEl = document.getElementById("profileName");
+  const profilePicEl = document.getElementById("profilePic");
+  const profileBioEl = document.getElementById("profileBio");
+  const myPostsEl = document.getElementById("myPosts");
 
-// ----------------- PROFILE (upload pic, bio, my posts) -----------------
-saveProfilePicBtn?.addEventListener("click", async () => {
-  if (!currentUser) return alert("Sign in");
-  const file = profileUploadInput.files[0];
-  if (!file) return alert("Select an image");
+  if (!uid) return;
+
   try {
-    const url = await uploadToCloudinary(file);
-    await updateDoc(doc(db, "users", currentUser.uid), { profilePic: url });
-    profilePicImg.src = url;
-    alert("Profile picture updated");
-  } catch (err) { alertErr(err); }
-});
-
-saveBioBtn?.addEventListener("click", async () => {
-  if (!currentUser) return alert("Sign in");
-  const bio = bioTextarea.value.trim();
-  try {
-    await updateDoc(doc(db, "users", currentUser.uid), { bio });
-    alert("Bio updated");
-  } catch (err) { alertErr(err); }
-});
-
-async function renderMyPosts() {
-  myPostsContainer.innerHTML = "";
-  if (!currentUser) return;
-  const q = query(collection(db, "posts"), where("uid", "==", currentUser.uid), orderBy("createdAt", "desc"));
-  const snap = await getDocs(q);
-  snap.forEach(d => {
-    const p = d.data();
-    const card = el("div", { class: "card post" });
-    card.innerHTML = `<h4>${p.name || p.email}</h4><p>${p.text || ""}</p>`;
-    if (p.image) {
-      const im = el("img", { src: p.image, style: "width:100%;margin-top:8px;border-radius:8px" });
-      card.appendChild(im);
+    const userSnap = await getDoc(doc(db, "users", uid));
+    const data = userSnap.exists() ? userSnap.data() : null;
+    if (data) {
+      if (profileNameEl) profileNameEl.textContent = data.name || data.email || "";
+      if (profilePicEl) profilePicEl.src = data.profilePic || "images/default_profile.png";
+      if (profileBioEl) profileBioEl.value = data.bio || "";
     }
-    const del = el("button", { class: "btn" }, "Delete");
-    del.style.background = "crimson";
-    del.addEventListener("click", async () => {
-      if (!confirm("Delete your post?")) return;
-      await deleteDoc(doc(db, "posts", d.id));
-      renderMyPosts();
-    });
-    card.appendChild(del);
-    myPostsContainer.appendChild(card);
-  });
-}
 
-// ----------------- FRIEND REQUESTS, ACCEPT / DECLINE, FRIEND LIST -----------------
-async function sendFriendRequest(targetUid) {
-  if (!currentUser) return alert("Sign in");
-  const me = currentUser.uid;
-  if (me === targetUid) return alert("Cannot friend yourself");
-  try {
-    await setDoc(doc(db, "users", me, "sentRequests", targetUid), { createdAt: serverTimestamp() });
-    await setDoc(doc(db, "users", targetUid, "receivedRequests", me), { createdAt: serverTimestamp() });
-    alert("Friend request sent");
-    renderPendingSent();
-  } catch (err) { alertErr(err); }
-}
-
-async function acceptFriendRequest(requesterUid) {
-  if (!currentUser) return alert("Sign in");
-  const me = currentUser.uid;
-  try {
-    await setDoc(doc(db, "users", me, "friends", requesterUid), { since: serverTimestamp() });
-    await setDoc(doc(db, "users", requesterUid, "friends", me), { since: serverTimestamp() });
-    await deleteDoc(doc(db, "users", me, "receivedRequests", requesterUid));
-    await deleteDoc(doc(db, "users", requesterUid, "sentRequests", me));
-    alert("Friend added");
-    await renderPendingReceived();
-    await renderFriendsList();
-    await renderChatFriends();
-  } catch (err) { alertErr(err); }
-}
-
-async function declineFriendRequest(requesterUid) {
-  if (!currentUser) return alert("Sign in");
-  const me = currentUser.uid;
-  try {
-    await deleteDoc(doc(db, "users", me, "receivedRequests", requesterUid));
-    await deleteDoc(doc(db, "users", requesterUid, "sentRequests", me));
-    alert("Request declined");
-    await renderPendingReceived();
-  } catch (err) { alertErr(err); }
-}
-
-async function renderPendingReceived() {
-  friendsContainer.innerHTML = "";
-  if (!currentUser) return;
-  const me = currentUser.uid;
-  const snap = await getDocs(collection(db, "users", me, "receivedRequests"));
-  if (!snap.empty) {
-    const heading = el("h3", {}, "Friend Requests");
-    friendsContainer.appendChild(heading);
-    snap.forEach(async d => {
-      const requesterUid = d.id;
-      const ud = await getDoc(doc(db, "users", requesterUid));
-      const udata = ud.exists() ? ud.data() : { name: requesterUid, email: "" };
-      const card = el("div", { class: "card friend" });
-      card.innerHTML = `<h4>${udata.name || udata.email}</h4><p class="muted">${udata.email || ""}</p>`;
-      const acceptBtn = el("button", { class: "btn" }, "Accept");
-      acceptBtn.addEventListener("click", () => acceptFriendRequest(requesterUid));
-      const declineBtn = el("button", { class: "btn" }, "Decline");
-      declineBtn.style.background = "grey";
-      declineBtn.addEventListener("click", () => declineFriendRequest(requesterUid));
-      card.appendChild(acceptBtn);
-      card.appendChild(declineBtn);
-      friendsContainer.appendChild(card);
-    });
-  } else {
-    // no pending received — show accepted friends
-    await renderFriendsList();
-  }
-}
-
-async function renderPendingSent() {
-  if (!currentUser) return;
-  const me = currentUser.uid;
-  const snap = await getDocs(collection(db, "users", me, "sentRequests"));
-  if (snap.empty) return;
-  const heading = el("h3", {}, "Requests Sent");
-  friendsContainer.appendChild(heading);
-  snap.forEach(async d => {
-    const targetUid = d.id;
-    const ud = await getDoc(doc(db, "users", targetUid));
-    const udata = ud.exists() ? ud.data() : { name: targetUid };
-    const card = el("div", { class: "card friend" });
-    card.innerHTML = `<h4>${udata.name || udata.email || targetUid}</h4><p class="muted">Request sent</p>`;
-    friendsContainer.appendChild(card);
-  });
-}
-
-async function renderFriendsList() {
-  friendsContainer.innerHTML = "";
-  if (!currentUser) return;
-  const me = currentUser.uid;
-  const snap = await getDocs(collection(db, "users", me, "friends"));
-  if (snap.empty) {
-    // show other users and Add Friend button
-    const usersSnap = await getDocs(collection(db, "users"));
-    usersSnap.forEach(d => {
-      if (d.id === me) return;
-      (async () => {
-        const fr = await getDoc(doc(db, "users", me, "friends", d.id));
-        const sent = await getDoc(doc(db, "users", me, "sentRequests", d.id));
-        const received = await getDoc(doc(db, "users", me, "receivedRequests", d.id));
-        const udata = d.data();
-        const card = el("div", { class: "card friend" });
-        card.innerHTML = `<h4>${udata.name || udata.email}</h4><p class="muted">${udata.email || ""}</p>`;
-        if (fr.exists()) {
-          const chatBtn = el("button", { class: "btn" }, "Chat 💬");
-          chatBtn.addEventListener("click", () => openChat(d.id));
-          card.appendChild(chatBtn);
-        } else if (sent.exists()) {
-          const pending = el("button", { class: "btn" }, "Requested");
-          pending.style.background = "grey";
-          card.appendChild(pending);
-        } else if (received.exists()) {
-          const respond = el("button", { class: "btn" }, "Respond");
-          respond.addEventListener("click", () => renderPendingReceived());
-          card.appendChild(respond);
-        } else {
-          const add = el("button", { class: "btn" }, "Add Friend");
-          add.addEventListener("click", () => sendFriendRequest(d.id));
-          card.appendChild(add);
+    // my posts
+    if (myPostsEl) {
+      myPostsEl.innerHTML = "";
+      const q = query(collection(db, "posts"), where("uid", "==", uid), orderBy("createdAt", "desc"));
+      const snap = await getDocs(q);
+      snap.forEach(d => {
+        const p = d.data();
+        const node = document.createElement("div");
+        node.className = "card";
+        node.innerHTML = `<h4>${p.name||p.email}</h4><p>${p.text||""}</p>`;
+        if (p.image) node.appendChild(Object.assign(document.createElement("img"), { src: p.image, style: "width:100%;height:180px;object-fit:cover;border-radius:8px" }));
+        // delete button if owner
+        if (currentUser && currentUser.uid === uid) {
+          const del = document.createElement("button");
+          del.textContent = "Delete";
+          del.style.background = "crimson";
+          del.addEventListener("click", async () => {
+            if (!confirm("Delete this post?")) return;
+            await deleteDoc(doc(db, "posts", d.id));
+            renderProfile(uid);
+          });
+          node.appendChild(del);
         }
-        friendsContainer.appendChild(card);
-      })();
-    });
-    return;
+        myPostsEl.appendChild(node);
+      });
+    }
+  } catch (err) {
+    console.error("renderProfile", err);
   }
-  snap.forEach(async d => {
-    const friendUid = d.id;
-    const ud = await getDoc(doc(db, "users", friendUid));
-    const udata = ud.exists() ? ud.data() : { name: friendUid };
-    const card = el("div", { class: "card friend" });
-    card.innerHTML = `<h4>${udata.name || udata.email}</h4><p class="muted">${udata.email || ""}</p>`;
-    const chatBtn = el("button", { class: "btn" }, "Chat 💬");
-    chatBtn.addEventListener("click", () => openChat(friendUid));
-    card.appendChild(chatBtn);
-    friendsContainer.appendChild(card);
-  });
 }
 
-// ----------------- CHAT -----------------
-let activePairId = null;
-let activeChatWith = null;
-const chatWindow = $("#chat-window");
-const chatWithEl = $("#chat-with");
-const messagesEl = $("#messages");
-const chatInput = $("#chat-input");
-const sendChatBtn = $("#send-chat");
-
-function openChat(otherUid) {
-  if (!currentUser) return alert("Sign in");
-  activeChatWith = otherUid;
-  activePairId = uidPair(currentUser.uid, otherUid);
-  chatWithEl.textContent = "Chat: " + (otherUid);
-  chatWindow.style.display = "block";
-  loadMessagesForPair(activePairId);
-}
-
-sendChatBtn?.addEventListener("click", async () => {
-  if (!currentUser || !activePairId || !activeChatWith) return alert("Select friend");
-  const txt = chatInput.value.trim();
-  if (!txt) return;
+// Save profile picture (upload to Cloudinary)
+const saveProfileBtn = document.getElementById("saveProfileBtn");
+if (saveProfileBtn) saveProfileBtn.addEventListener("click", async () => {
+  if (!currentUser) return alert("Login");
+  const fileEl = document.getElementById("profileUpload");
+  const bioEl = document.getElementById("profileBio");
+  const file = fileEl?.files?.[0];
+  let url = "";
+  if (file) {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("upload_preset", UPLOAD_PRESET);
+    try {
+      const res = await fetch(CLOUDINARY_URL, { method: "POST", body: form });
+      const data = await res.json();
+      url = data.secure_url;
+    } catch (err) {
+      console.error("cloudinary profile upload", err);
+      alert("Upload failed");
+      return;
+    }
+  }
   try {
+    await updateDoc(doc(db, "users", currentUser.uid), {
+      profilePic: url || undefined,
+      bio: bioEl?.value || undefined
+    });
+    // update auth profile photoURL if you want visible in auth
+    if (url) await updateProfile(currentUser, { photoURL: url });
+    alert("Profile updated");
+    renderProfile(currentUser.uid);
+  } catch (err) {
+    console.error("saveProfile error", err);
+    alert("Cannot save profile");
+  }
+});
+
+// -------------- FRIENDS (send, accept, decline) --------------
+async function sendFriendRequest(targetUid) {
+  if (!currentUser) return alert("Login to send friend request");
+  if (targetUid === currentUser.uid) return alert("Cannot add yourself");
+  try {
+    // update current user's sentRequests and target user's receivedRequests atomically (best-effort)
+    const meRef = doc(db, "users", currentUser.uid);
+    const targetRef = doc(db, "users", targetUid);
+    const meSnap = await getDoc(meRef);
+    const targetSnap = await getDoc(targetRef);
+    const meData = meSnap.exists() ? meSnap.data() : {};
+    const targetData = targetSnap.exists() ? targetSnap.data() : {};
+
+    const meSent = new Set(meData.sentRequests || []);
+    const targetReceived = new Set(targetData.receivedRequests || []);
+
+    if (meSent.has(targetUid)) return alert("Request already sent");
+    if ((meData.friends || []).includes(targetUid)) return alert("Already friends");
+
+    meSent.add(targetUid);
+    targetReceived.add(currentUser.uid);
+
+    await updateDoc(meRef, { sentRequests: Array.from(meSent) });
+    await updateDoc(targetRef, { receivedRequests: Array.from(targetReceived) });
+    alert("Friend request sent");
+    // refresh friend UI
+    renderFriendsUI();
+  } catch (err) {
+    console.error("sendFriendRequest", err);
+    alert("Unable to send request");
+  }
+}
+
+async function acceptFriendRequest(fromUid) {
+  if (!currentUser) return alert("Login");
+  try {
+    const meRef = doc(db, "users", currentUser.uid);
+    const fromRef = doc(db, "users", fromUid);
+    const meSnap = await getDoc(meRef);
+    const fromSnap = await getDoc(fromRef);
+    const meData = meSnap.exists() ? meSnap.data() : {};
+    const fromData = fromSnap.exists() ? fromSnap.data() : {};
+
+    const meReceived = new Set(meData.receivedRequests || []);
+    const meFriends = new Set(meData.friends || []);
+    const fromSent = new Set(fromData.sentRequests || []);
+    const fromFriends = new Set(fromData.friends || []);
+
+    if (!meReceived.has(fromUid)) return alert("No such request");
+
+    meReceived.delete(fromUid);
+    fromSent.delete(currentUser.uid);
+
+    meFriends.add(fromUid);
+    fromFriends.add(currentUser.uid);
+
+    await updateDoc(meRef, { receivedRequests: Array.from(meReceived), friends: Array.from(meFriends) });
+    await updateDoc(fromRef, { sentRequests: Array.from(fromSent), friends: Array.from(fromFriends) });
+    alert("Friend added");
+    renderFriendsUI();
+  } catch (err) {
+    console.error("acceptFriendRequest", err);
+    alert("Unable to accept");
+  }
+}
+
+async function declineFriendRequest(fromUid) {
+  if (!currentUser) return alert("Login");
+  try {
+    const meRef = doc(db, "users", currentUser.uid);
+    const fromRef = doc(db, "users", fromUid);
+    const meSnap = await getDoc(meRef);
+    const fromSnap = await getDoc(fromRef);
+    const meData = meSnap.exists() ? meSnap.data() : {};
+    const fromData = fromSnap.exists() ? fromSnap.data() : {};
+
+    const meReceived = new Set(meData.receivedRequests || []);
+    const fromSent = new Set(fromData.sentRequests || []);
+
+    meReceived.delete(fromUid);
+    fromSent.delete(currentUser.uid);
+
+    await updateDoc(meRef, { receivedRequests: Array.from(meReceived) });
+    await updateDoc(fromRef, { sentRequests: Array.from(fromSent) });
+    alert("Request declined");
+    renderFriendsUI();
+  } catch (err) {
+    console.error("declineFriendRequest", err);
+    alert("Unable to decline");
+  }
+}
+
+// Render friends UI parts: pending received, sent, friends list
+async function renderFriendsUI() {
+  const requestsContainer = document.getElementById("requestsList");
+  const friendsContainer = document.getElementById("friendsList");
+  const chatFriendsList = document.getElementById("friendsChatList");
+
+  if (!currentUser) return;
+  // fetch me
+  const meSnap = await getDoc(doc(db, "users", currentUser.uid));
+  const meData = meSnap.exists() ? meSnap.data() : { receivedRequests: [], sentRequests: [], friends: [] };
+
+  // Received requests
+  if (requestsContainer) {
+    requestsContainer.innerHTML = "";
+    for (const uid of meData.receivedRequests || []) {
+      const uSnap = await getDoc(doc(db, "users", uid));
+      const u = uSnap.exists() ? uSnap.data() : { name: uid, email: "" };
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `<strong>${u.name || u.email}</strong><div style="display:flex;gap:6px;margin-top:6px">
+                          <button class="btn-accept">Accept</button>
+                          <button class="btn-decline">Decline</button>
+                        </div>`;
+      card.querySelector(".btn-accept").addEventListener("click", () => acceptFriendRequest(uid));
+      card.querySelector(".btn-decline").addEventListener("click", () => declineFriendRequest(uid));
+      requestsContainer.appendChild(card);
+    }
+  }
+
+  // Friends list (accepted)
+  if (friendsContainer) {
+    friendsContainer.innerHTML = "";
+    for (const uid of meData.friends || []) {
+      const uSnap = await getDoc(doc(db, "users", uid));
+      const u = uSnap.exists() ? uSnap.data() : { name: uid };
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `<strong>${u.name || u.email}</strong><div style="margin-top:6px"><button class="btn-chat">Chat 💬</button></div>`;
+      card.querySelector(".btn-chat").addEventListener("click", () => openChatWith(uid));
+      friendsContainer.appendChild(card);
+    }
+  }
+
+  // Chat friends list (same)
+  if (chatFriendsList) {
+    chatFriendsList.innerHTML = "";
+    for (const uid of meData.friends || []) {
+      const uSnap = await getDoc(doc(db, "users", uid));
+      const u = uSnap.exists() ? uSnap.data() : { name: uid };
+      const li = document.createElement("div");
+      li.className = "card";
+      li.innerHTML = `<strong>${u.name || u.email}</strong><button class="btn-open-chat" style="margin-left:8px">Open</button>`;
+      li.querySelector(".btn-open-chat").addEventListener("click", () => openChatWith(uid));
+      chatFriendsList.appendChild(li);
+    }
+  }
+}
+
+// -------------- OPEN USER PROFILE (from feed click) --------------
+function openUserProfile(uid) {
+  // Ideally navigate to profile.html?uid=UID
+  // We'll open a modal or go to profile page and display the user info
+  // For simplicity, try to open profile page with query param
+  window.location.href = `profile.html?uid=${uid}`;
+}
+
+// -------------- CHAT (between accepted friends) --------------
+let chatPairId = null;
+function openChatWith(otherUid) {
+  if (!currentUser) return alert("Login");
+  // check they are friends
+  (async () => {
+    const meSnap = await getDoc(doc(db, "users", currentUser.uid));
+    const meData = meSnap.exists() ? meSnap.data() : {};
+    if (!meData.friends || !meData.friends.includes(otherUid)) return alert("You must be friends to chat");
+    chatPairId = uidPair(currentUser.uid, otherUid);
+    // show chat UI
+    window.location.href = `chat.html?pair=${chatPairId}&with=${otherUid}`;
+  })();
+}
+
+// On chat.html load: call loadChat(pairId)
+async function loadChat(pairId, otherUid) {
+  const messagesEl = document.getElementById("chatMessages");
+  const inputEl = document.getElementById("chatInput");
+  const sendBtn = document.getElementById("sendChatBtn");
+  if (!pairId || !messagesEl) return;
+  messagesEl.innerHTML = "";
+
+  // listener for messages where pairId equals this
+  const q = query(collection(db, "chats"), where("pairId", "==", pairId), orderBy("createdAt", "asc"));
+  onSnapshot(q, (snap) => {
+    messagesEl.innerHTML = "";
+    snap.forEach(d => {
+      const m = d.data();
+      const div = document.createElement("div");
+      div.className = (m.from === currentUser.uid) ? "chat-msg me" : "chat-msg them";
+      div.textContent = `${m.text}`;
+      messagesEl.appendChild(div);
+    });
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  });
+
+  if (sendBtn) sendBtn.onclick = async () => {
+    const txt = inputEl.value?.trim();
+    if (!txt) return;
     await addDoc(collection(db, "chats"), {
-      pairId: activePairId,
+      pairId,
       from: currentUser.uid,
-      to: activeChatWith,
+      to: otherUid,
       text: txt,
       createdAt: serverTimestamp()
     });
-    chatInput.value = "";
-    loadMessagesForPair(activePairId);
-  } catch (err) { alertErr(err); }
-});
-
-async function loadMessagesForPair(pairId) {
-  messagesEl.innerHTML = "";
-  const q = query(collection(db, "chats"), where("pairId", "==", pairId), orderBy("createdAt", "asc"));
-  const snap = await getDocs(q);
-  snap.forEach(d => {
-    const m = d.data();
-    const div = el("div", { class: "chat-message" }, `<strong>${m.from === currentUser.uid ? "You" : "Friend"}:</strong> ${m.text}`);
-    messagesEl.appendChild(div);
-  });
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+    inputEl.value = "";
+  };
 }
 
-// ----------------- ADMIN -----------------
-async function renderAdmin() {
-  if (!currentUser || currentUser.uid !== ADMIN_UID) return;
-  adminUsers.innerHTML = "";
-  const usersSnap = await getDocs(collection(db, "users"));
-  usersSnap.forEach(d => {
-    const u = d.data();
-    const card = el("div", { class: "card user" }, `<h4>${u.name || u.email}</h4><p class="muted">${d.id}</p>`);
-    adminUsers.appendChild(card);
-  });
-  adminPosts.innerHTML = "";
-  const postsSnap = await getDocs(collection(db, "posts"));
-  postsSnap.forEach(d => {
-    const p = d.data();
-    const card = el("div", { class: "card post" });
-    card.innerHTML = `<h4>${p.name || p.email}</h4><p>${p.text}</p>`;
-    const del = el("button", { class: "btn" }, "Delete");
-    del.style.background = "crimson";
-    del.addEventListener("click", async () => {
-      if (!confirm("Delete post?")) return;
-      await deleteDoc(doc(db, "posts", d.id));
-      renderAdmin();
-    });
-    card.appendChild(del);
-    adminPosts.appendChild(card);
-  });
-}
-
-// ----------------- WATCHERS & INITIAL RENDER -----------------
-function watchReceivedRequestsCount() {
+// -------------- ADMIN UI --------------
+async function renderAdminUIIfAdmin() {
   if (!currentUser) return;
-  const colRef = collection(db, "users", currentUser.uid, "receivedRequests");
-  onSnapshot(colRef, (snap) => {
-    const count = snap.size;
-    const navEl = $("#nav-profile");
-    if (navEl) navEl.title = count ? `${count} pending friend request(s)` : "";
-  });
+  if (currentUser.uid !== ADMIN_UID) return;
+  const adminUsersEl = document.getElementById("adminUsers");
+  const adminPostsEl = document.getElementById("adminPosts");
+  if (adminUsersEl) {
+    adminUsersEl.innerHTML = "";
+    const usersSnap = await getDocs(collection(db, "users"));
+    usersSnap.forEach(d => {
+      const u = d.data();
+      const node = document.createElement("div");
+      node.className = "card";
+      node.innerHTML = `<strong>${u.name || u.email}</strong><div style="color:#666">${d.id}</div>`;
+      adminUsersEl.appendChild(node);
+    });
+  }
+  if (adminPostsEl) {
+    adminPostsEl.innerHTML = "";
+    const postsSnap = await getDocs(collection(db, "posts"));
+    postsSnap.forEach(d => {
+      const p = d.data();
+      const node = document.createElement("div");
+      node.className = "card";
+      node.innerHTML = `<strong>${p.name || p.email}</strong><p>${p.text || ""}</p>`;
+      const del = document.createElement("button");
+      del.textContent = "Delete";
+      del.style.background = "crimson";
+      del.addEventListener("click", async () => {
+        if (!confirm("Delete this post?")) return;
+        await deleteDoc(doc(db, "posts", d.id));
+        renderAdminUIIfAdmin();
+      });
+      node.appendChild(del);
+      adminPostsEl.appendChild(node);
+    });
+  }
 }
 
-async function afterLoginInit() {
-  try {
-    // Seed products once (Option 1)
-    await seedProductsOnce();
-    // render product page
-    await renderProductsPage();
-    // start live feed
-    startFeed();
-    // render profile info
-    const ud = await getDoc(doc(db, "users", currentUser.uid));
-    if (ud.exists()) {
-      const data = ud.data();
-      if (data.profilePic) profilePicImg.src = data.profilePic;
-      if (data.bio) bioTextarea.value = data.bio;
-    }
-    await renderMyPosts();
-    await renderPendingReceived();
-    await renderPendingSent();
-    await renderFriendsList();
-    await renderChatFriends();
-    await renderAdmin();
-    watchReceivedRequestsCount();
-    showOnly("feed");
-  } catch (err) { console.error("afterLoginInit", err); }
-}
+// -------------- UTILS --------------
+function fmt(n){ return "₦" + Number(n).toLocaleString(); }
 
-// attach logout nav
-document.addEventListener("DOMContentLoaded", () => {
-  if (!currentUser) authModal.style.display = "flex";
-  $("#logout-btn").addEventListener("click", async () => { await signOut(auth); location.reload(); });
-});
+// -------------- FINAL NOTES --------------
+/*
+  1) This file assumes your HTML pages include elements with IDs referenced above.
+  2) Product images: put them in images/ folder in your repo (GitHub pages) with exact names used above.
+  3) Cloudinary: unsigned preset 'unsigned_upload' must be created in your Cloudinary dashboard.
+  4) Firestore rules: use the secure rules I previously gave you (users/posts/products/chats).
+  5) To show a user's profile page, open profile.html?uid=<uid> and use URLSearchParams to load that profile's details (getDoc users/<uid>).
+  6) If your HTML uses different IDs, either rename the elements or update IDs here.
+  7) For performance & security improvements later, move some logic to server side or Cloud Functions if needed.
+*/
 
-// ----------------- Expose helpers for debugging (optional) -----------------
-window.sendFriendRequest = sendFriendRequest;
-window.acceptFriendRequest = acceptFriendRequest;
-window.declineFriendRequest = declineFriendRequest;
-window.openChat = openChat;
+console.log("app.js loaded — all-in-one script");
