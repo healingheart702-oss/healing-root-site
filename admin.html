@@ -8,20 +8,28 @@
 <script type="module" src="js/admin.js" defer></script>
 </head>
 <body>
-<header class="header">
-  <div class="logo"><img src="images/logo.png" alt="logo"><span>HEALING ROOT AGRO</span></div>
-</header>
+  <header class="header">
+    <div class="logo"><img src="images/logo.PNG" alt="logo"><span>HEALING ROOT AGRO</span></div>
+    <nav>
+      <a href="products.html">Products</a>
+      <a href="feed.html">Feed</a>
+      <a href="profile.html">Profile</a>
+      <a href="chat.html">Chat</a>
+      <a href="admin.html" class="active">Admin</a>
+      <a id="logout-link" href="#">Logout</a>
+    </nav>
+  </header>
 
-<main class="container">
-  <section class="card">
-    <h2>Users</h2>
-    <ul id="admin-users"></ul>
-  </section>
+  <main class="container">
+    <section class="card">
+      <h2>Users</h2>
+      <ul id="admin-users"></ul>
+    </section>
 
-  <section class="card">
-    <h2>Posts</h2>
-    <ul id="admin-posts"></ul>
-  </section>
-</main>
+    <section class="card">
+      <h2>Posts</h2>
+      <ul id="admin-posts"></ul>
+    </section>
+  </main>
 </body>
 </html>
