@@ -1,120 +1,94 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>HEALING ROOT AGRO VENTURES — Social Farm</title>
-  <link rel="stylesheet" href="style.css">
-  <!-- Firebase (modules) -->
-  <script type="module" src="https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js"></script>
-  <script type="module" src="https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js"></script>
-  <script type="module" src="https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js"></script>
-  <!-- App (your logic) -->
-  <script type="module" src="app.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healing Root Agro Ventures</title>
+<link rel="stylesheet" href="style.css">
+<style>
+body{font-family:sans-serif;margin:0;padding:0;background:#f4f4f4;}
+header{background:#4CAF50;color:#fff;padding:10px;text-align:center;}
+nav{background:#333;color:#fff;display:flex;justify-content:center;}
+nav button{margin:5px;padding:10px;border:none;color:#fff;background:#4CAF50;cursor:pointer;}
+nav button:hover{background:#45a049;}
+.view{display:none;padding:20px;}
+.card{background:#fff;margin:10px;padding:15px;border-radius:5px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+.card img{max-width:100%;border-radius:5px;}
+.btn{padding:8px 12px;margin-top:5px;background:#4CAF50;color:#fff;border:none;cursor:pointer;border-radius:3px;}
+.btn:hover{background:#45a049;}
+.muted{color:#666;font-size:0.9em;}
+#notifications-panel div{padding:5px;border-bottom:1px solid #ccc;}
+</style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="brand">
-      <img src="images/logo.PNG" alt="logo" class="logo">
-      <div class="brand-title">HEALING ROOT AGRO VENTURES</div>
-    </div>
-    <nav class="main-nav">
-      <a href="#" id="nav-feed">Feed</a>
-      <a href="#" id="nav-products">Products</a>
-      <a href="#" id="nav-profile">Profile</a>
-      <a href="#" id="nav-chat">Chat</a>
-      <a href="#" id="nav-admin" style="display:none">Admin</a>
-      <button id="logout-btn" class="btn small" style="display:none">Logout</button>
-    </nav>
-  </header>
 
-  <main id="app">
-    <!-- LOGIN / SIGNUP Modal -->
-    <div id="auth-modal" class="modal">
-      <div class="modal-card">
-        <h2>Welcome — Sign in or Create account</h2>
+<header>
+  <h1>Healing Root Agro Ventures</h1>
+  <button id="logout-btn" style="display:none;">Logout</button>
+</header>
 
-        <div id="auth-forms">
-          <form id="signup-form" class="auth-form">
-            <input id="signup-name" placeholder="Full name" required />
-            <input id="signup-email" type="email" placeholder="Email" required />
-            <input id="signup-password" type="password" placeholder="Password" required />
-            <button class="btn">Create Account</button>
-          </form>
+<nav>
+  <button id="nav-feed">Feed</button>
+  <button id="nav-products">Products</button>
+  <button id="nav-profile">Profile</button>
+  <button id="nav-chat">Chat</button>
+  <button id="nav-admin" style="display:none;">Admin</button>
+</nav>
 
-          <hr/>
+<!-- AUTH MODAL -->
+<div id="auth-modal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;">
+  <div style="background:#fff;padding:20px;border-radius:5px;width:300px;">
+    <h2>Sign Up</h2>
+    <form id="signup-form">
+      <input type="text" id="signup-name" placeholder="Name" required><br><br>
+      <input type="email" id="signup-email" placeholder="Email" required><br><br>
+      <input type="password" id="signup-password" placeholder="Password" required><br><br>
+      <button type="submit" class="btn">Sign Up</button>
+    </form>
+    <hr>
+    <h2>Login</h2>
+    <form id="login-form">
+      <input type="email" id="login-email" placeholder="Email" required><br><br>
+      <input type="password" id="login-password" placeholder="Password" required><br><br>
+      <button type="submit" class="btn">Login</button>
+    </form>
+    <p id="auth-message" style="color:red;"></p>
+  </div>
+</div>
 
-          <form id="login-form" class="auth-form">
-            <input id="login-email" type="email" placeholder="Email" required />
-            <input id="login-password" type="password" placeholder="Password" required />
-            <button class="btn">Login</button>
-          </form>
+<!-- VIEWS -->
+<div id="feed-view" class="view"></div>
+<div id="products-view" class="view">
+  <div id="product-list"></div>
+</div>
+<div id="profile-view" class="view">
+  <h2>Your Profile</h2>
+  <img id="profile-pic" src="images/default_profile.png" width="100" height="100"><br><br>
+  <input type="file" id="profile-upload"><button id="save-profile-pic" class="btn">Save Profile Pic</button><br><br>
+  <textarea id="bio" placeholder="Your bio..."></textarea><button id="save-bio" class="btn">Save Bio</button><br><br>
+  <h3>Friends</h3>
+  <div id="friends"></div>
+  <h3>Post Something</h3>
+  <textarea id="post-text" placeholder="Write something..."></textarea><br>
+  <input type="file" id="post-image"><button id="post-btn" class="btn">Post</button>
+</div>
+<div id="chat-view" class="view">
+  <h2>Chat</h2>
+  <div id="friends-chat-list"></div>
+  <div id="chat-window" style="display:none;">
+    <h3 id="chat-with"></h3>
+    <div id="messages" style="height:200px;overflow-y:auto;border:1px solid #ccc;padding:5px;"></div>
+    <input type="text" id="chat-input" placeholder="Type message..."><button id="send-chat" class="btn">Send</button>
+  </div>
+</div>
+<div id="admin-view" class="view" style="display:none;">
+  <h2>Admin Panel</h2>
+  <h3>Users</h3>
+  <div id="admin-users"></div>
+  <h3>Posts</h3>
+  <div id="admin-posts"></div>
+</div>
 
-          <p id="auth-message" class="muted"></p>
-        </div>
-      </div>
-    </div>
-
-    <!-- FEED -->
-    <section id="feed-view" class="view" style="display:none">
-      <h1>Social Feed</h1>
-      <div id="create-post" class="card">
-        <h3>Create Post</h3>
-        <textarea id="post-text" placeholder="Write something..."></textarea>
-        <input id="post-image" type="file" accept="image/*">
-        <button id="post-btn" class="btn">Post</button>
-      </div>
-      <div id="feed" class="grid"></div>
-    </section>
-
-    <!-- PRODUCTS -->
-    <section id="products-view" class="view" style="display:none">
-      <h1>Products</h1>
-      <div id="product-list" class="grid"></div>
-    </section>
-
-    <!-- PROFILE -->
-    <section id="profile-view" class="view" style="display:none">
-      <h1>My Profile</h1>
-      <div class="card profile-card">
-        <img id="profile-pic" src="images/default_profile.png" alt="profile" class="profile-pic">
-        <input id="profile-upload" type="file" accept="image/*">
-        <button id="save-profile-pic" class="btn">Upload & Save Picture</button>
-        <textarea id="bio" placeholder="Write bio..."></textarea>
-        <button id="save-bio" class="btn">Save Bio</button>
-      </div>
-
-      <h2>My Posts</h2>
-      <div id="my-posts" class="grid"></div>
-
-      <h2>Friends</h2>
-      <div id="friends" class="grid"></div>
-    </section>
-
-    <!-- CHAT -->
-    <section id="chat-view" class="view" style="display:none">
-      <h1>Chat</h1>
-      <div id="friends-chat-list" class="grid"></div>
-      <div id="chat-window" style="display:none" class="card">
-        <h3 id="chat-with">Chat</h3>
-        <div id="messages" class="messages"></div>
-        <input id="chat-input" placeholder="Type a message">
-        <button id="send-chat" class="btn">Send</button>
-      </div>
-    </section>
-
-    <!-- ADMIN -->
-    <section id="admin-view" class="view" style="display:none">
-      <h1>Admin Dashboard</h1>
-      <h2>All Users</h2>
-      <div id="admin-users" class="grid"></div>
-      <h2>All Posts</h2>
-      <div id="admin-posts" class="grid"></div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    Healing Root AGRO Ventures · Call: 08153729342 · WhatsApp: +2349138938301
-  </footer>
+<script type="module" src="app.js"></script>
 </body>
 </html>
