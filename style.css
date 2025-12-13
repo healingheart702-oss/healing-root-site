@@ -1,126 +1,85 @@
-/* style.css — Healingroot Agro Ventures */
+:root {
+  --primary-green: #006400;
+  --secondary-white: #ffffff;
+  --muted-gray: #555;
+}
 
-body{
-  margin:0;
+body {
   font-family: Arial, sans-serif;
-  background:#f0f6f0;
-  color:#333;
+  background: var(--secondary-white);
+  color: var(--primary-green);
+  margin:0;
+  padding:0;
 }
 
-nav{
+nav {
   display:flex;
-  gap:20px;
-  background:#2b5d34;
-  color:#fff;
-  padding:10px 20px;
-  flex-wrap:wrap;
+  justify-content: space-between;
+  background: var(--primary-green);
+  color: var(--secondary-white);
+  padding: 10px 20px;
 }
 
-.nav-item{
+nav button {
+  margin:0 5px;
+  background: var(--secondary-white);
+  color: var(--primary-green);
+  border:none;
+  padding:5px 10px;
   cursor:pointer;
-  font-weight:bold;
-}
-
-.view{
-  display:none;
-  padding:20px;
-}
-
-.card{
-  background:#fff;
   border-radius:5px;
-  box-shadow:0 2px 5px rgba(0,0,0,0.1);
-  padding:15px;
-  margin:10px 0;
 }
 
-.card img{
+.view { display:none; padding:20px; }
+
+.modal {
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,0.5);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.modal-content {
+  background: var(--secondary-white);
+  padding:20px;
+  border-radius:10px;
+  min-width:300px;
+}
+
+.card {
+  border:1px solid var(--primary-green);
+  border-radius:8px;
+  margin:10px 0;
+  padding:10px;
+  background:#f9f9f9;
+}
+
+.card img {
   max-width:100%;
   height:auto;
   border-radius:5px;
 }
 
-.btn{
-  background:#2b5d34;
-  color:#fff;
+.btn {
+  background: var(--primary-green);
+  color: var(--secondary-white);
   border:none;
-  padding:8px 15px;
+  padding:5px 10px;
   cursor:pointer;
-  border-radius:4px;
   margin-top:5px;
-}
-
-.btn:hover{
-  background:#1f4024;
-}
-
-.modal{
-  position:fixed;
-  top:0; left:0; right:0; bottom:0;
-  background:rgba(0,0,0,0.6);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index:1000;
-}
-
-.modal-content{
-  background:#fff;
-  padding:20px;
   border-radius:5px;
-  width:90%;
-  max-width:400px;
 }
 
-.message{
-  color:red;
-  margin-bottom:10px;
+.btn:hover {
+  background:#004d00;
 }
 
-.profile-pic{
-  width:120px;
-  height:120px;
-  border-radius:50%;
-  display:block;
-  margin-bottom:10px;
-}
-
-textarea{
+textarea {
   width:100%;
-  height:80px;
-  margin-top:10px;
-  padding:5px;
-  border-radius:5px;
-  border:1px solid #ccc;
-}
-
-.chat-messages{
-  max-height:300px;
-  overflow-y:auto;
-  border:1px solid #ccc;
-  padding:5px;
-  margin-bottom:10px;
-}
-
-#notifications-panel{
-  position:fixed;
-  right:10px;
-  top:60px;
-  width:250px;
-  background:#f0f6f0;
-  border:1px solid #2b5d34;
-  border-radius:5px;
   padding:10px;
-}
-
-.notification{
-  background:#e0f0d9;
   margin:5px 0;
-  padding:5px;
-  border-left:4px solid #2b5d34;
-}
-
-@media(max-width:600px){
-  nav{ flex-direction:column; }
-  #notifications-panel{ position:static; width:100%; margin-top:10px;}
+  border-radius:5px;
+  border:1px solid var(--primary-green);
 }
