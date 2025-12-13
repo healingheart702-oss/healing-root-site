@@ -1,87 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Healing Root Agro Ventures Farm Social</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healing Root Agro Ventures — Mini Social</title>
+<link rel="stylesheet" href="style.css">
+<script type="module" src="app.js" defer></script>
 </head>
 <body>
-  <!-- Authentication Modal -->
+
+<header class="site-header">
+  <div class="brand">
+    <img src="images/logo.PNG" alt="logo" class="logo">
+    <span class="brand-title">HEALING ROOT AGRO VENTURES</span>
+  </div>
+  <nav class="main-nav">
+    <a href="#" id="nav-feed">Feed</a>
+    <a href="#" id="nav-products">Products</a>
+    <a href="#" id="nav-profile">Profile</a>
+    <a href="#" id="nav-chat">Chat</a>
+    <a href="#" id="nav-notifications">Notifications</a>
+    <a href="#" id="nav-admin" style="display:none">Admin</a>
+    <button id="logout-btn" class="btn small" style="display:none">Logout</button>
+  </nav>
+</header>
+
+<main id="app">
+
+  <!-- AUTH MODAL -->
   <div id="auth-modal" class="modal">
-    <div class="modal-content">
+    <div class="modal-card">
       <h2>Sign In / Sign Up</h2>
-      <div id="auth-message" class="error"></div>
-
       <form id="signup-form">
-        <input type="text" id="signup-name" placeholder="Full Name">
-        <input type="email" id="signup-email" placeholder="Email">
-        <input type="password" id="signup-password" placeholder="Password">
-        <button type="submit" class="btn">Sign Up</button>
+        <input id="signup-name" placeholder="Full Name" required>
+        <input id="signup-email" type="email" placeholder="Email" required>
+        <input id="signup-password" type="password" placeholder="Password" required>
+        <button class="btn">Create Account</button>
       </form>
-
+      <hr>
       <form id="login-form">
-        <input type="email" id="login-email" placeholder="Email">
-        <input type="password" id="login-password" placeholder="Password">
-        <button type="submit" class="btn">Log In</button>
+        <input id="login-email" type="email" placeholder="Email" required>
+        <input id="login-password" type="password" placeholder="Password" required>
+        <button class="btn">Login</button>
       </form>
+      <p id="auth-message" class="muted"></p>
     </div>
   </div>
 
-  <!-- Navigation -->
-  <nav>
-    <button id="nav-feed">Feed</button>
-    <button id="nav-products">Products</button>
-    <button id="nav-profile">Profile</button>
-    <button id="nav-chat">Chat</button>
-    <button id="nav-admin" style="display:none;">Admin</button>
-    <button id="logout-btn" style="display:none;">Log Out</button>
-  </nav>
+  <!-- FEED VIEW -->
+  <section id="feed-view" class="view" style="display:none">
+    <h1>Feed</h1>
 
-  <!-- Views -->
-  <div id="feed-view" class="view">
-    <h2>Feed</h2>
-    <div id="post-creator">
-      <textarea id="post-text" placeholder="What's on your mind?"></textarea>
-      <input type="file" id="post-image">
+    <!-- Stories Section -->
+    <div id="stories" class="stories">
+      <!-- Story thumbnails will be appended here dynamically -->
+    </div>
+
+    <!-- Create Post -->
+    <div id="create-post" class="card">
+      <textarea id="post-text" placeholder="Write something..."></textarea>
+      <input type="file" id="post-image" accept="image/*">
       <button id="post-btn" class="btn">Post</button>
     </div>
-    <div id="feed"></div>
-  </div>
 
-  <div id="products-view" class="view" style="display:none;">
-    <h2>Products</h2>
-    <div id="product-list"></div>
-  </div>
+    <!-- Feed Posts -->
+    <div id="feed" class="grid"></div>
+  </section>
 
-  <div id="profile-view" class="view" style="display:none;">
-    <h2>My Profile</h2>
-    <img id="profile-pic" src="images/default_profile.png" alt="Profile Picture" width="120">
-    <input type="file" id="profile-upload">
-    <button id="save-profile-pic" class="btn">Save Picture</button>
-    <textarea id="bio" placeholder="Your bio..."></textarea>
-    <button id="save-bio" class="btn">Save Bio</button>
-    <h3>Friends</h3>
-    <div id="friends"></div>
-    <h3>Notifications 📣</h3>
-    <div id="notifications"></div>
-  </div>
+  <!-- PRODUCTS VIEW -->
+  <section id="products-view" class="view" style="display:none">
+    <h1>Products</h1>
+    <div id="product-list" class="grid"></div>
+  </section>
 
-  <div id="chat-view" class="view" style="display:none;">
-    <h2 id="chat-with">Chat</h2>
-    <div id="messages" style="height:300px; overflow-y:auto; border:1px solid #ccc; padding:5px;"></div>
-    <input type="text" id="chat-input" placeholder="Type your message...">
-    <button id="send-chat" class="btn">Send</button>
-  </div>
+  <!-- PROFILE VIEW -->
+  <section id="profile-view" class="view" style="display:none">
+    <h1>Profile</h1>
+    <div class="card profile-card">
+      <img id="profile-pic" src="images/default_profile.png" alt="Profile Pic" class="profile-pic">
+      <input id="profile-upload" type="file" accept="image/*">
+      <button id="save-profile-pic" class="btn">Save Picture</button>
+      <textarea id="bio" placeholder="Write your bio"></textarea>
+      <button id="save-bio" class="btn">Save Bio</button>
+    </div>
 
-  <div id="admin-view" class="view" style="display:none;">
-    <h2>Admin Panel</h2>
-    <h3>Users</h3>
-    <div id="admin-users"></div>
-    <h3>Posts</h3>
-    <div id="admin-posts"></div>
-  </div>
+    <h2>Friend Requests</h2>
+    <div id="friend-requests" class="grid"></div>
 
-  <script type="module" src="app.js"></script>
+    <h2>Friends</h2>
+    <div id="friends" class="grid"></div>
+
+    <h2>My Posts</h2>
+    <div id="my-posts" class="grid"></div>
+  </section>
+
+  <!-- CHAT VIEW -->
+  <section id="chat-view" class="view" style="display:none">
+    <h1>Chat</h1>
+
+    <!-- Friends for Chat -->
+    <div id="friends-chat-list" class="grid"></div>
+
+    <!-- Chat Window -->
+    <div id="chat-window" style="display:none" class="card">
+      <h3 id="chat-with">Chat</h3>
+      <div id="messages" class="messages"></div>
+      <input id="chat-input" placeholder="Type a message">
+      <button id="send-chat" class="btn">Send</button>
+    </div>
+  </section>
+
+  <!-- NOTIFICATIONS VIEW -->
+  <section id="notifications-view" class="view" style="display:none">
+    <h1>Notifications</h1>
+    <div id="notifications" class="grid"></div>
+  </section>
+
+  <!-- ADMIN VIEW -->
+  <section id="admin-view" class="view" style="display:none">
+    <h1>Admin Dashboard</h1>
+    <h2>All Users</h2>
+    <div id="admin-users" class="grid"></div>
+    <h2>All Posts</h2>
+    <div id="admin-posts" class="grid"></div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  Healing Root AGRO Ventures · Call: 08153729342 · WhatsApp: +2349138938301
+</footer>
+
 </body>
 </html>
