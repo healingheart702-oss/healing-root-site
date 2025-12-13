@@ -336,7 +336,7 @@ $('#send-chat')?.addEventListener('click', async ()=>{
 
 // ---------------------- ADMIN ----------------------
 async function renderAdmin(){
-  if(!currentUser || currentUser.uid!==ADMIN_UID) return;
+  if(!currentUser || currentUser.uid!==gKwgPDNJgsdcApIJch6NM9bKmf02) return;
   $('#admin-view').style.display='block';
   const usersContainer = $('#admin-users'); usersContainer.innerHTML='';
   const usnap = await getDocs(collection(db,'users'));
