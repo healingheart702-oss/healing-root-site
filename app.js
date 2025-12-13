@@ -24,7 +24,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Admin UID
 const ADMIN_UID = "gKwgPDNJgsdcApIJch6NM9bKmf02";
 
 // ---------------------- PRODUCTS ----------------------
@@ -174,6 +173,7 @@ async function renderProducts(){
 // ---------------------- FEED ----------------------
 async function renderFeed(){
   const feed = $('#feed'); feed.innerHTML='';
+
   // products feed
   products.forEach(p=>{
     const card = el('div',{class:'card post'}, `
@@ -189,8 +189,10 @@ async function renderFeed(){
     feed.appendChild(card);
   });
 
+  // posts feed
   const postsRef = collection(db,'posts');
   onSnapshot(query(postsRef, orderBy('timestamp','desc')), snap=>{
+    feed.innerHTML=''; // clear to refresh
     snap.forEach(docSnap=>{
       const post = docSnap.data();
       const card = el('div',{class:'card post'});
@@ -199,7 +201,7 @@ async function renderFeed(){
         <h3>${post.name||'User'}</h3>
         <p>${post.text}</p>
         <p class="muted">by ${post.email||'user'}</p>
-        <div class="likes"><span class="like-count">0</span> Likes <button class="like-btn btn small">Like</button></div>
+        <div class="likes"><span class="like-count">${post.likes?.length||0}</span> Likes <button class="like-btn btn small">Like</button></div>
         <div class="comments"></div>
         <input class="comment-input" placeholder="Comment..."><button class="comment-btn btn small">Comment</button>
       `;
@@ -209,37 +211,37 @@ async function renderFeed(){
         card.appendChild(del);
       }
       feed.appendChild(card);
+
+      // like button
+      card.querySelector('.like-btn')?.addEventListener('click', async ()=>{
+        const likes = post.likes || [];
+        if(!likes.includes(currentUser.uid)) likes.push(currentUser.uid);
+        await updateDoc(doc(db,'posts',docSnap.id),{likes});
+        await addDoc(collection(db,'notifications'),{userId:post.uid,type:'like',fromName:currentUser.displayName||currentUser.email,message:'liked your post',read:false,timestamp:serverTimestamp()});
+      });
+
+      // comment button
+      card.querySelector('.comment-btn')?.addEventListener('click', async ()=>{
+        const input = card.querySelector('.comment-input');
+        const text = input.value.trim(); if(!text) return;
+        const comment = {uid:currentUser.uid,name:currentUser.displayName||currentUser.email,text,timestamp:serverTimestamp()};
+        const comments = post.comments||[];
+        comments.push(comment);
+        await updateDoc(doc(db,'posts',docSnap.id),{comments});
+        await addDoc(collection(db,'notifications'),{userId:post.uid,type:'comment',fromName:currentUser.displayName||currentUser.email,message:'commented on your post',read:false,timestamp:serverTimestamp()});
+        input.value='';
+      });
     });
   });
 }
-
-// ---------------------- CREATE POST ----------------------
-$('#post-btn')?.addEventListener('click', async ()=>{
-  if(!currentUser){ alert('Sign in first'); return; }
-  const text = $('#post-text').value.trim();
-  const file = $('#post-image').files[0];
-  let imageUrl = '';
-  if(file){
-    const fd = new FormData(); fd.append('file',file); fd.append('upload_preset',UPLOAD_PRESET);
-    try { const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd}); const data=await res.json(); imageUrl=data.secure_url; } catch(err){ alert('Upload failed'); return; }
-  }
-  await addDoc(collection(db,'posts'),{
-    uid: currentUser.uid,
-    email: currentUser.email,
-    name: currentUser.displayName||'',
-    text,
-    image: imageUrl,
-    timestamp: serverTimestamp()
-  });
-  $('#post-text').value=''; $('#post-image').value='';
-});
 
 // ---------------------- PROFILE ----------------------
 $('#save-profile-pic')?.addEventListener('click', async ()=>{
   if(!currentUser){ alert('Sign in'); return; }
   const file = $('#profile-upload').files[0]; if(!file){ alert('Choose file'); return; }
   const fd = new FormData(); fd.append('file',file); fd.append('upload_preset',UPLOAD_PRESET);
-  try { const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd}); const data = await res.json(); const url=data.secure_url;
+  try { const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd}); const data=await res.json(); const url=data.secure_url;
+    await updateProfile(currentUser,{photoURL:url});
     await setDoc(doc(db,'users',currentUser.uid),{profilePic:url},{merge:true});
     $('#profile-pic').src=url; alert('Profile picture saved');
   } catch(err){ alert('Upload failed'); }
@@ -252,7 +254,7 @@ $('#save-bio')?.addEventListener('click', async ()=>{
   alert('Bio saved');
 });
 
-// ---------------------- FRIEND REQUEST & NOTIFICATIONS ----------------------
+// ---------------------- FRIENDS ----------------------
 async function renderFriends(){
   const container = $('#friends'); container.innerHTML='';
   const snap = await getDocs(collection(db,'users'));
@@ -269,6 +271,7 @@ async function renderFriends(){
   });
 }
 
+// ---------------------- NOTIFICATIONS ----------------------
 async function renderNotifications(){
   const container = $('#notifications'); if(!currentUser) return;
   const q = query(collection(db,'notifications'),where('userId','==',currentUser.uid),orderBy('timestamp','desc'));
@@ -284,7 +287,10 @@ async function renderNotifications(){
 
 // ---------------------- CHAT ----------------------
 let activeChatWith = null;
-function openChat(uid){ activeChatWith=uid; $('#chat-window').style.display='block'; $('#chat-with').textContent='Chat'; loadMessages(uid); }
+function openChat(uid,name){
+  activeChatWith=uid; $('#chat-window').style.display='block'; $('#chat-with').textContent='Chat with '+name;
+  loadMessages(uid);
+}
 $('#send-chat')?.addEventListener('click', async ()=>{
   if(!currentUser||!activeChatWith) return alert('Select friend'); 
   const msg = $('#chat-input').value.trim(); if(!msg) return;
@@ -293,15 +299,15 @@ $('#send-chat')?.addEventListener('click', async ()=>{
 });
 
 async function loadMessages(uid){
-  $('#messages').innerHTML='';
+  const messagesEl = $('#messages'); messagesEl.innerHTML='';
   const q = query(collection(db,'chats'),where('participants','array-contains',currentUser.uid),orderBy('timestamp','asc'));
   onSnapshot(q,snap=>{
-    $('#messages').innerHTML='';
+    messagesEl.innerHTML='';
     snap.forEach(docSnap=>{
       const m=docSnap.data();
       if(m.participants.includes(uid)){
         const div = el('div',{},`<strong>${m.from===currentUser.uid?'You':'Friend'}:</strong> ${m.text}`);
-        $('#messages').appendChild(div);
+        messagesEl.appendChild(div);
       }
     });
   });
