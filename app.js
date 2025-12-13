@@ -24,67 +24,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Admin UID
 const ADMIN_UID = "gKwgPDNJgsdcApIJch6NM9bKmf02";
-
-// ---------------------- PRODUCTS ----------------------
-const products = [
-  {
-    id: "cassava",
-    name: "Cassava Stems (TME419)",
-    image: "images/cassava.JPG",
-    price: 1000,
-    description: `Healing Root Agro Ventures provides TME419 cassava stems, carefully selected for disease resistance, high yield, and excellent starch content. Our seedlings are nurtured under optimal farm conditions to ensure healthy growth and vigorous planting. Farmers across Nigeria trust our cassava stems to deliver rapid sprouting, uniform growth, and robust tuber development, providing dependable returns and sustainable cultivation.`
-  },
-  {
-    id: "plantain",
-    name: "Hybrid Plantain Suckers",
-    image: "images/plantain.JPG",
-    price: 500,
-    description: `Our hybrid plantain suckers are chosen for early maturity, high disease tolerance, and consistent bunch formation. Healing Root Agro Ventures ensures each sucker is robust and vigorous, promoting healthy growth and early fruiting. These plantains are ideal for small-scale and commercial farmers seeking reliable yields, uniform bunch size, and long-term productivity.`
-  },
-  {
-    id: "banana",
-    name: "Hybrid Dwarf Banana",
-    image: "images/giant_banana.JPG",
-    price: 500,
-    description: `The Hybrid Dwarf Banana is optimized for fast returns, easy maintenance, and compact plantation layouts. Healing Root Agro Ventures supplies these bananas to help farmers achieve early harvests, high bunch quality, and excellent disease resistance. Perfect for intensive cultivation and commercial banana farms seeking high-yield varieties.`
-  },
-  {
-    id: "oilpalm",
-    name: "Tenera Oil Palm Seedlings",
-    image: "images/oilpalm.JPG",
-    price: 1000,
-    description: `Tenera oil palm seedlings from Healing Root Agro Ventures are a long-term agricultural investment. They are carefully raised for strong root development, uniform growth, and high oil yield potential. Ideal for commercial plantations, these seedlings promise early bunch production and consistent fruit quality, ensuring sustainable and profitable oil palm farming.`
-  },
-  {
-    id: "coconut",
-    name: "Hybrid Dwarf Coconut Seedlings",
-    image: "images/coconut.JPG",
-    price: 4500,
-    description: `Healing Root Agro Ventures supplies premium hybrid dwarf coconut seedlings that thrive under various soil and climate conditions. These seedlings are selected for high survival rates, strong growth, and early nut production, making them perfect for commercial coconut plantations and smallholder farmers alike.`
-  },
-  {
-    id: "giant_cocoa",
-    name: "Hybrid Giant Cocoa Seedlings",
-    image: "images/giant_cocoa.JPG",
-    price: 500,
-    description: `Our hybrid giant cocoa seedlings offer farmers a dependable source for high-quality cocoa production. Healing Root Agro Ventures nurtures these seedlings for strong roots, resistance to diseases, and vigorous growth, ensuring healthy trees and abundant pod yield over the years.`
-  },
-  {
-    id: "pineapple",
-    name: "Pineapple Seedlings",
-    image: "images/pineapple.JPG",
-    price: 400,
-    description: `Healing Root Agro Ventures supplies pineapple seedlings carefully selected for sweetness, uniform size, and pest resistance. These seedlings ensure strong growth, early fruiting, and consistent yield, suitable for commercial and small-scale farms aiming for high-quality produce.`
-  },
-  {
-    id: "yam",
-    name: "Treated Yam Setts",
-    image: "images/Yamsett.JPG",
-    price: 700,
-    description: `Our treated yam setts are sourced from disease-free, high-yielding tubers. Healing Root Agro Ventures ensures rapid sprouting, healthy vine growth, and strong tuber development. Ideal for both traditional and commercial yam farms, these setts promote consistent yield and profitable harvests.`
-  }
-];
 
 // ---------------------- DOM Helpers ----------------------
 const $ = s => document.querySelector(s);
@@ -142,7 +83,6 @@ onAuthStateChanged(auth, async user=>{
     navAdmin.style.display=(user.uid===ADMIN_UID)?'inline-block':'none';
     $('#nav-feed').click();
     await renderAll();
-    renderNotifications();
   } else {
     showAuthModal(true);
     $('#logout-btn').style.display='none';
@@ -152,6 +92,17 @@ onAuthStateChanged(auth, async user=>{
 });
 
 // ---------------------- PRODUCTS ----------------------
+const products = [
+  {id:"cassava",name:"Cassava Stems (TME419)",image:"images/cassava.JPG",price:1000,description:`Healing Root Agro Ventures provides TME419 cassava stems, carefully selected for disease resistance, high yield, and excellent starch content.`},
+  {id:"plantain",name:"Hybrid Plantain Suckers",image:"images/plantain.JPG",price:500,description:`Our hybrid plantain suckers are chosen for early maturity, high disease tolerance, and consistent bunch formation.`},
+  {id:"banana",name:"Hybrid Dwarf Banana",image:"images/giant_banana.JPG",price:500,description:`The Hybrid Dwarf Banana is optimized for fast returns, easy maintenance, and compact plantation layouts.`},
+  {id:"oilpalm",name:"Tenera Oil Palm Seedlings",image:"images/oilpalm.JPG",price:1000,description:`Tenera oil palm seedlings are a long-term agricultural investment, carefully raised for strong root development and high oil yield.`},
+  {id:"coconut",name:"Hybrid Dwarf Coconut Seedlings",image:"images/coconut.JPG",price:4500,description:`Premium hybrid dwarf coconut seedlings that thrive under various soil and climate conditions.`},
+  {id:"giant_cocoa",name:"Hybrid Giant Cocoa Seedlings",image:"images/giant_cocoa.JPG",price:500,description:`Hybrid giant cocoa seedlings nurtured for strong roots, disease resistance, and vigorous growth.`},
+  {id:"pineapple",name:"Pineapple Seedlings",image:"images/pineapple.JPG",price:400,description:`Pineapple seedlings carefully selected for sweetness, uniform size, and pest resistance.`},
+  {id:"yam",name:"Treated Yam Setts",image:"images/Yamsett.JPG",price:700,description:`Treated yam setts sourced from disease-free, high-yielding tubers, ensuring healthy growth and strong tubers.`}
+];
+
 async function renderProducts(){
   const container = $('#product-list'); container.innerHTML='';
   products.forEach(p=>{
@@ -173,26 +124,9 @@ async function renderProducts(){
 // ---------------------- FEED ----------------------
 async function renderFeed(){
   const feed = $('#feed'); feed.innerHTML='';
-
-  // products feed
-  products.forEach(p=>{
-    const card = el('div',{class:'card post'}, `
-      <img src="${p.image}" alt="${p.name}">
-      <h3>${p.name}</h3>
-      <p class="muted">Price: ₦${p.price.toLocaleString()}</p>
-      <p>${p.description}</p>
-      <button class="btn order" data-name="${p.name}" data-price="${p.price}">Order via WhatsApp</button>
-      <div class="likes"><span class="like-count">0</span> Likes <button class="like-btn btn small">Like</button></div>
-      <div class="comments"></div>
-      <input class="comment-input" placeholder="Comment..."><button class="comment-btn btn small">Comment</button>
-    `);
-    feed.appendChild(card);
-  });
-
-  // posts feed
   const postsRef = collection(db,'posts');
   onSnapshot(query(postsRef, orderBy('timestamp','desc')), snap=>{
-    feed.innerHTML=''; // clear to refresh
+    feed.innerHTML='';
     snap.forEach(docSnap=>{
       const post = docSnap.data();
       const card = el('div',{class:'card post'});
@@ -212,15 +146,15 @@ async function renderFeed(){
       }
       feed.appendChild(card);
 
-      // like button
+      // like
       card.querySelector('.like-btn')?.addEventListener('click', async ()=>{
         const likes = post.likes || [];
         if(!likes.includes(currentUser.uid)) likes.push(currentUser.uid);
         await updateDoc(doc(db,'posts',docSnap.id),{likes});
-        await addDoc(collection(db,'notifications'),{userId:post.uid,type:'like',fromName:currentUser.displayName||currentUser.email,message:'liked your post',read:false,timestamp:serverTimestamp()});
+        if(post.uid) await addDoc(collection(db,'notifications'),{userId:post.uid,type:'like',fromName:currentUser.displayName||currentUser.email,message:'liked your post',read:false,timestamp:serverTimestamp()});
       });
 
-      // comment button
+      // comment
       card.querySelector('.comment-btn')?.addEventListener('click', async ()=>{
         const input = card.querySelector('.comment-input');
         const text = input.value.trim(); if(!text) return;
@@ -228,19 +162,42 @@ async function renderFeed(){
         const comments = post.comments||[];
         comments.push(comment);
         await updateDoc(doc(db,'posts',docSnap.id),{comments});
-        await addDoc(collection(db,'notifications'),{userId:post.uid,type:'comment',fromName:currentUser.displayName||currentUser.email,message:'commented on your post',read:false,timestamp:serverTimestamp()});
+        if(post.uid) await addDoc(collection(db,'notifications'),{userId:post.uid,type:'comment',fromName:currentUser.displayName||currentUser.email,message:'commented on your post',read:false,timestamp:serverTimestamp()});
         input.value='';
       });
     });
   });
 }
 
+// ---------------------- CREATE POST ----------------------
+$('#post-btn')?.addEventListener('click', async ()=>{
+  if(!currentUser){ alert('Sign in first'); return; }
+  const text = $('#post-text').value.trim();
+  const file = $('#post-image').files[0];
+  let imageUrl = '';
+  if(file){
+    const fd = new FormData(); fd.append('file',file); fd.append('upload_preset',UPLOAD_PRESET);
+    try { const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd}); const data=await res.json(); imageUrl=data.secure_url; } catch(err){ alert('Upload failed'); return; }
+  }
+  await addDoc(collection(db,'posts'),{
+    uid: currentUser.uid,
+    email: currentUser.email,
+    name: currentUser.displayName||'',
+    text,
+    image: imageUrl,
+    likes: [],
+    comments: [],
+    timestamp: serverTimestamp()
+  });
+  $('#post-text').value=''; $('#post-image').value='';
+});
+
 // ---------------------- PROFILE ----------------------
 $('#save-profile-pic')?.addEventListener('click', async ()=>{
   if(!currentUser){ alert('Sign in'); return; }
   const file = $('#profile-upload').files[0]; if(!file){ alert('Choose file'); return; }
   const fd = new FormData(); fd.append('file',file); fd.append('upload_preset',UPLOAD_PRESET);
-  try { const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd}); const data=await res.json(); const url=data.secure_url;
+  try { const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd}); const data = await res.json(); const url=data.secure_url;
     await updateProfile(currentUser,{photoURL:url});
     await setDoc(doc(db,'users',currentUser.uid),{profilePic:url},{merge:true});
     $('#profile-pic').src=url; alert('Profile picture saved');
