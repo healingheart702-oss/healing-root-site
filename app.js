@@ -195,25 +195,6 @@ async function renderProfile(uid){
   const postsSnap = await getDocs(collection(db,'posts'));
   const postsCount = postsSnap.docs.filter(d=>d.data().uid===uid).length;
 
-  // ---------------------- PROFILE ----------------------
-async function renderProfile(uid){
-  const userDoc = await getDocs(query(collection(db,'users'),where('__name__','==',uid)));
-  if(userDoc.empty) return;
-  const u = userDoc.docs[0].data();
-
-  // Populate profile card
-  $('#profile-pic').src = u.profilePic || 'images/default_profile.png';
-  $('#bio').value = u.bio || '';
-  $('#cover-photo')?.remove();
-  const cover = el('img',{id:'cover-photo',class:'cover-photo',src:u.coverPhoto||'images/default_cover.jpg'});
-  $('.profile-card').prepend(cover);
-
-  // Stats
-  const friendsSnap = await getDocs(collection(db,'friendRequests'));
-  const friendsCount = friendsSnap.docs.filter(d=>d.data().from===uid || d.data().to===uid).length;
-  const postsSnap = await getDocs(collection(db,'posts'));
-  const postsCount = postsSnap.docs.filter(d=>d.data().uid===uid).length;
-
   $('#profile-stats')?.remove();
   const stats = el('div',{id:'profile-stats',class:'profile-stats'},`
     <p>Friends: ${friendsCount}</p>
@@ -221,17 +202,13 @@ async function renderProfile(uid){
   `);
   $('.profile-card').appendChild(stats);
 }
-}
 
 // ---------------------- COVER PHOTO ----------------------
 $('#save-cover')?.addEventListener('click', async ()=>{
   if(!currentUser){ alert('Sign in'); return; }
   const file = $('#cover-upload').files[0]; if(!file){ alert('Choose file'); return; }
   const fd = new FormData(); fd.append('file',file); fd.append('upload_preset',UPLOAD_PRESET);
-  try {
-    const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd});
-    const data = await res.json(); 
-    const url = data.secure_url;
+  try { const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd}); const data = await res.json(); const url=data.secure_url;
     await setDoc(doc(db,'users',currentUser.uid),{coverPhoto:url},{merge:true});
     await renderProfile(currentUser.uid);
     alert('Cover photo saved');
@@ -318,17 +295,9 @@ async function renderAdmin(){
 // ---------------------- NAV ----------------------
 $('#nav-feed').addEventListener('click', ()=>showView('feed'));
 $('#nav-products').addEventListener('click', ()=>showView('products'));
-$('#nav-profile').addEventListener('click', ()=>{
-  showView('profile'); 
-  renderFriends(); 
-  renderProfile(currentUser.uid);
-});
-$('#nav-chat').addEventListener('click', ()=>showView('chat'));
-$('#nav-notifications').addEventListener('click', ()=>showView('notifications'));
-$('#nav-admin').addEventListener('click', ()=>{
-  showView('admin'); 
-  renderAdmin();
-});
+$('#nav-profile').addEventListener('click', ()=>{ showView('profile'); renderFriends(); renderProfile(currentUser.uid); });
+$('#nav-chat').addEventListener('click', ()=>{ showView('chat'); });
+$('#nav-admin').addEventListener('click', ()=>{ showView('admin'); renderAdmin(); });
 
 // ---------------------- INITIAL RENDER ----------------------
 async function renderAll(){ renderProducts(); renderFeed(); renderNotifications(); renderFriends(); renderProfile(currentUser.uid); }
