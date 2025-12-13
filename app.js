@@ -1,10 +1,16 @@
 // app.js (module)
-// Save this file as app.js in the same folder as index.html and style.css
+// Save as app.js in same folder as index.html and style.css
 
 // Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, addDoc, getDocs, onSnapshot, query, where, orderBy, serverTimestamp, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
+import { 
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, 
+  onAuthStateChanged, updateProfile 
+} from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+import { 
+  getFirestore, collection, doc, setDoc, addDoc, getDocs, onSnapshot, 
+  query, where, orderBy, serverTimestamp, updateDoc, deleteDoc 
+} from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
 
 // Cloudinary config
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dd7dre9hd/upload";
@@ -23,8 +29,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-
-// Admin UID
 const ADMIN_UID = "gKwgPDNJgsdcApIJch6NM9bKmf02";
 
 // ---------------------- DOM Helpers ----------------------
@@ -45,7 +49,6 @@ function showView(id){
 }
 function showAuthModal(show){ authModal.style.display = show ? 'flex':'none'; }
 
-// ---------------------- AUTH EVENTS ----------------------
 $('#signup-form')?.addEventListener('submit', async e=>{
   e.preventDefault();
   authMessage.textContent = '';
@@ -83,6 +86,7 @@ onAuthStateChanged(auth, async user=>{
     navAdmin.style.display=(user.uid===ADMIN_UID)?'inline-block':'none';
     $('#nav-feed').click();
     await renderAll();
+    renderNotifications();
   } else {
     showAuthModal(true);
     $('#logout-btn').style.display='none';
@@ -131,8 +135,8 @@ async function renderFeed(){
       const post = docSnap.data();
       const card = el('div',{class:'card post'});
       card.innerHTML = `
-        <img src="${post.image||'images/default_profile.png'}">
-        <h3>${post.name||'User'}</h3>
+        <img src="${post.image||'images/default_profile.png'}" class="feed-profile" data-uid="${post.uid}">
+        <h3 class="feed-name" data-uid="${post.uid}">${post.name||'User'}</h3>
         <p>${post.text}</p>
         <p class="muted">by ${post.email||'user'}</p>
         <div class="likes"><span class="like-count">${post.likes?.length||0}</span> Likes <button class="like-btn btn small">Like</button></div>
@@ -145,6 +149,11 @@ async function renderFeed(){
         card.appendChild(del);
       }
       feed.appendChild(card);
+
+      // Clickable profile
+      card.querySelectorAll('.feed-profile, .feed-name').forEach(elm=>{
+        elm.addEventListener('click',()=>openProfile(post.uid));
+      });
 
       // like
       card.querySelector('.like-btn')?.addEventListener('click', async ()=>{
@@ -169,47 +178,71 @@ async function renderFeed(){
   });
 }
 
-// ---------------------- CREATE POST ----------------------
-$('#post-btn')?.addEventListener('click', async ()=>{
-  if(!currentUser){ alert('Sign in first'); return; }
-  const text = $('#post-text').value.trim();
-  const file = $('#post-image').files[0];
-  let imageUrl = '';
-  if(file){
-    const fd = new FormData(); fd.append('file',file); fd.append('upload_preset',UPLOAD_PRESET);
-    try { const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd}); const data=await res.json(); imageUrl=data.secure_url; } catch(err){ alert('Upload failed'); return; }
-  }
-  await addDoc(collection(db,'posts'),{
-    uid: currentUser.uid,
-    email: currentUser.email,
-    name: currentUser.displayName||'',
-    text,
-    image: imageUrl,
-    likes: [],
-    comments: [],
-    timestamp: serverTimestamp()
-  });
-  $('#post-text').value=''; $('#post-image').value='';
-});
-
 // ---------------------- PROFILE ----------------------
-$('#save-profile-pic')?.addEventListener('click', async ()=>{
-  if(!currentUser){ alert('Sign in'); return; }
-  const file = $('#profile-upload').files[0]; if(!file){ alert('Choose file'); return; }
-  const fd = new FormData(); fd.append('file',file); fd.append('upload_preset',UPLOAD_PRESET);
-  try { const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd}); const data = await res.json(); const url=data.secure_url;
-    await updateProfile(currentUser,{photoURL:url});
-    await setDoc(doc(db,'users',currentUser.uid),{profilePic:url},{merge:true});
-    $('#profile-pic').src=url; alert('Profile picture saved');
-  } catch(err){ alert('Upload failed'); }
-});
+// Open user profile (self or other)
+async function openProfile(uid){
+  showView('profile');
+  const profileCard = $('#profile-view'); profileCard.innerHTML='';
+  const userSnap = await getDocs(collection(db,'users'));
+  let userData = null;
+  userSnap.forEach(doc=>{ if(doc.id===uid) userData=doc.data(); });
+  if(!userData) return alert('User not found');
 
-$('#save-bio')?.addEventListener('click', async ()=>{
-  if(!currentUser){ alert('Sign in'); return; }
-  const bio = $('#bio').value.trim();
-  await setDoc(doc(db,'users',currentUser.uid),{bio},{merge:true});
-  alert('Bio saved');
-});
+  // Profile HTML
+  profileCard.innerHTML = `
+    <div class="profile-cover">
+      <img id="cover-photo" src="${userData.coverPhoto||'images/default_cover.jpg'}" alt="Cover">
+    </div>
+    <div class="profile-main">
+      <img id="profile-pic" src="${userData.profilePic||'images/default_profile.png'}" alt="Profile Pic" class="profile-pic">
+      <h2>${userData.name||userData.email}</h2>
+      <p>${userData.email}</p>
+      <p>${userData.bio||''}</p>
+      <div id="profile-actions"></div>
+    </div>
+    <h3>Posts</h3>
+    <div id="profile-posts" class="grid"></div>
+  `;
+
+  const actionsDiv = $('#profile-actions');
+  if(uid!==currentUser.uid){
+    const chatBtn = el('button',{},'Chat'); chatBtn.className='btn';
+    chatBtn.addEventListener('click',()=>openChat(uid,userData.name));
+    actionsDiv.appendChild(chatBtn);
+
+    const frBtn = el('button',{},'Add Friend'); frBtn.className='btn';
+    frBtn.addEventListener('click', async ()=>{
+      await addDoc(collection(db,'friendRequests'),{from:currentUser.uid,to:uid,status:'pending',createdAt:serverTimestamp()});
+      await addDoc(collection(db,'notifications'),{userId:uid,type:'friendRequest',fromName:currentUser.displayName||currentUser.email,message:'sent you a friend request',read:false,timestamp:serverTimestamp()});
+      alert('Friend request sent');
+    });
+    actionsDiv.appendChild(frBtn);
+  }
+
+  // Render user posts
+  const postsRef = collection(db,'posts');
+  onSnapshot(query(postsRef, where('uid','==',uid), orderBy('timestamp','desc')), snap=>{
+    const postsDiv = $('#profile-posts'); postsDiv.innerHTML='';
+    snap.forEach(docSnap=>{
+      const post = docSnap.data();
+      const card = el('div',{class:'card post'},`
+        <img src="${post.image||userData.profilePic||'images/default_profile.png'}">
+        <p>${post.text}</p>
+        <div class="likes"><span class="like-count">${post.likes?.length||0}</span> Likes <button class="like-btn btn small">Like</button></div>
+        <div class="comments"></div>
+      `);
+      postsDiv.appendChild(card);
+
+      // like
+      card.querySelector('.like-btn')?.addEventListener('click', async ()=>{
+        const likes = post.likes||[];
+        if(!likes.includes(currentUser.uid)) likes.push(currentUser.uid);
+        await updateDoc(doc(db,'posts',docSnap.id),{likes});
+        if(post.uid) await addDoc(collection(db,'notifications'),{userId:post.uid,type:'like',fromName:currentUser.displayName||currentUser.email,message:'liked your post',read:false,timestamp:serverTimestamp()});
+      });
+    });
+  });
+}
 
 // ---------------------- FRIENDS ----------------------
 async function renderFriends(){
@@ -265,33 +298,16 @@ async function loadMessages(uid){
       if(m.participants.includes(uid)){
         const div = el('div',{},`<strong>${m.from===currentUser.uid?'You':'Friend'}:</strong> ${m.text}`);
         messagesEl.appendChild(div);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
       }
     });
-  });
-}
-
-// ---------------------- ADMIN ----------------------
-async function renderAdmin(){
-  if(!currentUser||currentUser.uid!==ADMIN_UID) return;
-  $('#admin-view').style.display='block';
-  const usersContainer = $('#admin-users'); usersContainer.innerHTML='';
-  const usnap = await getDocs(collection(db,'users'));
-  usnap.forEach(d=>{ const u=d.data(); usersContainer.appendChild(el('div',{class:'card user'},`<h4>${u.name||u.email}</h4><p>${d.id}</p>`)); });
-  const postsContainer = $('#admin-posts'); postsContainer.innerHTML='';
-  const psnap = await getDocs(collection(db,'posts'));
-  psnap.forEach(docSnap=>{
-    const p=docSnap.data();
-    const card = el('div',{class:'card post'},`<h4>${p.name||p.email}</h4><p>${p.text}</p>`); 
-    const del = el('button',{class:'btn'},'Delete'); del.style.background='crimson'; 
-    del.addEventListener('click',async()=>{ await deleteDoc(doc(db,'posts',docSnap.id)); alert('Deleted'); renderAdmin(); });
-    card.appendChild(del); postsContainer.appendChild(card);
   });
 }
 
 // ---------------------- NAV ----------------------
 $('#nav-feed').addEventListener('click', ()=>showView('feed'));
 $('#nav-products').addEventListener('click', ()=>showView('products'));
-$('#nav-profile').addEventListener('click', ()=>{ showView('profile'); renderFriends(); });
+$('#nav-profile').addEventListener('click', ()=>openProfile(currentUser.uid));
 $('#nav-chat').addEventListener('click', ()=>{ showView('chat'); });
 $('#nav-admin').addEventListener('click', ()=>{ showView('admin'); renderAdmin(); });
 
