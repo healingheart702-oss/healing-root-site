@@ -1,60 +1,3 @@
-// app.js (module)
-
-// ================= FIREBASE IMPORTS =================
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  updateProfile
-} from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
-import {
-  getFirestore,
-  collection,
-  doc,
-  setDoc,
-  addDoc,
-  getDocs,
-  onSnapshot,
-  query,
-  where,
-  orderBy,
-  serverTimestamp,
-  updateDoc,
-  deleteDoc
-} from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
-
-// ================= CLOUDINARY =================
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dd7dre9hd/upload";
-const UPLOAD_PRESET = "unsigned_upload";
-
-// ================= FIREBASE CONFIG =================
-const firebaseConfig = {
-  apiKey: "AIzaSyAgjMFw0dbM7CBH4S_zrmPhE69pp84Tpdo",
-  authDomain: "healing-root-farm.firebaseapp.com",
-  projectId: "healing-root-farm",
-  storageBucket: "healing-root-farm.appspot.com",
-  messagingSenderId: "1042258816994",
-  appId: "1:1042258816994:web:0b6dd6b7f1c370ee7093bb"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const ADMIN_UID = "gKwgPDNJgsdcApIJch6NM9bKmf02";
-
-// ================= HELPERS =================
-const $ = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
-function el(tag, attrs = {}, html = "") {
-  const e = document.createElement(tag);
-  Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
-  e.innerHTML = html;
-  return e;
-}
-
 // ================= GLOBAL STATE =================
 let currentUser = null;
 let activeChatWith = null;
@@ -72,7 +15,7 @@ const products = [
     name: "Cassava Stems (TME419)",
     price: 1000,
     image: "images/cassava.JPG",
-    description: `Our TME419 cassava stems are carefully selected for exceptional disease resistance, high yield, and superior starch content. Each stem is sourced from mature, healthy parent plants, ensuring robust root development and vigorous growth. Ideal for both small-scale and commercial farming, these stems adapt well to diverse soil types and climates. By planting our TME419 stems, farmers can achieve higher productivity, quicker maturity, and better profitability. With consistent quality assurance, these stems are suitable for processing industries and fresh consumption, guaranteeing sustainable agricultural returns. Every batch is treated to prevent pests and diseases, giving your farm a head start in cultivation success.`
+    description: `Our TME419 cassava stems are carefully selected for their exceptional disease resistance, high yield, and superior starch content. Each stem is sourced from mature, healthy parent plants, ensuring robust root development and vigorous growth. Ideal for both small-scale and commercial farming, these stems adapt well to diverse soil types and climates. By planting our TME419 stems, farmers can achieve higher productivity, quicker maturity, and better profitability. With consistent quality assurance, these stems are suitable for processing industries and fresh consumption, guaranteeing sustainable agricultural returns. Every batch is treated to prevent pests and diseases, giving your farm a head start in cultivation success.`
   },
   {
     name: "Hybrid Plantain Suckers",
@@ -116,7 +59,6 @@ const products = [
     image: "images/Yamsett.JPG",
     description: `Our Treated Yam Setts are sourced from disease-free, high-yielding tubers to ensure vigorous growth, uniform sprouting, and strong tuber development. Each sett undergoes careful treatment to eliminate pests and diseases, giving farmers a healthy start for their yam plantations. Ideal for both small-scale and commercial farming, these setts produce consistent yields and mature quickly, allowing for reliable harvest schedules. With robust root systems and strong resistance to common yam diseases, they provide a sustainable, high-return investment for any farmer. Perfect for fresh markets, processing, or storage, these treated yam setts maximize productivity and minimize losses.`
   }
-];
 
 // ================= RENDER PRODUCTS =================
 function renderProducts() {
@@ -165,7 +107,10 @@ $("#login-form")?.addEventListener("submit", async e => {
   await signInWithEmailAndPassword(auth, $("#login-email").value, $("#login-password").value);
 });
 
-$("#logout-btn")?.addEventListener("click", () => signOut(auth));
+$("#logout-btn")?.addEventListener("click", async () => {
+  await signOut(auth);
+  showView("auth-forms");
+});
 
 // ================= AUTH STATE =================
 onAuthStateChanged(auth, async user => {
@@ -178,7 +123,7 @@ onAuthStateChanged(auth, async user => {
     renderFriends();
     renderProfile(user.uid);
   } else {
-    showView("feed");
+    showView("auth-forms");
   }
 });
 
@@ -193,6 +138,7 @@ async function renderFeed() {
       const card = el("div", { class: "card post" });
       card.innerHTML = `
         <h3 class="user-link" data-uid="${post.uid}">${post.name}</h3>
+        ${post.image ? `<img src="${post.image}" />` : ""}
         <p>${post.text}</p>
         <div class="likes">
           <span class="like-count">${post.likes?.length || 0}</span> Likes 
@@ -212,7 +158,14 @@ async function renderFeed() {
         const likes = post.likes || [];
         if (!likes.includes(currentUser.uid)) likes.push(currentUser.uid);
         await updateDoc(doc(db, "posts", docSnap.id), { likes });
-        await addDoc(collection(db, "notifications"), { userId: post.uid, type: "like", fromName: currentUser.displayName || currentUser.email, message: "liked your post", read: false, timestamp: serverTimestamp() });
+        await addDoc(collection(db, "notifications"), {
+          userId: post.uid,
+          type: "like",
+          fromName: currentUser.displayName || currentUser.email,
+          message: "liked your post",
+          read: false,
+          timestamp: serverTimestamp()
+        });
       });
 
       card.querySelector(".comment-btn")?.addEventListener("click", async () => {
@@ -223,8 +176,22 @@ async function renderFeed() {
         const comments = post.comments || [];
         comments.push(comment);
         await updateDoc(doc(db, "posts", docSnap.id), { comments });
-        await addDoc(collection(db, "notifications"), { userId: post.uid, type: "comment", fromName: currentUser.displayName || currentUser.email, message: "commented on your post", read: false, timestamp: serverTimestamp() });
+        await addDoc(collection(db, "notifications"), {
+          userId: post.uid,
+          type: "comment",
+          fromName: currentUser.displayName || currentUser.email,
+          message: "commented on your post",
+          read: false,
+          timestamp: serverTimestamp()
+        });
         input.value = "";
+      });
+
+      // Render existing comments
+      const commentsDiv = card.querySelector(".comments");
+      (post.comments || []).forEach(c => {
+        const div = el("div", {}, `<strong>${c.name}:</strong> ${c.text}`);
+        commentsDiv.appendChild(div);
       });
 
       feed.appendChild(card);
@@ -246,6 +213,25 @@ async function renderProfile(uid) {
   });
 }
 
+// PROFILE UPLOAD HANDLER
+$("#profile-upload")?.addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', 'unsigned_upload');
+
+  const res = await fetch('https://api.cloudinary.com/v1_1/dd7dre9hd/upload', {
+    method: 'POST',
+    body: formData
+  });
+  const data = await res.json();
+  const url = data.secure_url;
+  $("#profile-pic").src = url;
+  if (currentUser) await setDoc(doc(db, 'users', currentUser.uid), { profilePic: url }, { merge: true });
+});
+
 // ================= FRIENDS =================
 async function renderFriends() {
   const snap = await getDocs(collection(db, "users"));
@@ -260,7 +246,7 @@ async function renderFriends() {
       await addDoc(collection(db, "friendRequests"), { from: currentUser.uid, to: d.id, status: "pending", createdAt: serverTimestamp() });
       await addDoc(collection(db, "notifications"), { userId: d.id, type: "friendRequest", fromName: currentUser.displayName || currentUser.email, message: "sent you a friend request", read: false, timestamp: serverTimestamp() });
       alert("Friend request sent");
-      renderFriends(); // refresh list
+      renderFriends();
     });
     card.appendChild(btn);
     container.appendChild(card);
@@ -294,7 +280,6 @@ $("#send-chat")?.addEventListener("click", async () => {
   if (!msg) return;
   await addDoc(collection(db, "chats"), { from: currentUser.uid, to: activeChatWith, participants: [currentUser.uid, activeChatWith], text: msg, timestamp: serverTimestamp() });
   $("#chat-input").value = "";
-  loadMessages(activeChatWith);
 });
 
 async function loadMessages(uid) {
