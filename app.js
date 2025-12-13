@@ -93,7 +93,34 @@ const products = [
     description:`Our Treated Yam Setts are carefully selected tubers treated for disease resistance and enhanced sprouting. Each sett is ideal for both smallholder and commercial farms, ensuring rapid germination, uniform growth, and high tuber yield. Healing Root Agro Ventures provides full guidance on soil preparation, planting, and maintenance for maximum productivity and profitable harvests.` 
   }
 ];
+// --- Modal elements ---
+const modal = $('#read-more-modal');
+const modalTitle = $('#read-more-title');
+const modalText = $('#read-more-text');
+const modalClose = $('#read-more-close');
 
+// --- Functions ---
+function openReadMore(title, text){
+  modalTitle.textContent = title;
+  modalText.textContent = text;
+  modal.style.display = 'flex';
+}
+
+// Close modal on X or background click
+modalClose.addEventListener('click', ()=> { modal.style.display='none'; });
+modal.addEventListener('click', e => { if(e.target===modal) modal.style.display='none'; });
+
+// --- Attach to all read-more links ---
+function attachReadMoreLinks(){
+  $$('.read-more, .read-more-prod').forEach(a=>{
+    a.addEventListener('click', e=>{
+      e.preventDefault();
+      const id=a.dataset.id;
+      const p=products.find(x=>x.id===id);
+      openReadMore(p.name, p.description);
+    });
+  });
+}
 // ---------------------- AUTH & NAV ----------------------
 const authModal = $('#auth-modal');
 const signupForm = $('#signup-form');
@@ -158,67 +185,37 @@ onAuthStateChanged(auth, async user=>{
   }
 });
 
-// ---------------------- RENDER PRODUCTS ----------------------
 async function renderProducts(){
   const container = $('#product-list');
   container.innerHTML='';
+  
   products.forEach(p=>{
     const card = el('div',{class:'card product'},`
       <img src="${p.image}" alt="${p.name}">
       <h3>${p.name}</h3>
       <p class="muted">Price: ₦${p.price.toLocaleString()}</p>
-      <p>${p.description.slice(0,350)}... <a href="#" data-id="${p.id}" class="read-more">Read more</a></p>
+      <p>${p.description.slice(0,150)}... <a href="#" data-id="${p.id}" class="read-more">Read more</a></p>
       <button class="btn order" data-name="${p.name}" data-price="${p.price}">Order via WhatsApp</button>
     `);
     container.appendChild(card);
   });
+
+  // WhatsApp order buttons
   $$('.order').forEach(btn=>{
     btn.addEventListener('click', e=>{
-      const name=e.currentTarget.dataset.name;
-      const price=e.currentTarget.dataset.price;
-      const phone='2349138938301';
+      const name = e.currentTarget.dataset.name;
+      const price = e.currentTarget.dataset.price;
+      const phone = '2349138938301';
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(`Hello, I want to order ${name} priced at ₦${price}.`)}`,'_blank');
     });
   });
-  $$('.read-more').forEach(a=>{
-    a.addEventListener('click', e=>{
-      e.preventDefault();
-      const id=a.dataset.id;
-      const p=products.find(x=>x.id===id);
-      alert(p.name+'\n\n'+p.description);
-    });
-  });
+
+  // Attach modal to read more
+  attachReadMoreLinks();
 }
 
 // ---------------------- RENDER FEED ----------------------
-async function renderFeed(){
-  const feed = $('#feed');
-  feed.innerHTML='';
-  // products first
-  products.forEach(p=>{
-    const card = el('div',{class:'card post'},`
-      <img src="${p.image}" alt="${p.name}">
-      <h3>${p.name}</h3>
-      <p class="muted">Price: ₦${p.price.toLocaleString()}</p>
-      <p>${p.description.slice(0,350)}... <a href="#" data-id="${p.id}" class="read-more-prod">Read more</a></p>
-      <button class="btn order" data-name="${p.name}" data-price="${p.price}">Order via WhatsApp</button>
-    `);
-    feed.appendChild(card);
-  });
-  // user posts
-  try{
-    const q=query(collection(db,'posts'), orderBy('timestamp','desc'));
-    const snap=await getDocs(q);
-    for(const docSnap of snap.docs){
-      const post = docSnap.data();
-      const ownerName = await getUserName(post.uid);
-      const card = el('div',{class:'card post'});
-      card.innerHTML = `
-        <img src="${post.image || 'images/default_profile.png'}" alt="">
-        <h3>${ownerName}</h3>
-        <p>${post.text}</p>
-        <p class="muted">by ${post.email || 'user'}</p>
-      `;
+ 
       if(currentUser && (currentUser.uid===post.uid || currentUser.uid===ADMIN_UID)){
         const del = el('button',{class:'btn'},'Delete');
         del.style.background='crimson';
