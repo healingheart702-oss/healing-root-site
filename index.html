@@ -52,9 +52,7 @@
     <h1>Feed</h1>
 
     <!-- Stories Section -->
-    <div id="stories" class="stories">
-      <!-- Story thumbnails will be appended here dynamically -->
-    </div>
+    <div id="stories" class="stories"></div>
 
     <!-- Create Post -->
     <div id="create-post" class="card">
@@ -76,20 +74,45 @@
   <!-- PROFILE VIEW -->
   <section id="profile-view" class="view" style="display:none">
     <h1>Profile</h1>
-    <div class="card profile-card">
-      <img id="profile-pic" src="images/default_profile.png" alt="Profile Pic" class="profile-pic">
-      <input id="profile-upload" type="file" accept="image/*">
-      <button id="save-profile-pic" class="btn">Save Picture</button>
-      <textarea id="bio" placeholder="Write your bio"></textarea>
-      <button id="save-bio" class="btn">Save Bio</button>
+
+    <div class="profile-header card">
+      <!-- Cover Photo -->
+      <div class="cover-photo-container">
+        <img id="cover-photo" src="images/default_cover.jpg" alt="Cover Photo" class="cover-photo">
+        <input id="cover-upload" type="file" accept="image/*">
+        <button id="save-cover" class="btn small">Save Cover</button>
+      </div>
+
+      <!-- Profile Picture -->
+      <div class="profile-picture-container">
+        <img id="profile-pic" src="images/default_profile.png" alt="Profile Pic" class="profile-pic">
+        <input id="profile-upload" type="file" accept="image/*">
+        <button id="save-profile-pic" class="btn small">Save Picture</button>
+      </div>
+
+      <!-- User Info -->
+      <div class="profile-info">
+        <h2 id="profile-name">User Name</h2>
+        <textarea id="bio" placeholder="Write your bio"></textarea>
+        <button id="save-bio" class="btn small">Save Bio</button>
+
+        <!-- Stats -->
+        <div class="profile-stats">
+          <div><strong id="friends-count">0</strong> Friends</div>
+          <div><strong id="posts-count">0</strong> Posts</div>
+        </div>
+      </div>
     </div>
 
+    <!-- Friend Requests -->
     <h2>Friend Requests</h2>
     <div id="friend-requests" class="grid"></div>
 
+    <!-- Friends -->
     <h2>Friends</h2>
     <div id="friends" class="grid"></div>
 
+    <!-- User Posts -->
     <h2>My Posts</h2>
     <div id="my-posts" class="grid"></div>
   </section>
