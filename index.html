@@ -1,95 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Healing Root Agro Ventures</title>
-<link rel="stylesheet" href="style.css">
-<!-- Firebase SDKs -->
-<script type="module" src="app.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Healing Root Agro Ventures</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js" defer></script>
 </head>
 <body>
-
-<!-- NAVIGATION -->
-<nav>
-  <div id="nav-auth">
-    <button id="nav-login">Login</button>
-    <button id="nav-signup">Sign Up</button>
-  </div>
-  <div id="nav-logout" style="display:none;">
+  <!-- NAVIGATION -->
+  <nav>
     <button id="nav-feed">Feed</button>
     <button id="nav-products">Products</button>
     <button id="nav-profile">Profile</button>
     <button id="nav-chat">Chat</button>
     <button id="nav-admin" style="display:none;">Admin</button>
-    <button id="logout-btn">Logout</button>
-  </div>
-</nav>
+    <button id="logout-btn" style="display:none;">Logout</button>
+  </nav>
 
-<!-- AUTH MODAL -->
-<div id="auth-modal" class="modal">
-  <div class="modal-content">
-    <form id="signup-form" class="view">
-      <h2>Sign Up</h2>
-      <input type="text" id="signup-name" placeholder="Full Name" required>
-      <input type="email" id="signup-email" placeholder="Email" required>
-      <input type="password" id="signup-password" placeholder="Password" required>
-      <button type="submit">Sign Up</button>
+  <!-- AUTH MODAL -->
+  <div id="auth-modal" class="modal">
+    <div class="modal-content">
+      <h2>Sign Up / Login</h2>
+      <form id="signup-form">
+        <input type="text" id="signup-name" placeholder="Name" required>
+        <input type="email" id="signup-email" placeholder="Email" required>
+        <input type="password" id="signup-password" placeholder="Password" required>
+        <button type="submit">Sign Up</button>
+      </form>
+      <form id="login-form">
+        <input type="email" id="login-email" placeholder="Email" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <button type="submit">Login</button>
+      </form>
       <p id="auth-message"></p>
-    </form>
-    <form id="login-form" class="view">
-      <h2>Login</h2>
-      <input type="email" id="login-email" placeholder="Email" required>
-      <input type="password" id="login-password" placeholder="Password" required>
-      <button type="submit">Login</button>
-      <p id="auth-message"></p>
-    </form>
+    </div>
   </div>
-</div>
 
-<!-- VIEWS -->
-<section id="feed-view" class="view">
-  <h2>Feed</h2>
-  <textarea id="post-text" placeholder="What's on your farm?"></textarea>
-  <input type="file" id="post-image">
-  <button id="post-btn">Post</button>
-  <div id="feed"></div>
-</section>
-
-<section id="products-view" class="view" style="display:none;">
-  <h2>Products</h2>
-  <div id="product-list"></div>
-</section>
-
-<section id="profile-view" class="view" style="display:none;">
-  <h2>Profile</h2>
-  <img id="profile-pic" src="images/default_profile.png" alt="Profile Picture">
-  <input type="file" id="profile-upload">
-  <button id="save-profile-pic">Save Profile Picture</button>
-  <textarea id="bio" placeholder="Your bio..."></textarea>
-  <button id="save-bio">Save Bio</button>
-  <h3>Friends</h3>
-  <div id="friends"></div>
-</section>
-
-<section id="chat-view" class="view" style="display:none;">
-  <h2>Chat</h2>
-  <div id="friends-chat-list"></div>
-  <div id="chat-window" style="display:none;">
-    <h4 id="chat-with"></h4>
-    <div id="messages"></div>
-    <input type="text" id="chat-input" placeholder="Type a message">
-    <button id="send-chat">Send</button>
+  <!-- VIEWS -->
+  <div id="feed-view" class="view"></div>
+  <div id="products-view" class="view">
+    <div id="product-list"></div>
   </div>
-</section>
-
-<section id="admin-view" class="view" style="display:none;">
-  <h2>Admin Panel</h2>
-  <h3>Users</h3>
-  <div id="admin-users"></div>
-  <h3>Posts</h3>
-  <div id="admin-posts"></div>
-</section>
-
+  <div id="profile-view" class="view">
+    <img id="profile-pic" src="images/default_profile.png" alt="Profile Picture" width="100">
+    <input type="file" id="profile-upload">
+    <button id="save-profile-pic">Save Picture</button>
+    <textarea id="bio" placeholder="Your bio..."></textarea>
+    <button id="save-bio">Save Bio</button>
+  </div>
+  <div id="chat-view" class="view">
+    <div id="friends"></div>
+    <div id="chat-window">
+      <h3 id="chat-with"></h3>
+      <div id="messages"></div>
+      <input type="text" id="chat-input" placeholder="Type message...">
+      <button id="send-chat">Send</button>
+    </div>
+  </div>
+  <div id="admin-view" class="view" style="display:none;">
+    <h2>Users</h2>
+    <div id="admin-users"></div>
+    <h2>Posts</h2>
+    <div id="admin-posts"></div>
+  </div>
 </body>
 </html>
