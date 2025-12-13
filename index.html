@@ -1,114 +1,120 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Healing Root Agro Social App</title>
-  <link rel="stylesheet" href="styles.css">
-  <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
-    nav { background: #2e7d32; color: white; padding: 10px; display: flex; gap: 10px; }
-    nav button { background: white; color: #2e7d32; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px; }
-    .view { display: none; padding: 15px; }
-    .card { background: white; padding: 10px; margin-bottom: 15px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-    .card img { max-width: 100%; border-radius: 5px; }
-    .muted { color: gray; }
-    .btn { background: #2e7d32; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 5px; margin-top: 5px; }
-    .small { padding: 3px 6px; font-size: 12px; }
-    #chat-window { display: none; position: fixed; bottom: 0; right: 0; width: 300px; background: white; border: 1px solid #ccc; border-radius: 5px 5px 0 0; }
-    #chat-window h4 { margin: 0; padding: 5px; background: #2e7d32; color: white; border-radius: 5px 5px 0 0; }
-    #messages { max-height: 200px; overflow-y: auto; padding: 5px; }
-    input, textarea { width: 100%; padding: 5px; margin-top: 5px; border-radius: 3px; border: 1px solid #ccc; }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HEALING ROOT AGRO VENTURES — Social Farm</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Firebase (modules) -->
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js"></script>
+  <!-- App (your logic) -->
+  <script type="module" src="app.js" defer></script>
 </head>
 <body>
+  <header class="site-header">
+    <div class="brand">
+      <img src="images/logo.PNG" alt="logo" class="logo">
+      <div class="brand-title">HEALING ROOT AGRO VENTURES</div>
+    </div>
+    <nav class="main-nav">
+      <a href="#" id="nav-feed">Feed</a>
+      <a href="#" id="nav-products">Products</a>
+      <a href="#" id="nav-profile">Profile</a>
+      <a href="#" id="nav-chat">Chat</a>
+      <a href="#" id="nav-admin" style="display:none">Admin</a>
+      <button id="logout-btn" class="btn small" style="display:none">Logout</button>
+    </nav>
+  </header>
 
-  <nav>
-    <button id="nav-feed">Feed</button>
-    <button id="nav-products">Products</button>
-    <button id="nav-profile">Profile</button>
-    <button id="nav-notifications">Notifications</button>
-    <button id="logout-btn">Logout</button>
-  </nav>
+  <main id="app">
+    <!-- LOGIN / SIGNUP Modal (shown until user logs in) -->
+    <div id="auth-modal" class="modal">
+      <div class="modal-card">
+        <h2>Welcome — Sign in or Create account</h2>
 
-  <!-- FEED VIEW -->
-  <div id="feed-view" class="view">
-    <h2>Feed</h2>
-    <div id="feed"></div>
-  </div>
+        <div id="auth-forms">
+          <form id="signup-form" class="auth-form">
+            <input id="signup-name" placeholder="Full name" required />
+            <input id="signup-email" type="email" placeholder="Email" required />
+            <input id="signup-password" type="password" placeholder="Password" required />
+            <button class="btn">Create Account</button>
+          </form>
 
-  <!-- PRODUCTS VIEW -->
-  <div id="products-view" class="view">
-    <h2>Products</h2>
-    <div id="product-list"></div>
-  </div>
+          <hr/>
 
-  <!-- PROFILE VIEW -->
-  <div id="profile-view" class="view">
-    <h2>Profile</h2>
-    <img id="profile-pic" src="images/default_profile.png" alt="Profile" width="100">
-    <input type="file" id="profile-upload">
-    <input type="text" id="bio" placeholder="Write your bio...">
-    <h3>Friends</h3>
-    <div id="friends"></div>
-  </div>
+          <form id="login-form" class="auth-form">
+            <input id="login-email" type="email" placeholder="Email" required />
+            <input id="login-password" type="password" placeholder="Password" required />
+            <button class="btn">Login</button>
+          </form>
 
-  <!-- NOTIFICATIONS VIEW -->
-  <div id="notifications-view" class="view">
-    <h2>Notifications</h2>
-    <div id="notifications"></div>
-  </div>
+          <p id="auth-message" class="muted"></p>
+        </div>
+      </div>
+    </div>
 
-  <!-- CHAT WINDOW -->
-  <div id="chat-window">
-    <h4 id="chat-with">Chat</h4>
-    <div id="messages"></div>
-    <input type="text" id="chat-input" placeholder="Type a message...">
-    <button id="send-chat" class="btn">Send</button>
-  </div>
+    <!-- FEED -->
+    <section id="feed-view" class="view" style="display:none">
+      <h1>Social Feed</h1>
+      <div id="create-post" class="card">
+        <h3>Create post</h3>
+        <textarea id="post-text" placeholder="Write something..."></textarea>
+        <input id="post-image" type="file" accept="image/*">
+        <button id="post-btn" class="btn">Post</button>
+      </div>
+      <div id="feed" class="grid"></div>
+    </section>
 
-  <!-- AUTH FORMS (hidden initially, can be modal if you want) -->
-  <div id="auth-forms" class="view">
-    <h2>Sign Up</h2>
-    <form id="signup-form">
-      <input type="text" id="signup-name" placeholder="Name" required>
-      <input type="email" id="signup-email" placeholder="Email" required>
-      <input type="password" id="signup-password" placeholder="Password" required>
-      <button class="btn">Sign Up</button>
-    </form>
+    <!-- PRODUCTS -->
+    <section id="products-view" class="view" style="display:none">
+      <h1>Products</h1>
+      <div id="product-list" class="grid"></div>
+    </section>
 
-    <h2>Login</h2>
-    <form id="login-form">
-      <input type="email" id="login-email" placeholder="Email" required>
-      <input type="password" id="login-password" placeholder="Password" required>
-      <button class="btn">Login</button>
-    </form>
-  </div>
+    <!-- PROFILE -->
+    <section id="profile-view" class="view" style="display:none">
+      <h1>My Profile</h1>
+      <div class="card profile-card">
+        <img id="profile-pic" src="images/default_profile.png" alt="profile" class="profile-pic">
+        <input id="profile-upload" type="file" accept="image/*">
+        <button id="save-profile-pic" class="btn">Upload & Save Picture</button>
+        <textarea id="bio" placeholder="Write bio..."></textarea>
+        <button id="save-bio" class="btn">Save Bio</button>
+      </div>
 
-  <script type="module" src="app.js"></script>
-  <script>
-    // PROFILE UPLOAD HANDLER (Cloudinary)
-    const profileUpload = document.getElementById('profile-upload');
-    profileUpload?.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+      <h2>My Posts</h2>
+      <div id="my-posts" class="grid"></div>
 
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'unsigned_upload');
+      <h2>Friends</h2>
+      <div id="friends" class="grid"></div>
+    </section>
 
-      const res = await fetch('https://api.cloudinary.com/v1_1/dd7dre9hd/upload', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      const url = data.secure_url;
-      document.getElementById('profile-pic').src = url;
+    <!-- CHAT -->
+    <section id="chat-view" class="view" style="display:none">
+      <h1>Chat</h1>
+      <div id="friends-chat-list" class="grid"></div>
+      <div id="chat-window" style="display:none" class="card">
+        <h3 id="chat-with">Chat</h3>
+        <div id="messages" class="messages"></div>
+        <input id="chat-input" placeholder="Type a message">
+        <button id="send-chat" class="btn">Send</button>
+      </div>
+    </section>
 
-      if (window.currentUser) {
-        await setDoc(doc(window.db, 'users', window.currentUser.uid), { profilePic: url }, { merge: true });
-      }
-    });
-  </script>
+    <!-- ADMIN -->
+    <section id="admin-view" class="view" style="display:none">
+      <h1>Admin Dashboard</h1>
+      <h2>All Users</h2>
+      <div id="admin-users" class="grid"></div>
+      <h2>All Posts</h2>
+      <div id="admin-posts" class="grid"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    Healing Root AGRO Ventures · Call: 08153729342 · WhatsApp: +2349138938301
+  </footer>
 </body>
 </html>
