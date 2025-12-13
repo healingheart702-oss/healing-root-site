@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -5,11 +6,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>HEALING ROOT AGRO VENTURES — Social Farm</title>
   <link rel="stylesheet" href="style.css">
-  <!-- Firebase modules -->
+  <!-- Firebase (modules) -->
   <script type="module" src="https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js"></script>
   <script type="module" src="https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js"></script>
   <script type="module" src="https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js"></script>
-  <!-- App JS -->
+  <!-- App (your logic) -->
   <script type="module" src="app.js" defer></script>
 </head>
 <body>
@@ -29,10 +30,11 @@
   </header>
 
   <main id="app">
-    <!-- AUTH MODAL -->
+    <!-- LOGIN / SIGNUP Modal (shown until user logs in) -->
     <div id="auth-modal" class="modal">
       <div class="modal-card">
         <h2>Welcome — Sign in or Create account</h2>
+
         <div id="auth-forms">
           <form id="signup-form" class="auth-form">
             <input id="signup-name" placeholder="Full name" required />
@@ -40,12 +42,15 @@
             <input id="signup-password" type="password" placeholder="Password" required />
             <button class="btn">Create Account</button>
           </form>
+
           <hr/>
+
           <form id="login-form" class="auth-form">
             <input id="login-email" type="email" placeholder="Email" required />
             <input id="login-password" type="password" placeholder="Password" required />
             <button class="btn">Login</button>
           </form>
+
           <p id="auth-message" class="muted"></p>
         </div>
       </div>
@@ -79,8 +84,10 @@
         <textarea id="bio" placeholder="Write bio..."></textarea>
         <button id="save-bio" class="btn">Save Bio</button>
       </div>
+
       <h2>My Posts</h2>
       <div id="my-posts" class="grid"></div>
+
       <h2>Friends</h2>
       <div id="friends" class="grid"></div>
     </section>
