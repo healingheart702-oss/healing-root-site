@@ -1,14 +1,20 @@
-// app.js (stable production-ready)
-// Firebase ESM
+// app.js (merged A→J)
+
+// ---------------------- DOM helpers ----------------------
+const $ = selector => document.querySelector(selector);
+const $$ = selector => Array.from(document.querySelectorAll(selector));
+function el(tag, attrs = {}, innerHTML = '') {
+  const e = document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v]) => e.setAttribute(k,v));
+  e.innerHTML = innerHTML;
+  return e;
+}
+
+// ---------------------- FIREBASE SETUP ----------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, setDoc, getDoc, getDocs, deleteDoc, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, setDoc, getDoc, getDocs, deleteDoc, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
 
-// Cloudinary
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dd7dre9hd/upload";
-const UPLOAD_PRESET = "unsigned_upload";
-
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyAgjMFw0dbM7CBH4S_zrmPhE69pp84Tpdo",
   authDomain: "healing-root-farm.firebaseapp.com",
@@ -17,75 +23,86 @@ const firebaseConfig = {
   messagingSenderId: "1042258816994",
   appId: "1:1042258816994:web:0b6dd6b7f1c370ee7093bb"
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Admin UID
+// ---------------------- CLOUDINARY ----------------------
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dd7dre9hd/upload";
+const UPLOAD_PRESET = "unsigned_upload";
+
+// ---------------------- ADMIN ----------------------
 const ADMIN_UID = "gKwgPDNJgsdcApIJch6NM9bKmf02";
 
-// ---------------------- DOM HELPERS ----------------------
-const $ = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
-const el = (tag, attrs = {}, html = '') => {
-  const e = document.createElement(tag);
-  Object.entries(attrs).forEach(([k,v])=> e.setAttribute(k,v));
-  e.innerHTML = html;
-  return e;
-};
+// ---------------------- PRODUCTS ----------------------
+const products = [
+  { id:"cassava", name:"Cassava Stems (TME419)", image:"images/cassava.JPG", price:1000, description:`Healingroot AGRO ventures ...`},
+  { id:"plantain", name:"Hybrid Plantain Suckers", image:"images/plantain.JPG", price:500, description:`Hybrid plantain suckers ...`},
+  { id:"banana", name:"Hybrid Dwarf Banana", image:"images/giant_banana.JPG", price:500, description:`The Hybrid Dwarf Banana ...`},
+  { id:"oilpalm", name:"Tenera Oil Palm Seedlings", image:"images/oilpalm.JPG", price:1000, description:`Tenera oil palm seedlings ...`},
+  { id:"coconut", name:"Hybrid Dwarf Coconut Seedlings", image:"images/coconut.JPG", price:4500, description:`Healingroot AGRO Ventures ...`},
+  { id:"giant_cocoa", name:"Hybrid Giant Cocoa Seedlings", image:"images/giant_cocoa.JPG", price:500, description:`Healingroot AGRO Ventures ...`},
+  { id:"pineapple", name:"Pineapple Seedlings", image:"images/pineapple.JPG", price:400, description:`Premium pineapple seedlings ...`},
+  { id:"yam", name:"Treated Yam Setts", image:"images/Yamsett.JPG", price:700, description:`Healingroot AGRO Ventures ...`}
+];
 
-// ---------------------- AUTH ----------------------
-let currentUser = null;
+// ---------------------- AUTH & NAV ----------------------
 const authModal = $('#auth-modal');
+const signupForm = $('#signup-form');
+const loginForm = $('#login-form');
+const authMessage = $('#auth-message');
+const logoutBtn = $('#logout-btn');
 const navAdmin = $('#nav-admin');
 
-function showView(id){
-  $$('.view').forEach(v => v.style.display='none');
-  const v = $('#'+id+'-view');
-  if(v) v.style.display='block';
-}
+let currentUser = null;
 
-function showAuthModal(show){
-  if(authModal) authModal.style.display = show ? 'flex' : 'none';
+function showView(id){ $$('.view').forEach(v=>v.style.display='none'); const v=$('#'+id+'-view'); if(v) v.style.display='block'; }
+function showAuthModal(show){ authModal.style.display = show?'flex':'none'; }
+
+// ---------------------- HELPER: GET USER NAME ----------------------
+async function getUserName(uid){
+  try{
+    const docSnap = await getDoc(doc(db,'users',uid));
+    if(docSnap.exists()) return docSnap.data().name || 'User';
+  }catch(e){ console.error(e); }
+  return 'User';
 }
 
 // ---------------------- AUTH ACTIONS ----------------------
-$('#signup-form')?.addEventListener('submit', async e=>{
+signupForm?.addEventListener('submit', async e=>{
   e.preventDefault();
+  authMessage.textContent='';
   const name = $('#signup-name').value.trim();
   const email = $('#signup-email').value.trim();
   const password = $('#signup-password').value;
-  if(!name || !email || !password){ $('#auth-message').textContent='Fill all fields'; return; }
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    await setDoc(doc(db,'users',cred.user.uid), { name, email, createdAt: serverTimestamp() });
-    $('#auth-message').textContent='Account created';
-  } catch(err){ $('#auth-message').textContent=err.message; }
+  if(!name || !email || !password){ authMessage.textContent='Fill all fields'; return; }
+  try{
+    const cred = await createUserWithEmailAndPassword(auth,email,password);
+    await setDoc(doc(db,'users',cred.user.uid), { name,email,createdAt:serverTimestamp() });
+    authMessage.textContent='Account created — signed in';
+  }catch(err){ authMessage.textContent = err.message; }
 });
 
-$('#login-form')?.addEventListener('submit', async e=>{
+loginForm?.addEventListener('submit', async e=>{
   e.preventDefault();
+  authMessage.textContent='';
   const email = $('#login-email').value.trim();
   const password = $('#login-password').value;
-  try { await signInWithEmailAndPassword(auth,email,password); } 
-  catch(err){ $('#auth-message').textContent=err.message; }
+  try{ await signInWithEmailAndPassword(auth,email,password); }catch(err){ authMessage.textContent=err.message; }
 });
 
-$('#logout-btn')?.addEventListener('click', async ()=>{
-  await signOut(auth);
-});
+logoutBtn?.addEventListener('click', async ()=>{ await signOut(auth); });
 
 // ---------------------- AUTH STATE ----------------------
 onAuthStateChanged(auth, async user=>{
-  currentUser = user;
+  currentUser=user;
   if(user){
     showAuthModal(false);
     $('#logout-btn').style.display='inline-block';
-    navAdmin.style.display = (user.uid===ADMIN_UID)? 'inline-block':'none';
+    navAdmin.style.display = (user.uid===ADMIN_UID)?'inline-block':'none';
+    $('#nav-feed').click();
     await renderAll();
-    showView('feed');
-  } else {
+  }else{
     showAuthModal(true);
     $('#logout-btn').style.display='none';
     navAdmin.style.display='none';
@@ -93,9 +110,7 @@ onAuthStateChanged(auth, async user=>{
   }
 });
 
-// ---------------------- PRODUCTS ----------------------
-const products = [ /* same product objects as before */ ];
-
+// ---------------------- RENDER PRODUCTS ----------------------
 async function renderProducts(){
   const container = $('#product-list');
   container.innerHTML='';
@@ -109,33 +124,29 @@ async function renderProducts(){
     `);
     container.appendChild(card);
   });
-  attachProductHandlers();
-}
-
-function attachProductHandlers(){
   $$('.order').forEach(btn=>{
     btn.addEventListener('click', e=>{
-      const {name, price} = e.currentTarget.dataset;
-      const url = `https://wa.me/2349138938301?text=${encodeURIComponent(`Hello, I want to order ${name} priced at ₦${price}.`)}`;
-      window.open(url,'_blank');
+      const name=e.currentTarget.dataset.name;
+      const price=e.currentTarget.dataset.price;
+      const phone='2349138938301';
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(`Hello, I want to order ${name} priced at ₦${price}.`)}`,'_blank');
     });
   });
   $$('.read-more').forEach(a=>{
     a.addEventListener('click', e=>{
       e.preventDefault();
-      const id = a.dataset.id;
-      const p = products.find(x=>x.id===id);
+      const id=a.dataset.id;
+      const p=products.find(x=>x.id===id);
       alert(p.name+'\n\n'+p.description);
     });
   });
 }
 
-// ---------------------- FEED ----------------------
+// ---------------------- RENDER FEED ----------------------
 async function renderFeed(){
   const feed = $('#feed');
   feed.innerHTML='';
-
-  // Products first
+  // products first
   products.forEach(p=>{
     const card = el('div',{class:'card post'},`
       <img src="${p.image}" alt="${p.name}">
@@ -146,42 +157,52 @@ async function renderFeed(){
     `);
     feed.appendChild(card);
   });
-
-  // User posts
-  try {
-    const snap = await getDocs(query(collection(db,'posts'), orderBy('timestamp','desc')));
-    snap.forEach(docSnap=>{
+  // user posts
+  try{
+    const q=query(collection(db,'posts'), orderBy('timestamp','desc'));
+    const snap=await getDocs(q);
+    for(const docSnap of snap.docs){
       const post = docSnap.data();
-      const card = el('div',{class:'card post'},`
-        <img src="${post.image||'images/default_profile.png'}" alt="">
-        <h3>${post.name||'User'}</h3>
+      const ownerName = await getUserName(post.uid);
+      const card = el('div',{class:'card post'});
+      card.innerHTML = `
+        <img src="${post.image || 'images/default_profile.png'}" alt="">
+        <h3>${ownerName}</h3>
         <p>${post.text}</p>
-        <p class="muted">by ${post.email||'user'}</p>
-      `);
+        <p class="muted">by ${post.email || 'user'}</p>
+      `;
       if(currentUser && (currentUser.uid===post.uid || currentUser.uid===ADMIN_UID)){
         const del = el('button',{class:'btn'},'Delete');
         del.style.background='crimson';
         del.addEventListener('click', async ()=>{
           await deleteDoc(doc(db,'posts',docSnap.id));
+          alert('Post deleted');
           renderFeed();
         });
         card.appendChild(del);
       }
       feed.appendChild(card);
+    }
+  }catch(err){ console.error(err); }
+  $$('.order').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      const name=e.currentTarget.dataset.name;
+      const price=e.currentTarget.dataset.price;
+      const phone='2349138938301';
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(`Hello, I want to order ${name} priced at ₦${price}.`)}`,'_blank');
     });
-  } catch(err){ console.error('Feed error',err); }
-
-  attachProductHandlers();
+  });
   $$('.read-more-prod').forEach(a=>{
-    a.addEventListener('click', e=>{
+    a.addEventListener('click', async e=>{
       e.preventDefault();
-      const p = products.find(x=>x.id===a.dataset.id);
+      const id=a.dataset.id;
+      const p=products.find(x=>x.id===id);
       alert(p.name+'\n\n'+p.description);
     });
   });
 }
 
-// ---------------------- POST ----------------------
+// ---------------------- CREATE POST ----------------------
 $('#post-btn')?.addEventListener('click', async ()=>{
   if(!currentUser){ alert('Sign in first'); return; }
   const text = $('#post-text').value.trim();
@@ -191,69 +212,87 @@ $('#post-btn')?.addEventListener('click', async ()=>{
     const fd = new FormData();
     fd.append('file',file);
     fd.append('upload_preset',UPLOAD_PRESET);
-    try {
-      const res = await fetch(CLOUDINARY_URL,{method:'POST', body:fd});
+    try{
+      const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd});
       const data = await res.json();
-      imageUrl = data.secure_url;
-    } catch(err){ alert('Image upload failed'); return; }
+      imageUrl=data.secure_url;
+    }catch(err){ console.error(err); alert('Image upload failed'); return; }
   }
-  await addDoc(collection(db,'posts'), { uid:currentUser.uid, email:currentUser.email, name:currentUser.displayName||'', text, image:imageUrl, timestamp:serverTimestamp() });
-  $('#post-text').value=''; $('#post-image').value='';
+  await addDoc(collection(db,'posts'),{
+    uid:currentUser.uid,
+    email:currentUser.email,
+    name:currentUser.displayName || '',
+    text,
+    image:imageUrl,
+    timestamp:serverTimestamp()
+  });
+  $('#post-text').value='';
+  $('#post-image').value='';
+  alert('Posted!');
   renderFeed();
 });
 
 // ---------------------- PROFILE ----------------------
 $('#save-profile-pic')?.addEventListener('click', async ()=>{
   if(!currentUser){ alert('Sign in'); return; }
-  const file = $('#profile-upload').files[0]; if(!file){ alert('Choose file'); return; }
+  const file = $('#profile-upload').files[0];
+  if(!file){ alert('Choose file'); return; }
   const fd = new FormData();
-  fd.append('file',file); fd.append('upload_preset',UPLOAD_PRESET);
-  try {
-    const res = await fetch(CLOUDINARY_URL,{method:'POST', body:fd});
+  fd.append('file',file);
+  fd.append('upload_preset',UPLOAD_PRESET);
+  try{
+    const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd});
     const data = await res.json();
     const url = data.secure_url;
-    await setDoc(doc(db,'users',currentUser.uid),{ profilePic:url }, {merge:true});
+    await setDoc(doc(db,'users',currentUser.uid), { profilePic:url }, {merge:true});
     $('#profile-pic').src=url;
-    alert('Profile saved');
-  } catch(err){ console.error(err); alert('Upload failed'); }
+    alert('Profile picture saved');
+  }catch(err){ console.error(err); alert('Upload failed'); }
 });
 
 $('#save-bio')?.addEventListener('click', async ()=>{
-  if(!currentUser){ alert('Sign in'); return; }
+  if(!currentUser) return alert('Sign in');
   const bio = $('#bio').value.trim();
-  await setDoc(doc(db,'users',currentUser.uid),{ bio }, {merge:true});
+  await setDoc(doc(db,'users',currentUser.uid), { bio }, {merge:true});
   alert('Bio saved');
 });
 
-// ---------------------- FRIENDS ----------------------
+// ---------------------- FRIENDS & CHAT ----------------------
 async function renderFriends(){
-  const container = $('#friends'); container.innerHTML='';
+  const container = $('#friends');
+  container.innerHTML='';
   const snap = await getDocs(collection(db,'users'));
-  snap.forEach(d=>{
-    if(d.id===currentUser.uid) return;
-    const u = d.data();
-    const card = el('div',{class:'card friend'},`<h4>${u.name||u.email}</h4><p>${u.email||''}</p>`);
-    const btn = el('button',{},'Add Friend'); btn.className='btn';
+  for(const d of snap.docs){
+    const u=d.data();
+    if(d.id===currentUser.uid) continue;
+    const card = el('div',{class:'card friend'});
+    const userName = await getUserName(d.id);
+    card.innerHTML = `<h4>${userName}</h4><p class="muted">${u.email||''}</p>`;
+    const btn = el('button', {}, 'Add Friend'); btn.className='btn';
     btn.addEventListener('click', async ()=>{
-      await addDoc(collection(db,'friendRequests'),{ from:currentUser.uid, to:d.id, status:'pending', createdAt:serverTimestamp() });
+      await addDoc(collection(db,'friendRequests'), { from:currentUser.uid, to:d.id, status:'pending', createdAt:serverTimestamp() });
       alert('Friend request sent');
     });
-    card.appendChild(btn); container.appendChild(card);
-  });
+    card.appendChild(btn);
+    container.appendChild(card);
+  }
 }
 
-// ---------------------- CHAT ----------------------
 let activeChatWith=null;
 function openChat(uid){
-  activeChatWith = uid; $('#chat-window').style.display='block'; $('#chat-with').textContent='Chat: '+uid;
+  activeChatWith=uid;
+  $('#chat-window').style.display='block';
+  $('#chat-with').textContent='Chat: '+uid;
   loadMessages(uid);
 }
 
 $('#send-chat')?.addEventListener('click', async ()=>{
-  if(!currentUser||!activeChatWith) return;
-  const msg = $('#chat-input').value.trim(); if(!msg) return;
-  await addDoc(collection(db,'chats'),{ from:currentUser.uid, to:activeChatWith, text:msg, timestamp:serverTimestamp() });
-  $('#chat-input').value=''; loadMessages(activeChatWith);
+  if(!currentUser || !activeChatWith) return alert('Select friend');
+  const msg = $('#chat-input').value.trim();
+  if(!msg) return;
+  await addDoc(collection(db,'chats'), { from:currentUser.uid, to:activeChatWith, text:msg, timestamp:serverTimestamp() });
+  $('#chat-input').value='';
+  loadMessages(activeChatWith);
 });
 
 async function loadMessages(uid){
@@ -261,10 +300,10 @@ async function loadMessages(uid){
   const snap = await getDocs(collection(db,'chats'));
   snap.forEach(d=>{
     const m = d.data();
-    if((m.from===currentUser.uid && m.to===uid) || (m.from===uid && m.to===currentUser.uid)){
-      const div = el('div',{},`<strong>${m.from===currentUser.uid?'You':'Friend'}:</strong> ${m.text}`);
-      $('#messages').appendChild(div);
-    }
+    if(!([m.from,m.to].includes(currentUser.uid) && [m.from,m.to].includes(uid))) return;
+    const fromName = (m.from===currentUser.uid)?'You':(await getUserName(m.from));
+    const div = el('div',{}, `<strong>${fromName}:</strong> ${m.text}`);
+    $('#messages').appendChild(div);
   });
 }
 
@@ -272,50 +311,72 @@ async function loadMessages(uid){
 async function renderAdmin(){
   if(!currentUser || currentUser.uid!==ADMIN_UID) return;
   $('#admin-view').style.display='block';
-
-  const usersContainer = $('#admin-users'); usersContainer.innerHTML='';
+  const usersContainer = $('#admin-users');
+  usersContainer.innerHTML='';
   const usnap = await getDocs(collection(db,'users'));
-  usnap.forEach(d=>{
-    const u=d.data();
-    const card=el('div',{class:'card user'},`<h4>${u.name||u.email}</h4><p>${d.id}</p>`);
+  for(const d of usnap.docs){
+    const u = d.data();
+    const card = el('div',{class:'card user'}, `<h4>${u.name||u.email}</h4><p>${d.id}</p>`);
     usersContainer.appendChild(card);
-  });
-
+  }
   const postsContainer = $('#admin-posts'); postsContainer.innerHTML='';
   const psnap = await getDocs(collection(db,'posts'));
-  psnap.forEach(docSnap=>{
-    const p=docSnap.data();
-    const card=el('div',{class:'card post'},`<h4>${p.name||p.email}</h4><p>${p.text}</p>`);
-    const del=el('button',{class:'btn'},'Delete'); del.style.background='crimson';
-    del.addEventListener('click', async ()=>{ await deleteDoc(doc(db,'posts',docSnap.id)); renderAdmin(); });
-    card.appendChild(del); postsContainer.appendChild(card);
-  });
+  for(const docSnap of psnap.docs){
+    const p = docSnap.data();
+    const card = el('div',{class:'card post'});
+    card.innerHTML = `<h4>${p.name||p.email}</h4><p>${p.text}</p>`;
+    const del = el('button',{class:'btn'},'Delete'); del.style.background='crimson';
+    del.addEventListener('click', async ()=>{
+      await deleteDoc(doc(db,'posts',docSnap.id));
+      alert('Deleted'); renderAdmin();
+    });
+    card.appendChild(del);
+    postsContainer.appendChild(card);
+  }
 }
 
-// ---------------------- NAV ----------------------
-$('#nav-feed')?.addEventListener('click',()=>showView('feed'));
-$('#nav-products')?.addEventListener('click',()=>showView('products'));
-$('#nav-profile')?.addEventListener('click',()=>showView('profile'));
-$('#nav-chat')?.addEventListener('click',()=>showView('chat'));
-$('#nav-admin')?.addEventListener('click',()=>showView('admin'));
+// ---------------------- NAV & STARTUP ----------------------
+$('#nav-feed').addEventListener('click', ()=> showView('feed'));
+$('#nav-products').addEventListener('click', ()=> showView('products'));
+$('#nav-profile').addEventListener('click', ()=> showView('profile'));
+$('#nav-chat').addEventListener('click', ()=> showView('chat'));
+$('#nav-admin').addEventListener('click', ()=> showView('admin'));
 
-// ---------------------- RENDER ALL ----------------------
 async function renderAll(){
   await renderProducts();
   await renderFeed();
   if(currentUser){
     const udoc = await getDoc(doc(db,'users',currentUser.uid));
     if(udoc.exists()){
-      const data=udoc.data();
+      const data = udoc.data();
       if(data.profilePic) $('#profile-pic').src=data.profilePic;
       if(data.bio) $('#bio').value=data.bio;
     }
-    await renderFriends();
-    await renderAdmin();
+    renderFriends();
+    // chat friends: only accepted
+    renderChatFriends();
+    renderAdmin();
   }
 }
 
-// ---------------------- STARTUP ----------------------
-document.addEventListener('DOMContentLoaded', ()=>{
+async function renderChatFriends(){
+  const c = $('#friends-chat-list'); c.innerHTML='';
+  const snap = await getDocs(collection(db,'friends'));
+  snap.forEach(d=>{
+    const fr = d.data();
+    if(fr.uids && fr.uids.includes(currentUser.uid)){
+      const other = fr.uids.find(id=>id!==currentUser.uid);
+      const card = el('div',{class:'card friend'}, `<h4>Friend</h4>`);
+      const chatBtn = el('button', {}, 'Open Chat'); chatBtn.className='btn';
+      chatBtn.addEventListener('click', ()=> openChat(other));
+      card.appendChild(chatBtn);
+      c.appendChild(card);
+    }
+  });
+}
+
+// ---------------------- INITIAL ----------------------
+document.addEventListener('DOMContentLoaded', async ()=>{
   showView('feed');
+  $('#logout-btn').addEventListener('click', async ()=> { await signOut(auth); location.reload(); });
 });
