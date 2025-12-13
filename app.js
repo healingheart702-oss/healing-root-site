@@ -14,7 +14,7 @@ import {
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 import { 
-  getFirestore, collection, addDoc, doc, setDoc, updateDoc, getDoc, getDocs, deleteDoc, query, where, orderBy, serverTimestamp, onSnapshot, arrayUnion
+  getFirestore, collection, addDoc, doc, setDoc, updateDoc, getDoc, getDocs, deleteDoc, query, orderBy, serverTimestamp, onSnapshot, arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -38,14 +38,14 @@ const ADMIN_UID = "gKwgPDNJgsdcApIJch6NM9bKmf02";
 
 // ---------------------- PRODUCTS ----------------------
 const products = [
-  { id:"cassava", name:"Cassava Stems (TME419)", image:"images/cassava.JPG", price:1000, description:`Healing Root Agro Ventures provides premium TME419 cassava stems known for high yield, disease resistance, and strong root development. Each stem is nurtured in a controlled nursery to ensure survival rates above 95%, giving farmers a reliable start. Our cassava stems are ideal for commercial farming, guaranteeing tuber quality and consistent income for small and large-scale farmers across Nigeria. Full planting guidance and farm management tips are provided with every purchase.` },
-  { id:"plantain", name:"Hybrid Plantain Suckers", image:"images/plantain.JPG", price:500, description:`Our Hybrid Plantain Suckers are carefully selected for vigor, early fruiting, and high production. Raised in hygienic nurseries, these suckers adapt easily to different soil types and climates in Nigeria. With strong resistance to pests and diseases, they provide farmers with dependable growth and fruiting cycles. Each purchase comes with detailed planting and care instructions to ensure optimal yield and long-term plantation success.` },
-  { id:"banana", name:"Hybrid Dwarf Banana", image:"images/giant_banana.JPG", price:500, description:`The Hybrid Dwarf Banana from Healing Root Agro Ventures offers early maturation, high fruit quality, and strong resistance to common diseases. Ideal for both backyard gardens and commercial plantations, these banana seedlings ensure consistent yield and minimal maintenance. Raised in controlled nurseries, each seedling is ready for immediate transplantation, helping farmers secure profitable banana production with long-term benefits.` },
-  { id:"oilpalm", name:"Tenera Oil Palm Seedlings", image:"images/oilpalm.JPG", price:1000, description:`Healing Root Agro Ventures Tenera Oil Palm Seedlings are top-quality planting materials carefully raised to ensure maximum yield, disease resistance, and early fruiting. Each seedling undergoes rigorous nursery management including proper fertilization, pest control, and root development enhancement. Suitable for commercial plantations, these seedlings guarantee consistent bunch production, high oil content, and longevity of palms. Farmers are provided with full planting guidelines, soil preparation techniques, and maintenance tips to achieve optimal growth, minimize losses, and maximize return on investment. Our seedlings are acclimatized to different soil types and Nigerian climatic conditions, making them ideal for large and small-scale farming. With a focus on sustainable practices, every purchase ensures not only high productivity but also long-term farm profitability. This comprehensive package enables growers to establish healthy plantations, increase oil extraction efficiency, and secure a dependable income from the first harvest to full maturity.` },
-  { id:"coconut", name:"Hybrid Dwarf Coconut Seedlings", image:"images/coconut.JPG", price:4500, description:`Our Hybrid Dwarf Coconut Seedlings are fast-growing, high-yielding, and ideal for small to medium-scale farms. Each seedling is carefully raised to ensure healthy root systems, strong stem development, and early fruiting. Farmers benefit from reliable growth, superior nut quality, and high survival rates. Planting instructions and care guidance are included with every purchase for optimal results.` },
-  { id:"giant_cocoa", name:"Hybrid Giant Cocoa Seedlings", image:"images/giant_cocoa.JPG", price:500, description:`Healing Root Agro Ventures offers Hybrid Giant Cocoa Seedlings that combine high yield with strong resistance to common diseases. Raised in clean nurseries, these seedlings adapt well to Nigerian soils and climates, giving farmers dependable growth and fruiting cycles. Each purchase comes with expert guidance on planting, maintenance, and pest control to maximize long-term cocoa production.` },
-  { id:"pineapple", name:"Pineapple Seedlings", image:"images/pineapple.JPG", price:400, description:`Premium Pineapple Seedlings from Healing Root Agro Ventures are selected for rapid growth, high fruit quality, and uniformity. They are raised in controlled nursery conditions to ensure strong establishment and survival. Ideal for both commercial and backyard planting, these seedlings come with planting and care instructions to guarantee maximum fruit yield and consistent quality.` },
-  { id:"yam", name:"Treated Yam Setts", image:"images/Yamsett.JPG", price:700, description:`Our Treated Yam Setts are carefully selected tubers treated for disease resistance and enhanced sprouting. Each sett is ideal for both smallholder and commercial farms, ensuring rapid germination, uniform growth, and high tuber yield. Healing Root Agro Ventures provides full guidance on soil preparation, planting, and maintenance for maximum productivity and profitable harvests.` }
+  { id:"cassava", name:"Cassava Stems (TME419)", image:"images/cassava.JPG", price:1000, description:"Healing Root Agro Ventures provides premium TME419 cassava stems known for high yield..." },
+  { id:"plantain", name:"Hybrid Plantain Suckers", image:"images/plantain.JPG", price:500, description:"Our Hybrid Plantain Suckers are carefully selected for vigor, early fruiting..." },
+  { id:"banana", name:"Hybrid Dwarf Banana", image:"images/giant_banana.JPG", price:500, description:"The Hybrid Dwarf Banana from Healing Root Agro Ventures offers early maturation..." },
+  { id:"oilpalm", name:"Tenera Oil Palm Seedlings", image:"images/oilpalm.JPG", price:1000, description:"Healing Root Agro Ventures Tenera Oil Palm Seedlings are top-quality planting materials..." },
+  { id:"coconut", name:"Hybrid Dwarf Coconut Seedlings", image:"images/coconut.JPG", price:4500, description:"Our Hybrid Dwarf Coconut Seedlings are fast-growing, high-yielding..." },
+  { id:"giant_cocoa", name:"Hybrid Giant Cocoa Seedlings", image:"images/giant_cocoa.JPG", price:500, description:"Healing Root Agro Ventures offers Hybrid Giant Cocoa Seedlings that combine high yield..." },
+  { id:"pineapple", name:"Pineapple Seedlings", image:"images/pineapple.JPG", price:400, description:"Premium Pineapple Seedlings from Healing Root Agro Ventures are selected for rapid growth..." },
+  { id:"yam", name:"Treated Yam Setts", image:"images/Yamsett.JPG", price:700, description:"Our Treated Yam Setts are carefully selected tubers treated for disease resistance..." }
 ];
 
 // ---------------------- MODAL ----------------------
@@ -158,11 +158,9 @@ async function renderProducts(){
   attachReadMoreLinks();
 }
 
-// ---------------------- FEED WITH LIKES & COMMENTS ----------------------
+// ---------------------- FEED ----------------------
 async function renderFeed(){
   const feed = $('#feed'); feed.innerHTML='';
-
-  // Add products as posts
   products.forEach(p=>{
     const card = el('div',{class:'card post'},`
       <img src="${p.image}" alt="${p.name}">
@@ -176,7 +174,7 @@ async function renderFeed(){
 
   const q = query(collection(db,'posts'), orderBy('timestamp','desc'));
   onSnapshot(q, async snapshot=>{
-    feed.innerHTML=''; // reset feed
+    feed.innerHTML='';
     for(const docSnap of snapshot.docs){
       const post = docSnap.data();
       const ownerName = await getUserName(post.uid);
@@ -195,11 +193,9 @@ async function renderFeed(){
           <button class="btn comment-btn">Comment</button>
         </div>
       `;
-      // Like
       card.querySelector('.like-btn').addEventListener('click', async ()=>{
         await updateDoc(doc(db,'posts',docSnap.id), { likes: arrayUnion(currentUser.uid) });
       });
-      // Comment
       card.querySelector('.comment-btn').addEventListener('click', async ()=>{
         const input = card.querySelector('.comment-input');
         const text = input.value.trim();
@@ -269,7 +265,7 @@ $('#save-bio')?.addEventListener('click', async ()=>{
   alert('Bio saved');
 });
 
-// ---------------------- FRIENDS & CHAT ----------------------
+// ---------------------- FRIENDS (optional) ----------------------
 async function renderFriends(){
   const container = $('#friends'); container.innerHTML='';
   const snap = await getDocs(collection(db,'users'));
@@ -281,7 +277,6 @@ async function renderFriends(){
     card.innerHTML = `<h4>${userName}</h4><p class="muted">${u.email||''}</p>`;
     const btn = el('button', {}, 'Add Friend'); btn.className='btn';
     btn.addEventListener('click', async ()=>{
-      // Add friend to both users
       await updateDoc(doc(db,'users',currentUser.uid), { friends: arrayUnion(d.id) });
       await updateDoc(doc(db,'users',d.id), { friends: arrayUnion(currentUser.uid) });
       alert(`${userName} added as friend`);
@@ -292,20 +287,22 @@ async function renderFriends(){
   }
 }
 
-function renderChats(){
-  const container = $('#chat-list'); container.innerHTML='';
-  if(!currentUser) return;
-  const userRef = doc(db,'users',currentUser.uid);
-  getDoc(userRef).then(async docSnap=>{
-    if(!docSnap.exists()) return;
-    const friends = docSnap.data().friends || [];
-    for(const uid of friends){
-      const name = await getUserName(uid);
-      const card = el('div',{class:'card chat-user'},`${name}`);
-      card.addEventListener('click', ()=> openChat(uid));
-      container.appendChild(card);
-    }
-  });
+// ---------------------- CHAT ----------------------
+let activeChatWith = null;
+let unsubscribeChats = null;
+
+async function renderChats() {
+  const container = $('#chat-list'); container.innerHTML = '';
+  if (!currentUser) return;
+
+  const snap = await getDocs(collection(db, 'users'));
+  for (const d of snap.docs) {
+    if (d.id === currentUser.uid) continue;
+    const name = await getUserName(d.id);
+    const card = el('div', { class: 'card chat-user' }, name);
+    card.addEventListener('click', () => openChat(d.id));
+    container.appendChild(card);
+  }
 }
 
 function openChat(uid){
@@ -326,6 +323,7 @@ function openChat(uid){
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   });
 }
+
 $('#send-chat')?.addEventListener('click', async ()=>{
   if(!currentUser || !activeChatWith) return alert('Select friend');
   const msg = $('#chat-input').value.trim();
@@ -336,8 +334,9 @@ $('#send-chat')?.addEventListener('click', async ()=>{
 
 // ---------------------- ADMIN ----------------------
 async function renderAdmin(){
-  if(!currentUser || currentUser.uid!==gKwgPDNJgsdcApIJch6NM9bKmf02) return;
+  if(!currentUser || currentUser.uid !== ADMIN_UID) return;
   $('#admin-view').style.display='block';
+
   const usersContainer = $('#admin-users'); usersContainer.innerHTML='';
   const usnap = await getDocs(collection(db,'users'));
   for(const d of usnap.docs){
@@ -345,6 +344,7 @@ async function renderAdmin(){
     const card = el('div',{class:'card user'}, `<h4>${u.name||u.email}</h4><p>${d.id}</p>`);
     usersContainer.appendChild(card);
   }
+
   const postsContainer = $('#admin-posts'); postsContainer.innerHTML='';
   const psnap = await getDocs(collection(db,'posts'));
   for(const docSnap of psnap.docs){
