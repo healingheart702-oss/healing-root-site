@@ -14,7 +14,7 @@ import {
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 import { 
-  getFirestore, collection, addDoc, doc, setDoc, updateDoc, getDoc, getDocs, deleteDoc, query, orderBy, serverTimestamp, onSnapshot, arrayUnion
+  getFirestore, collection, addDoc, doc, setDoc, updateDoc, getDoc, getDocs, deleteDoc, query, orderBy, serverTimestamp, onSnapshot, arrayUnion, arrayRemove, where
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -71,7 +71,7 @@ function attachReadMoreLinks(){
   });
 }
 
-// ---------------------- AUTH & NAV ----------------------
+// ---------------------- AUTH & NAV & GLOBAL STATE ----------------------
 const authModal = $('#auth-modal');
 const signupForm = $('#signup-form');
 const loginForm = $('#login-form');
@@ -80,15 +80,32 @@ const logoutBtn = $('#logout-btn');
 const navAdmin = $('#nav-admin');
 
 let currentUser = null;
+let currentProfile = null; // New: Stores the current user's profile data
+let currentChatID = null; // New: Stores the active chat document ID
+let unsubscribeMessages = null; // New: To stop previous chat listener
+
 function showView(id){ $$('.view').forEach(v=>v.style.display='none'); $('#'+id+'-view').style.display='block'; }
 function showAuthModal(show){ authModal.style.display = show?'flex':'none'; }
-async function getUserName(uid){
+
+// Helper to fetch user profile, now used for friend requests and chat
+const userProfileCache = {};
+async function getUserProfile(uid){
+  if(userProfileCache[uid]) return userProfileCache[uid];
   try{
     const docSnap = await getDoc(doc(db,'users',uid));
-    if(docSnap.exists()) return docSnap.data().name || 'User';
-  }catch(e){ console.error(e); }
-  return 'User';
+    if(docSnap.exists()) {
+      const profile = docSnap.data();
+      userProfileCache[uid] = profile;
+      return profile;
+    }
+  }catch(e){ console.error("Error fetching user profile:", e); }
+  return { name: 'User', email: 'N/A', profilePicUrl: 'images/default_profile.png' };
 }
+async function getUserName(uid){
+  const profile = await getUserProfile(uid);
+  return profile.name || (profile.email ? profile.email.split('@')[0] : 'User');
+}
+
 
 // ---------------------- AUTH ACTIONS ----------------------
 signupForm?.addEventListener('submit', async e=>{
@@ -100,7 +117,8 @@ signupForm?.addEventListener('submit', async e=>{
   if(!name || !email || !password){ authMessage.textContent='Fill all fields'; return; }
   try{
     const cred = await createUserWithEmailAndPassword(auth,email,password);
-    await setDoc(doc(db,'users',cred.user.uid), { name,email,createdAt:serverTimestamp(), friends:[] });
+    // Modified: Added pendingRequests for friend request feature
+    await setDoc(doc(db,'users',cred.user.uid), { name, email, createdAt:serverTimestamp(), friends:[], pendingRequests: [] }); 
     authMessage.textContent='Account created — signed in';
   }catch(err){ authMessage.textContent = err.message; }
 });
@@ -116,11 +134,28 @@ logoutBtn?.addEventListener('click', async ()=>{ await signOut(auth); });
 onAuthStateChanged(auth, async user=>{
   currentUser=user;
   if(user){
+    // Fetch and set current user profile
+    const profileSnap = await getDoc(doc(db, 'users', user.uid));
+    currentProfile = profileSnap.exists() ? profileSnap.data() : null;
+
+    if (!currentProfile) {
+      console.error("User profile missing in Firestore!");
+      await signOut(auth); 
+      showAuthModal(true);
+      return;
+    }
+
     showAuthModal(false);
     $('#logout-btn').style.display='inline-block';
     navAdmin.style.display = (user.uid===ADMIN_UID)?'inline-block':'none';
     $('#nav-feed').click();
-    await renderAll();
+    
+    // Start all real-time listeners
+    await renderAll(); 
+    loadSocialFeed(); // Real-time feed listener
+    setupFriendshipListener(user.uid); // Real-time friends/requests listener
+    setupNotificationListener(user.uid); // Real-time notification listener
+
   }else{
     showAuthModal(true);
     $('#logout-btn').style.display='none';
@@ -158,57 +193,70 @@ async function renderProducts(){
   attachReadMoreLinks();
 }
 
-// ---------------------- FEED ----------------------
-async function renderFeed(){
-  const feed = $('#feed'); feed.innerHTML='';
-  products.forEach(p=>{
-    const card = el('div',{class:'card post'},`
-      <img src="${p.image}" alt="${p.name}">
-      <h3>${p.name}</h3>
-      <p class="muted">Price: ₦${p.price.toLocaleString()}</p>
-      <p>${p.description.slice(0,150)}... <a href="#" data-id="${p.id}" class="read-more-prod">Read more</a></p>
-      <button class="btn order" data-name="${p.name}" data-price="${p.price}">Order via WhatsApp</button>
-    `);
-    feed.appendChild(card);
-  });
+// ---------------------- FEED (Enhanced Real-Time Listener) ----------------------
+function loadSocialFeed(){
+    const feed = $('#feed'); 
+    const q = query(collection(db,'posts'), orderBy('timestamp','desc'));
 
-  const q = query(collection(db,'posts'), orderBy('timestamp','desc'));
-  onSnapshot(q, async snapshot=>{
-    feed.innerHTML='';
-    for(const docSnap of snapshot.docs){
-      const post = docSnap.data();
-      const ownerName = await getUserName(post.uid);
-      const card = el('div',{class:'card post'});
-      card.innerHTML = `
-        <img src="${post.image || 'images/default_profile.png'}" alt="">
-        <h3>${ownerName}</h3>
-        <p>${post.text}</p>
-        <p>Likes: <span class="like-count">${post.likes?.length||0}</span> 
-          <button class="btn like-btn">Like</button>
-        </p>
-        <div class="comments">
-          <h5>Comments:</h5>
-          <ul class="comment-list">${(post.comments||[]).map(c=>`<li>${c.name}: ${c.text}</li>`).join('')}</ul>
-          <input type="text" placeholder="Comment" class="comment-input">
-          <button class="btn comment-btn">Comment</button>
-        </div>
-      `;
-      card.querySelector('.like-btn').addEventListener('click', async ()=>{
-        await updateDoc(doc(db,'posts',docSnap.id), { likes: arrayUnion(currentUser.uid) });
-      });
-      card.querySelector('.comment-btn').addEventListener('click', async ()=>{
-        const input = card.querySelector('.comment-input');
-        const text = input.value.trim();
-        if(!text) return;
-        await updateDoc(doc(db,'posts',docSnap.id), { comments: arrayUnion({ uid: currentUser.uid, name: await getUserName(currentUser.uid), text }) });
-        input.value='';
-      });
-      feed.appendChild(card);
-    }
-  });
+    onSnapshot(q, async snapshot=>{
+        feed.innerHTML='';
+        // Re-render the initial products list at the top of the feed view if desired
+        products.forEach(p=>{
+            const card = el('div',{class:'card post'},`
+                <img src="${p.image}" alt="${p.name}">
+                <h3>${p.name}</h3>
+                <p class="muted">Price: ₦${p.price.toLocaleString()}</p>
+                <p>${p.description.slice(0,150)}... <a href="#" data-id="${p.id}" class="read-more-prod">Read more</a></p>
+                <button class="btn order" data-name="${p.name}" data-price="${p.price}">Order via WhatsApp</button>
+            `);
+            feed.appendChild(card);
+        });
 
-  attachWhatsAppButtons('#feed');
-  attachReadMoreLinks();
+        // Loop through Firestore posts
+        for(const docSnap of snapshot.docs){
+            const post = docSnap.data();
+            const ownerName = await getUserName(post.uid);
+            const card = el('div',{class:'card post'});
+            const isLiked = post.likes && post.likes.includes(currentUser.uid);
+
+            card.innerHTML = `
+                <img src="${post.image || (await getUserProfile(post.uid)).profilePic || 'images/default_profile.png'}" alt="">
+                <h3>${ownerName}</h3>
+                <p>${post.text}</p>
+                <p>Likes: <span class="like-count">${post.likes?.length||0}</span> 
+                    <button class="btn like-btn" data-liked="${isLiked ? 'true' : 'false'}" style="background-color: ${isLiked ? '#28a745' : '#007bff'};">${isLiked ? 'Liked' : 'Like'}</button>
+                </p>
+                <div class="comments">
+                    <h5>Comments:</h5>
+                    <ul class="comment-list">${(post.comments||[]).map(c=>`<li><strong>${c.name||'User'}:</strong> ${c.text}</li>`).join('')}</ul>
+                    <input type="text" placeholder="Comment" class="comment-input">
+                    <button class="btn comment-btn">Comment</button>
+                </div>
+            `;
+            
+            // Like/Unlike Listener
+            card.querySelector('.like-btn').addEventListener('click', async ()=>{
+                const isCurrentlyLiked = post.likes && post.likes.includes(currentUser.uid);
+                const updateAction = isCurrentlyLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid);
+                await updateDoc(doc(db,'posts',docSnap.id), { likes: updateAction });
+            });
+            
+            // Comment Listener
+            card.querySelector('.comment-btn').addEventListener('click', async ()=>{
+                const input = card.querySelector('.comment-input');
+                const text = input.value.trim();
+                if(!text) return;
+                await updateDoc(doc(db,'posts',docSnap.id), { 
+                    comments: arrayUnion({ uid: currentUser.uid, name: await getUserName(currentUser.uid), text, timestamp: new Date().getTime() }) 
+                });
+                input.value='';
+            });
+            feed.appendChild(card);
+        }
+
+        attachWhatsAppButtons('#feed');
+        attachReadMoreLinks();
+    });
 }
 
 // ---------------------- CREATE POST ----------------------
@@ -217,6 +265,8 @@ $('#post-btn')?.addEventListener('click', async ()=>{
   const text = $('#post-text').value.trim();
   const file = $('#post-image').files[0];
   let imageUrl = '';
+  let authorPfp = currentProfile.profilePic || 'images/default_profile.png'; // Get PFP from current profile
+
   if(file){
     const fd = new FormData();
     fd.append('file',file);
@@ -230,7 +280,8 @@ $('#post-btn')?.addEventListener('click', async ()=>{
   await addDoc(collection(db,'posts'),{
     uid: currentUser.uid,
     email: currentUser.email,
-    name: currentUser.displayName || '',
+    name: currentProfile.name || '',
+    authorPfp: authorPfp, // Include PFP
     text,
     image: imageUrl,
     timestamp: serverTimestamp(),
@@ -253,7 +304,10 @@ $('#save-profile-pic')?.addEventListener('click', async ()=>{
     const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd});
     const data = await res.json();
     const url = data.secure_url;
+    // Modified: Update the user's document with the profilePic field
     await updateDoc(doc(db,'users',currentUser.uid), { profilePic:url });
+    // Update global profile cache
+    currentProfile.profilePic = url;
     $('#profile-pic').src=url;
     alert('Profile picture saved');
   }catch(err){ console.error(err); alert('Upload failed'); }
@@ -265,72 +319,223 @@ $('#save-bio')?.addEventListener('click', async ()=>{
   alert('Bio saved');
 });
 
-// ---------------------- FRIENDS (optional) ----------------------
-async function renderFriends(){
-  const container = $('#friends'); container.innerHTML='';
-  const snap = await getDocs(collection(db,'users'));
-  for(const d of snap.docs){
-    if(d.id === currentUser.uid) continue;
-    const u = d.data();
-    const card = el('div',{class:'card friend'});
-    const userName = await getUserName(d.id);
-    card.innerHTML = `<h4>${userName}</h4><p class="muted">${u.email||''}</p>`;
-    const btn = el('button', {}, 'Add Friend'); btn.className='btn';
-    btn.addEventListener('click', async ()=>{
-      await updateDoc(doc(db,'users',currentUser.uid), { friends: arrayUnion(d.id) });
-      await updateDoc(doc(db,'users',d.id), { friends: arrayUnion(currentUser.uid) });
-      alert(`${userName} added as friend`);
-      renderChats();
+// ---------------------- FRIENDSHIP & CHAT (ADVANCED) ----------------------
+const friendsListContainer = $('#friends'); // Existing container for finding/displaying friends
+const chatListContainer = $('#chat-list'); // Existing container for chat users
+const friendRequestsContainer = $('#friend-requests'); // NEW container needed in HTML
+
+// Helper to send friend request
+async function sendFriendRequest(e) {
+    const recipientUID = e.currentTarget.dataset.uid;
+
+    if (currentProfile.friends.includes(recipientUID) || (currentProfile.pendingRequests && currentProfile.pendingRequests.includes(recipientUID))) {
+        alert("Already friends or request already sent.");
+        return;
+    }
+
+    try {
+        await updateDoc(doc(db, "users", recipientUID), {
+            pendingRequests: arrayUnion(currentUser.uid) 
+        });
+        alert("Friend request sent!");
+    } catch (error) {
+        console.error("Error sending request:", error);
+        alert("Failed to send request.");
+    }
+}
+
+// Function factory for handling accept/reject
+function handleFriendRequest(action) {
+    return async (e) => {
+        const senderUID = e.currentTarget.dataset.senderUid;
+        const senderRef = doc(db, "users", senderUID);
+        const recipientRef = doc(db, "users", currentUser.uid);
+
+        if (action === 'accept') {
+            await updateDoc(recipientRef, { pendingRequests: arrayRemove(senderUID) });
+            await updateDoc(recipientRef, { friends: arrayUnion(senderUID) });
+            await updateDoc(senderRef, { friends: arrayUnion(currentUser.uid) });
+            alert(`You are now friends!`);
+        } else if (action === 'reject') {
+            await updateDoc(recipientRef, { pendingRequests: arrayRemove(senderUID) });
+            alert(`Request rejected.`);
+        }
+    }
+}
+
+// Render the list of current friends
+async function renderFriends(friendUids) {
+    chatListContainer.innerHTML = '';
+    if (friendUids.length === 0) {
+        chatListContainer.innerHTML = '<p>No friends yet. Search below to add someone.</p>';
+        return;
+    }
+
+    const friendProfiles = await Promise.all(
+        friendUids.map(uid => getUserProfile(uid))
+    );
+
+    friendProfiles.forEach(friend => {
+        const card = el('div', { class: 'card chat-user' }, `
+            <img src="${friend.profilePic || 'images/default_profile.png'}" style="width:30px; height:30px; border-radius:50%; margin-right:10px;">
+            ${friend.name || friend.email.split('@')[0]}
+            <button class="btn btn-sm" data-uid="${friend.uid}" style="margin-left:auto;">Chat</button>
+        `);
+        card.querySelector('button').addEventListener('click', startChat);
+        chatListContainer.appendChild(card);
     });
-    card.appendChild(btn);
-    container.appendChild(card);
-  }
 }
 
-// ---------------------- CHAT ----------------------
-let activeChatWith = null;
-let unsubscribeChats = null;
+// Render the list of pending friend requests
+async function renderFriendRequests(requestUids) {
+    // NOTE: You need to add <div id="friend-requests"> in your profile/friends view HTML
+    if (friendRequestsContainer) friendRequestsContainer.innerHTML = ''; 
+    else { console.warn("Missing HTML element: #friend-requests"); return; }
+    
+    if (!requestUids || requestUids.length === 0) {
+        friendRequestsContainer.innerHTML = '<p>No pending requests.</p>';
+        return;
+    }
 
-async function renderChats() {
-  const container = $('#chat-list'); container.innerHTML = '';
-  if (!currentUser) return;
+    const senderProfiles = await Promise.all(
+        requestUids.map(uid => getUserProfile(uid))
+    );
 
-  const snap = await getDocs(collection(db, 'users'));
-  for (const d of snap.docs) {
-    if (d.id === currentUser.uid) continue;
-    const name = await getUserName(d.id);
-    const card = el('div', { class: 'card chat-user' }, name);
-    card.addEventListener('click', () => openChat(d.id));
-    container.appendChild(card);
-  }
-}
-
-function openChat(uid){
-  activeChatWith = uid;
-  $('#chat-window').style.display = 'block';
-  $('#chat-with').textContent = 'Chat: ' + uid;
-  if(unsubscribeChats) unsubscribeChats();
-  const messagesContainer = $('#messages'); messagesContainer.innerHTML='';
-  const q = query(collection(db,'chats'), orderBy('timestamp'));
-  unsubscribeChats = onSnapshot(q, snapshot=>{
-    messagesContainer.innerHTML='';
-    snapshot.docs.forEach(docSnap=>{
-      const m = docSnap.data();
-      if(!([m.from,m.to].includes(currentUser.uid) && [m.from,m.to].includes(uid))) return;
-      const fromName = (m.from===currentUser.uid)?'You':'Friend';
-      messagesContainer.appendChild(el('div',{}, `<strong>${fromName}:</strong> ${m.text}`));
+    senderProfiles.forEach(sender => {
+        const div = el('div', { class: 'card request-item' }, `
+            <span>${sender.name || sender.email.split('@')[0]} sent a request.</span>
+        `);
+        const acceptBtn = el('button', { 'data-sender-uid': sender.uid, class: 'btn btn-sm' }, 'Accept');
+        const rejectBtn = el('button', { 'data-sender-uid': sender.uid, class: 'btn btn-sm', style: 'background-color:crimson' }, 'Reject');
+        
+        acceptBtn.addEventListener('click', handleFriendRequest('accept'));
+        rejectBtn.addEventListener('click', handleFriendRequest('reject'));
+        
+        div.appendChild(acceptBtn);
+        div.appendChild(rejectBtn);
+        friendRequestsContainer.appendChild(div);
     });
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-  });
 }
 
+// Real-time listener for current user's friends and requests
+function setupFriendshipListener(uid) {
+    onSnapshot(doc(db, "users", uid), (docSnap) => {
+        if (docSnap.exists()) {
+            const user = docSnap.data();
+            currentProfile = user; // Update the global profile state
+            renderFriends(user.friends || []);
+            renderFriendRequests(user.pendingRequests || []);
+        }
+    });
+
+    // Also render all potential users for searching/adding (using the old friends container)
+    renderAllUsersForFriendSearch();
+}
+
+// Render all users in the friend search view
+async function renderAllUsersForFriendSearch(){
+    friendsListContainer.innerHTML = '<h4>Find Users</h4>';
+    const snap = await getDocs(collection(db,'users'));
+    for(const d of snap.docs){
+        if(d.id === currentUser.uid) continue;
+        const u = d.data();
+        const card = el('div',{class:'card friend-search-item'}, `
+            <p><strong>${u.name || u.email.split('@')[0]}</strong></p>
+        `);
+        const btn = el('button', { 'data-uid': d.id }, 'Send Request'); btn.className='btn btn-sm';
+        btn.addEventListener('click', sendFriendRequest);
+        card.appendChild(btn);
+        friendsListContainer.appendChild(card);
+    }
+}
+
+// ---------------------- CHAT IMPLEMENTATION ----------------------
+
+// Start a new chat session
+async function startChat(e) {
+    const friendUID = e.currentTarget.dataset.uid;
+    const participants = [currentUser.uid, friendUID].sort();
+    const chatID = participants.join('_');
+    currentChatID = chatID;
+    
+    const friendProfile = await getUserProfile(friendUID);
+    $('#chat-window').style.display = 'block';
+    $('#chat-with').textContent = `💬 Chat with ${friendProfile.name || friendProfile.email.split('@')[0]}`;
+    
+    // Ensure the chat room document exists
+    await setDoc(doc(db, "chats", chatID), { 
+        participants: participants, 
+        lastMessageAt: serverTimestamp() 
+    }, { merge: true });
+
+    setupMessageListener(chatID, friendUID);
+}
+
+// Real-time listener for messages in the active chat
+function setupMessageListener(chatID, friendUID) {
+    if (unsubscribeChats) unsubscribeChats(); // Stop previous listener
+
+    const messagesContainer = $('#messages'); 
+    messagesContainer.innerHTML=''; // Clear previous messages
+    
+    const q = query(collection(db, "chats", chatID, "messages"), orderBy("timestamp", "asc"));
+    
+    unsubscribeChats = onSnapshot(q, (snapshot) => {
+        messagesContainer.innerHTML = '';
+        snapshot.docs.forEach(docSnap => {
+            const message = docSnap.data();
+            const isMe = message.senderUID === currentUser.uid;
+            const fromName = isMe ? 'You' : (message.senderName || 'Friend');
+            
+            const messageDiv = el('div', { class: `message-bubble ${isMe ? 'mine' : 'theirs'}` }, 
+                `<strong>${fromName}:</strong> ${message.text}`
+            );
+            messagesContainer.appendChild(messageDiv);
+        });
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    });
+}
+
+// Send chat message listener (replaces the old $('#send-chat') listener)
 $('#send-chat')?.addEventListener('click', async ()=>{
-  if(!currentUser || !activeChatWith) return alert('Select friend');
+  if(!currentUser || !currentChatID) return alert('Select a friend to chat with.');
   const msg = $('#chat-input').value.trim();
   if(!msg) return;
-  await addDoc(collection(db,'chats'), { from:currentUser.uid, to:activeChatWith, text:msg, timestamp:serverTimestamp() });
+
+  await addDoc(collection(db, "chats", currentChatID, "messages"), {
+        senderUID: currentUser.uid,
+        senderName: currentProfile.name || currentProfile.email.split('@')[0],
+        text: msg,
+        timestamp: serverTimestamp()
+    });
+    
+  // Update the parent chat document for sorting/display
+  await updateDoc(doc(db, "chats", currentChatID), {
+      lastMessageText: msg,
+      lastMessageAt: serverTimestamp()
+  });
+
   $('#chat-input').value='';
 });
+
+// ---------------------- NOTIFICATION LISTENER (NEW) ----------------------
+// NOTE: You need an HTML element for the counter (e.g., <span id="notification-counter"></span>)
+function setupNotificationListener(uid) { 
+    const notificationCounter = $('#notification-counter');
+    if (!notificationCounter) {
+        console.warn("Missing HTML element: #notification-counter");
+        return;
+    }
+
+    const q = query(collection(db, "notifications"), where("recipientUID", "==", uid), where("read", "==", false));
+
+    onSnapshot(q, (snapshot) => {
+        let unreadCount = snapshot.docs.length;
+        notificationCounter.textContent = unreadCount > 0 ? unreadCount : '';
+        notificationCounter.style.display = unreadCount > 0 ? 'block' : 'none';
+        console.log(`Unread notifications: ${unreadCount}`);
+    });
+}
 
 // ---------------------- ADMIN ----------------------
 async function renderAdmin(){
@@ -362,7 +567,7 @@ async function renderAdmin(){
 }
 
 // ---------------------- NAV ----------------------
-$('#nav-feed').addEventListener('click', ()=> showView('feed'));
+$('#nav-feed').addEventListener('click', ()=> { showView('feed'); loadSocialFeed(); });
 $('#nav-products').addEventListener('click', ()=> showView('products'));
 $('#nav-profile').addEventListener('click', ()=> showView('profile'));
 $('#nav-chat').addEventListener('click', ()=> showView('chat'));
@@ -371,20 +576,20 @@ $('#nav-admin').addEventListener('click', ()=> showView('admin'));
 // ---------------------- RENDER ALL ----------------------
 async function renderAll(){
   await renderProducts();
-  await renderFeed();
   if(currentUser){
     const udoc = await getDoc(doc(db,'users',currentUser.uid));
     if(udoc.exists()){
       const data = udoc.data();
       if(data.profilePic) $('#profile-pic').src=data.profilePic;
       if(data.bio) $('#bio').value=data.bio;
+      // Note: renderFriends/renderChats/renderRequests are now handled by setupFriendshipListener (real-time)
     }
-    renderFriends();
-    renderChats();
     renderAdmin();
   }
 }
 
 document.addEventListener('DOMContentLoaded', async ()=>{
   showView('feed');
+  renderProducts(); // Render products immediately for logged out users too
 });
+
