@@ -30,7 +30,7 @@ body {
 }
 
 .brand .logo {
-    width: 60px; /* smaller logo */
+    width: 40px; /* Reduced logo size from 60px to 40px */
     height: auto;
     margin-right: 15px;
     border-radius: 5px;
@@ -125,10 +125,13 @@ body {
 /* Images */
 .card img {
     max-width: 100%;
-    height: auto;
+    /* Removed max-width: 100% limitation, setting a specific max-height */
+    max-height: 250px; /* Added max height to prevent pictures from being too tall */
+    width: auto; /* Let the width adjust automatically */
     display: block;
-    margin-bottom: 10px;
+    margin: 0 auto 10px auto; /* Centered the image and added margin */
     border-radius: 8px;
+    object-fit: cover; /* Ensures the image covers the area without distortion */
 }
 
 /* Feed (Mini-Facebook style) */
@@ -185,8 +188,8 @@ body {
 }
 
 .profile-pic {
-    width: 120px;
-    height: 120px;
+    width: 100px; /* Slightly reduced profile picture from 120px to 100px */
+    height: 100px; /* Keep it square */
     object-fit: cover;
     border-radius: 50%;
     margin-bottom: 10px;
