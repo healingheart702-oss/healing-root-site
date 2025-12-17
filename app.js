@@ -80,14 +80,13 @@ const logoutBtn = $('#logout-btn');
 const navAdmin = $('#nav-admin');
 
 let currentUser = null;
-let currentProfile = null; // New: Stores the current user's profile data
-let currentChatID = null; // New: Stores the active chat document ID
-let unsubscribeMessages = null; // New: To stop previous chat listener
+let currentProfile = null; 
+let currentChatID = null; 
+let unsubscribeMessages = null; 
 
 function showView(id){ $$('.view').forEach(v=>v.style.display='none'); $('#'+id+'-view').style.display='block'; }
 function showAuthModal(show){ authModal.style.display = show?'flex':'none'; }
 
-// Helper to fetch user profile, now used for friend requests and chat
 const userProfileCache = {};
 async function getUserProfile(uid){
   if(userProfileCache[uid]) return userProfileCache[uid];
@@ -106,6 +105,29 @@ async function getUserName(uid){
   return profile.name || (profile.email ? profile.email.split('@')[0] : 'User');
 }
 
+// ---------------------- NOTIFICATION HELPER FUNCTION (NEW) ----------------------
+
+async function createNotification(recipientUID, type, sourceID, senderUID, senderName) {
+    // Prevent sending a notification to yourself (e.g., liking your own post)
+    if (recipientUID === senderUID) return; 
+
+    // Find the recipient's profile to ensure they exist
+    const recipientProfile = await getUserProfile(recipientUID);
+    if (!recipientProfile.email || recipientProfile.email === 'N/A') {
+        console.warn(`Attempted to send notification to non-existent user: ${recipientUID}`);
+        return;
+    }
+    
+    await addDoc(collection(db, 'notifications'), {
+        recipientUID: recipientUID,
+        type: type, // 'like', 'comment', or 'friend_request'
+        sourceID: sourceID, // The postId or senderUID
+        senderUID: senderUID,
+        senderName: senderName,
+        read: false,
+        timestamp: serverTimestamp()
+    });
+}
 
 // ---------------------- AUTH ACTIONS ----------------------
 signupForm?.addEventListener('submit', async e=>{
@@ -117,7 +139,6 @@ signupForm?.addEventListener('submit', async e=>{
   if(!name || !email || !password){ authMessage.textContent='Fill all fields'; return; }
   try{
     const cred = await createUserWithEmailAndPassword(auth,email,password);
-    // Modified: Added pendingRequests for friend request feature
     await setDoc(doc(db,'users',cred.user.uid), { name, email, createdAt:serverTimestamp(), friends:[], pendingRequests: [] }); 
     authMessage.textContent='Account created — signed in';
   }catch(err){ authMessage.textContent = err.message; }
@@ -134,7 +155,6 @@ logoutBtn?.addEventListener('click', async ()=>{ await signOut(auth); });
 onAuthStateChanged(auth, async user=>{
   currentUser=user;
   if(user){
-    // Fetch and set current user profile
     const profileSnap = await getDoc(doc(db, 'users', user.uid));
     currentProfile = profileSnap.exists() ? profileSnap.data() : null;
 
@@ -150,11 +170,10 @@ onAuthStateChanged(auth, async user=>{
     navAdmin.style.display = (user.uid===ADMIN_UID)?'inline-block':'none';
     $('#nav-feed').click();
     
-    // Start all real-time listeners
     await renderAll(); 
-    loadSocialFeed(); // Real-time feed listener
-    setupFriendshipListener(user.uid); // Real-time friends/requests listener
-    setupNotificationListener(user.uid); // Real-time notification listener
+    loadSocialFeed(); 
+    setupFriendshipListener(user.uid); 
+    setupNotificationListener(user.uid); 
 
   }else{
     showAuthModal(true);
@@ -217,7 +236,7 @@ function loadSocialFeed(){
             const post = docSnap.data();
             const ownerName = await getUserName(post.uid);
             const card = el('div',{class:'card post'});
-            const isLiked = post.likes && post.likes.includes(currentUser.uid);
+            const isLiked = currentUser && post.likes && post.likes.includes(currentUser.uid);
 
             card.innerHTML = `
                 <img src="${post.image || (await getUserProfile(post.uid)).profilePic || 'images/default_profile.png'}" alt="">
@@ -234,22 +253,51 @@ function loadSocialFeed(){
                 </div>
             `;
             
-            // Like/Unlike Listener
+            // 1. Like/Unlike Listener (UPGRADED for Notifications)
             card.querySelector('.like-btn').addEventListener('click', async ()=>{
+                if (!currentUser) return alert('Please sign in to like posts.');
                 const isCurrentlyLiked = post.likes && post.likes.includes(currentUser.uid);
                 const updateAction = isCurrentlyLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid);
+                
                 await updateDoc(doc(db,'posts',docSnap.id), { likes: updateAction });
+                
+                // 🔔 NOTIFICATION LOGIC: Only notify on a new like (not an unlike)
+                if (!isCurrentlyLiked) {
+                    await createNotification(
+                        post.uid,                 // Recipient: Post owner
+                        'like',                   // Type
+                        docSnap.id,               // Source: Post ID
+                        currentUser.uid,          // Sender UID
+                        currentProfile.name       // Sender Name
+                    );
+                }
             });
             
-            // Comment Listener
+            // 2. Comment Listener (UPGRADED for Notifications)
             card.querySelector('.comment-btn').addEventListener('click', async ()=>{
+                if (!currentUser) return alert('Please sign in to comment.');
                 const input = card.querySelector('.comment-input');
                 const text = input.value.trim();
                 if(!text) return;
+
                 await updateDoc(doc(db,'posts',docSnap.id), { 
-                    comments: arrayUnion({ uid: currentUser.uid, name: await getUserName(currentUser.uid), text, timestamp: new Date().getTime() }) 
+                    comments: arrayUnion({ 
+                        uid: currentUser.uid, 
+                        name: currentProfile.name,
+                        text, 
+                        timestamp: new Date().getTime() 
+                    }) 
                 });
                 input.value='';
+
+                // 🔔 NOTIFICATION LOGIC
+                await createNotification(
+                    post.uid,                 // Recipient: Post owner
+                    'comment',                // Type
+                    docSnap.id,               // Source: Post ID
+                    currentUser.uid,          // Sender UID
+                    currentProfile.name       // Sender Name
+                );
             });
             feed.appendChild(card);
         }
@@ -265,7 +313,7 @@ $('#post-btn')?.addEventListener('click', async ()=>{
   const text = $('#post-text').value.trim();
   const file = $('#post-image').files[0];
   let imageUrl = '';
-  let authorPfp = currentProfile.profilePic || 'images/default_profile.png'; // Get PFP from current profile
+  let authorPfp = currentProfile.profilePic || 'images/default_profile.png'; 
 
   if(file){
     const fd = new FormData();
@@ -281,7 +329,7 @@ $('#post-btn')?.addEventListener('click', async ()=>{
     uid: currentUser.uid,
     email: currentUser.email,
     name: currentProfile.name || '',
-    authorPfp: authorPfp, // Include PFP
+    authorPfp: authorPfp, 
     text,
     image: imageUrl,
     timestamp: serverTimestamp(),
@@ -304,9 +352,7 @@ $('#save-profile-pic')?.addEventListener('click', async ()=>{
     const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd});
     const data = await res.json();
     const url = data.secure_url;
-    // Modified: Update the user's document with the profilePic field
     await updateDoc(doc(db,'users',currentUser.uid), { profilePic:url });
-    // Update global profile cache
     currentProfile.profilePic = url;
     $('#profile-pic').src=url;
     alert('Profile picture saved');
@@ -319,12 +365,12 @@ $('#save-bio')?.addEventListener('click', async ()=>{
   alert('Bio saved');
 });
 
-// ---------------------- FRIENDSHIP & CHAT (ADVANCED) ----------------------
-const friendsListContainer = $('#friends'); // Existing container for finding/displaying friends
-const chatListContainer = $('#chat-list'); // Existing container for chat users
-const friendRequestsContainer = $('#friend-requests'); // NEW container needed in HTML
+// ---------------------- FRIENDSHIP & CHAT ----------------------
+const friendsListContainer = $('#friends'); 
+const chatListContainer = $('#chat-list'); 
+const friendRequestsContainer = $('#friend-requests'); 
 
-// Helper to send friend request
+// Send Friend Request (UPGRADED for Notifications)
 async function sendFriendRequest(e) {
     const recipientUID = e.currentTarget.dataset.uid;
 
@@ -334,9 +380,20 @@ async function sendFriendRequest(e) {
     }
 
     try {
+        // 1. Update recipient's user document
         await updateDoc(doc(db, "users", recipientUID), {
             pendingRequests: arrayUnion(currentUser.uid) 
         });
+
+        // 2. 🔔 NOTIFICATION LOGIC
+        await createNotification(
+            recipientUID,             // Recipient: The user being requested
+            'friend_request',         // Type
+            currentUser.uid,          // Source: Sender UID
+            currentUser.uid,          // Sender UID
+            currentProfile.name       // Sender Name
+        );
+        
         alert("Friend request sent!");
     } catch (error) {
         console.error("Error sending request:", error);
@@ -344,7 +401,6 @@ async function sendFriendRequest(e) {
     }
 }
 
-// Function factory for handling accept/reject
 function handleFriendRequest(action) {
     return async (e) => {
         const senderUID = e.currentTarget.dataset.senderUid;
@@ -363,7 +419,6 @@ function handleFriendRequest(action) {
     }
 }
 
-// Render the list of current friends
 async function renderFriends(friendUids) {
     chatListContainer.innerHTML = '';
     if (friendUids.length === 0) {
@@ -386,9 +441,7 @@ async function renderFriends(friendUids) {
     });
 }
 
-// Render the list of pending friend requests
 async function renderFriendRequests(requestUids) {
-    // NOTE: You need to add <div id="friend-requests"> in your profile/friends view HTML
     if (friendRequestsContainer) friendRequestsContainer.innerHTML = ''; 
     else { console.warn("Missing HTML element: #friend-requests"); return; }
     
@@ -417,22 +470,19 @@ async function renderFriendRequests(requestUids) {
     });
 }
 
-// Real-time listener for current user's friends and requests
 function setupFriendshipListener(uid) {
     onSnapshot(doc(db, "users", uid), (docSnap) => {
         if (docSnap.exists()) {
             const user = docSnap.data();
-            currentProfile = user; // Update the global profile state
+            currentProfile = user; 
             renderFriends(user.friends || []);
             renderFriendRequests(user.pendingRequests || []);
         }
     });
 
-    // Also render all potential users for searching/adding (using the old friends container)
     renderAllUsersForFriendSearch();
 }
 
-// Render all users in the friend search view
 async function renderAllUsersForFriendSearch(){
     friendsListContainer.innerHTML = '<h4>Find Users</h4>';
     const snap = await getDocs(collection(db,'users'));
@@ -449,9 +499,6 @@ async function renderAllUsersForFriendSearch(){
     }
 }
 
-// ---------------------- CHAT IMPLEMENTATION ----------------------
-
-// Start a new chat session
 async function startChat(e) {
     const friendUID = e.currentTarget.dataset.uid;
     const participants = [currentUser.uid, friendUID].sort();
@@ -462,7 +509,6 @@ async function startChat(e) {
     $('#chat-window').style.display = 'block';
     $('#chat-with').textContent = `💬 Chat with ${friendProfile.name || friendProfile.email.split('@')[0]}`;
     
-    // Ensure the chat room document exists
     await setDoc(doc(db, "chats", chatID), { 
         participants: participants, 
         lastMessageAt: serverTimestamp() 
@@ -471,16 +517,15 @@ async function startChat(e) {
     setupMessageListener(chatID, friendUID);
 }
 
-// Real-time listener for messages in the active chat
 function setupMessageListener(chatID, friendUID) {
-    if (unsubscribeChats) unsubscribeChats(); // Stop previous listener
+    if (unsubscribeMessages) unsubscribeMessages(); 
 
     const messagesContainer = $('#messages'); 
-    messagesContainer.innerHTML=''; // Clear previous messages
+    messagesContainer.innerHTML=''; 
     
     const q = query(collection(db, "chats", chatID, "messages"), orderBy("timestamp", "asc"));
     
-    unsubscribeChats = onSnapshot(q, (snapshot) => {
+    unsubscribeMessages = onSnapshot(q, (snapshot) => {
         messagesContainer.innerHTML = '';
         snapshot.docs.forEach(docSnap => {
             const message = docSnap.data();
@@ -496,7 +541,6 @@ function setupMessageListener(chatID, friendUID) {
     });
 }
 
-// Send chat message listener (replaces the old $('#send-chat') listener)
 $('#send-chat')?.addEventListener('click', async ()=>{
   if(!currentUser || !currentChatID) return alert('Select a friend to chat with.');
   const msg = $('#chat-input').value.trim();
@@ -509,7 +553,6 @@ $('#send-chat')?.addEventListener('click', async ()=>{
         timestamp: serverTimestamp()
     });
     
-  // Update the parent chat document for sorting/display
   await updateDoc(doc(db, "chats", currentChatID), {
       lastMessageText: msg,
       lastMessageAt: serverTimestamp()
@@ -518,8 +561,7 @@ $('#send-chat')?.addEventListener('click', async ()=>{
   $('#chat-input').value='';
 });
 
-// ---------------------- NOTIFICATION LISTENER (NEW) ----------------------
-// NOTE: You need an HTML element for the counter (e.g., <span id="notification-counter"></span>)
+// ---------------------- NOTIFICATION LISTENER ----------------------
 function setupNotificationListener(uid) { 
     const notificationCounter = $('#notification-counter');
     if (!notificationCounter) {
@@ -533,7 +575,6 @@ function setupNotificationListener(uid) {
         let unreadCount = snapshot.docs.length;
         notificationCounter.textContent = unreadCount > 0 ? unreadCount : '';
         notificationCounter.style.display = unreadCount > 0 ? 'block' : 'none';
-        console.log(`Unread notifications: ${unreadCount}`);
     });
 }
 
@@ -582,7 +623,6 @@ async function renderAll(){
       const data = udoc.data();
       if(data.profilePic) $('#profile-pic').src=data.profilePic;
       if(data.bio) $('#bio').value=data.bio;
-      // Note: renderFriends/renderChats/renderRequests are now handled by setupFriendshipListener (real-time)
     }
     renderAdmin();
   }
@@ -590,6 +630,5 @@ async function renderAll(){
 
 document.addEventListener('DOMContentLoaded', async ()=>{
   showView('feed');
-  renderProducts(); // Render products immediately for logged out users too
+  renderProducts(); 
 });
-
