@@ -34,7 +34,8 @@ const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dd7dre9hd/upload";
 const UPLOAD_PRESET = "unsigned_upload";
 
 // ---------------------- ADMIN ----------------------
-const ADMIN_UID = "gKwgPDNJgsdcApIJch6NM9bKmf02";
+// *** IMPORTANT: Ensure this UID is correct for your Admin account ***
+const ADMIN_UID = "gKwgPDNJgsdcApIJch6NM9bKmf02"; 
 
 // ---------------------- PRODUCTS (UPDATED) ----------------------
 const products = [
@@ -214,6 +215,7 @@ onAuthStateChanged(auth, async user=>{
 
     showAuthModal(false);
     $('#logout-btn').style.display='inline-block';
+    // Admin Check for Navigation
     navAdmin.style.display = (user.uid===ADMIN_UID)?'inline-block':'none';
     $('#nav-feed').click();
     
@@ -427,11 +429,12 @@ async function sendFriendRequest(e) {
     }
 
     try {
+        // 1. Update recipient's document (requires rule change)
         await updateDoc(doc(db, "users", recipientUID), {
             pendingRequests: arrayUnion(currentUser.uid) 
         });
 
-        // 🔔 NOTIFICATION LOGIC
+        // 2. Create notification (requires rule change)
         await createNotification(
             recipientUID,             
             'friend_request',         
@@ -443,7 +446,7 @@ async function sendFriendRequest(e) {
         alert("Friend request sent!");
     } catch (error) {
         console.error("Error sending request:", error);
-        alert("Failed to send request.");
+        alert("Failed to send request. Check Firebase Security Rules.");
     }
 }
 
@@ -453,14 +456,24 @@ function handleFriendRequest(action) {
         const senderRef = doc(db, "users", senderUID);
         const recipientRef = doc(db, "users", currentUser.uid);
 
-        if (action === 'accept') {
-            await updateDoc(recipientRef, { pendingRequests: arrayRemove(senderUID) });
-            await updateDoc(recipientRef, { friends: arrayUnion(senderUID) });
-            await updateDoc(senderRef, { friends: arrayUnion(currentUser.uid) });
-            alert(`You are now friends!`);
-        } else if (action === 'reject') {
-            await updateDoc(recipientRef, { pendingRequests: arrayRemove(senderUID) });
-            alert(`Request rejected.`);
+        try {
+            if (action === 'accept') {
+                // 1. Remove from recipient's pending list (Requires recipient self-update)
+                await updateDoc(recipientRef, { pendingRequests: arrayRemove(senderUID) });
+                // 2. Add to recipient's friends list (Requires recipient self-update)
+                await updateDoc(recipientRef, { friends: arrayUnion(senderUID) });
+                // 3. Add to sender's friends list (Requires recipient to update sender's doc - Rule change required)
+                await updateDoc(senderRef, { friends: arrayUnion(currentUser.uid) });
+                
+                alert(`You are now friends!`);
+            } else if (action === 'reject') {
+                // 1. Remove from recipient's pending list (Requires recipient self-update)
+                await updateDoc(recipientRef, { pendingRequests: arrayRemove(senderUID) });
+                alert(`Request rejected.`);
+            }
+        } catch (error) {
+            console.error(`Error handling request (${action}):`, error);
+            alert(`Failed to ${action} request. Check Firebase Security Rules.`);
         }
     }
 }
@@ -517,6 +530,7 @@ async function renderFriendRequests(requestUids) {
 }
 
 function setupFriendshipListener(uid) {
+    // Real-time listener for the current user's own profile updates (friends/requests)
     onSnapshot(doc(db, "users", uid), (docSnap) => {
         if (docSnap.exists()) {
             const user = docSnap.data();
@@ -540,7 +554,6 @@ async function renderAllUsersForFriendSearch(){
         `);
         const btn = el('button', { 'data-uid': d.id }, 'Send Request'); btn.className='btn btn-sm';
         btn.addEventListener('click', sendFriendRequest);
-        card.appendChild(btn);
         friendsListContainer.appendChild(card);
     }
 }
@@ -555,6 +568,7 @@ async function startChat(e) {
     $('#chat-window').style.display = 'block';
     $('#chat-with').textContent = `💬 Chat with ${friendProfile.name || friendProfile.email.split('@')[0]}`;
     
+    // Ensure chat room exists (requires chat/create rule)
     await setDoc(doc(db, "chats", chatID), { 
         participants: participants, 
         lastMessageAt: serverTimestamp() 
@@ -569,6 +583,7 @@ function setupMessageListener(chatID, friendUID) {
     const messagesContainer = $('#messages'); 
     messagesContainer.innerHTML=''; 
     
+    // Real-time listener for messages (requires chat/messages/read rule)
     const q = query(collection(db, "chats", chatID, "messages"), orderBy("timestamp", "asc"));
     
     unsubscribeMessages = onSnapshot(q, (snapshot) => {
@@ -592,19 +607,26 @@ $('#send-chat')?.addEventListener('click', async ()=>{
   const msg = $('#chat-input').value.trim();
   if(!msg) return;
 
-  await addDoc(collection(db, "chats", currentChatID, "messages"), {
-        senderUID: currentUser.uid,
-        senderName: currentProfile.name || currentProfile.email.split('@')[0],
-        text: msg,
-        timestamp: serverTimestamp()
-    });
-    
-  await updateDoc(doc(db, "chats", currentChatID), {
-      lastMessageText: msg,
-      lastMessageAt: serverTimestamp()
-  });
-
-  $('#chat-input').value='';
+  try {
+      // 1. Add message (requires chat/messages/create rule)
+      await addDoc(collection(db, "chats", currentChatID, "messages"), {
+          senderUID: currentUser.uid,
+          senderName: currentProfile.name || currentProfile.email.split('@')[0],
+          text: msg,
+          timestamp: serverTimestamp()
+      });
+      
+      // 2. Update chat room last message (requires chat/update rule)
+      await updateDoc(doc(db, "chats", currentChatID), {
+          lastMessageText: msg,
+          lastMessageAt: serverTimestamp()
+      });
+      
+      $('#chat-input').value='';
+  } catch (error) {
+      console.error("Error sending message:", error);
+      alert("Failed to send message. Check Firebase Security Rules.");
+  }
 });
 
 // ---------------------- NOTIFICATION LISTENER ----------------------
@@ -615,6 +637,7 @@ function setupNotificationListener(uid) {
         return;
     }
 
+    // Real-time listener for unread notifications (requires notifications/read rule)
     const q = query(collection(db, "notifications"), where("recipientUID", "==", uid), where("read", "==", false));
 
     onSnapshot(q, (snapshot) => {
@@ -626,6 +649,7 @@ function setupNotificationListener(uid) {
 
 // ---------------------- ADMIN ----------------------
 async function renderAdmin(){
+  // Check Admin UID (requires correct ADMIN_UID definition)
   if(!currentUser || currentUser.uid !== ADMIN_UID) return;
   $('#admin-view').style.display='block';
 
@@ -642,9 +666,10 @@ async function renderAdmin(){
   for(const docSnap of psnap.docs){
     const p = docSnap.data();
     const card = el('div',{class:'card post'});
-    card.innerHTML = `<h4>${p.name||p.email}</h4><p>${p.text}</p>`;
+    card.innerHTML = `<h4>${p.name||p.email}</h4><p>${p.text.substring(0, 50)}...</p>`;
     const del = el('button',{class:'btn'},'Delete'); del.style.background='crimson';
     del.addEventListener('click', async ()=>{
+      // Admin delete post (requires posts/delete rule with isAdmin() check)
       await deleteDoc(doc(db,'posts',docSnap.id));
       renderAdmin();
     });
@@ -658,7 +683,7 @@ $('#nav-feed').addEventListener('click', ()=> { showView('feed'); loadSocialFeed
 $('#nav-products').addEventListener('click', ()=> showView('products'));
 $('#nav-profile').addEventListener('click', ()=> showView('profile'));
 $('#nav-chat').addEventListener('click', ()=> showView('chat'));
-$('#nav-admin').addEventListener('click', ()=> showView('admin'));
+$('#nav-admin').addEventListener('click', ()=> { showView('admin'); renderAdmin(); }); // Ensure renderAdmin is called
 
 // ---------------------- RENDER ALL ----------------------
 async function renderAll(){
