@@ -11,7 +11,8 @@ function el(tag, attrs = {}, innerHTML = '') {
 // ---------------------- FIREBASE SETUP ----------------------
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
 import { 
-  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged 
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+  GoogleAuthProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 import { 
   getFirestore, collection, addDoc, doc, setDoc, updateDoc, getDoc, getDocs, deleteDoc, query, orderBy, serverTimestamp, onSnapshot, arrayUnion, arrayRemove, where
@@ -33,11 +34,15 @@ const db = getFirestore(app);
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dd7dre9hd/upload";
 const UPLOAD_PRESET = "unsigned_upload";
 
-// ---------------------- ADMIN ----------------------
-// *** IMPORTANT: Ensure this UID is correct for your Admin account ***
-const ADMIN_UID = "gKwgPDNJgsdcApIJch6NM9bKmf02"; 
+// ---------------------- ADMIN & GLOBAL STATE ----------------------
+const ADMIN_UID = "zqq3aNV8HqdkcnvRKosTE40YbIn2"; 
+let currentUser = null;
+let currentProfile = null; 
+let currentChatID = null; 
+let unsubscribeMessages = null; 
+let confirmationResult = null; // For Phone Auth
 
-// ---------------------- PRODUCTS (UPDATED) ----------------------
+// ---------------------- PRODUCTS (FULL LIST) ----------------------
 const products = [
   { 
     id:"cassava", 
@@ -107,8 +112,9 @@ function openReadMore(title, text){
   modalText.textContent = text;
   modal.style.display = 'flex';
 }
-modalClose.addEventListener('click', ()=> modal.style.display='none');
-modal.addEventListener('click', e => { if(e.target===modal) modal.style.display='none'; });
+if(modalClose) modalClose.addEventListener('click', ()=> modal.style.display='none');
+modal?.addEventListener('click', e => { if(e.target===modal) modal.style.display='none'; });
+
 function attachReadMoreLinks(){
   $$('.read-more, .read-more-prod').forEach(a=>{
     a.addEventListener('click', e=>{
@@ -120,7 +126,7 @@ function attachReadMoreLinks(){
   });
 }
 
-// ---------------------- AUTH & NAV & GLOBAL STATE ----------------------
+// ---------------------- AUTH VIEW HELPERS ----------------------
 const authModal = $('#auth-modal');
 const signupForm = $('#signup-form');
 const loginForm = $('#login-form');
@@ -128,13 +134,8 @@ const authMessage = $('#auth-message');
 const logoutBtn = $('#logout-btn');
 const navAdmin = $('#nav-admin');
 
-let currentUser = null;
-let currentProfile = null; 
-let currentChatID = null; 
-let unsubscribeMessages = null; 
-
 function showView(id){ $$('.view').forEach(v=>v.style.display='none'); $('#'+id+'-view').style.display='block'; }
-function showAuthModal(show){ authModal.style.display = show?'flex':'none'; }
+function showAuthModal(show){ if(authModal) authModal.style.display = show?'flex':'none'; }
 
 const userProfileCache = {};
 async function getUserProfile(uid){
@@ -154,99 +155,118 @@ async function getUserName(uid){
   return profile.name || (profile.email ? profile.email.split('@')[0] : 'User');
 }
 
-// ---------------------- NOTIFICATION HELPER FUNCTION ----------------------
-
+// ---------------------- NOTIFICATION HELPER ----------------------
 async function createNotification(recipientUID, type, sourceID, senderUID, senderName) {
-    // Prevent sending a notification to yourself (e.g., liking your own post)
     if (recipientUID === senderUID) return; 
-
-    const recipientProfile = await getUserProfile(recipientUID);
-    if (!recipientProfile.email || recipientProfile.email === 'N/A') {
-        console.warn(`Attempted to send notification to non-existent user: ${recipientUID}`);
-        return;
-    }
-    
     await addDoc(collection(db, 'notifications'), {
-        recipientUID: recipientUID,
-        type: type, // 'like', 'comment', or 'friend_request'
-        sourceID: sourceID, // The postId or senderUID
-        senderUID: senderUID,
-        senderName: senderName,
-        read: false,
-        timestamp: serverTimestamp()
+        recipientUID, type, sourceID, senderUID, senderName, read: false, timestamp: serverTimestamp()
     });
 }
 
-// ---------------------- AUTH ACTIONS ----------------------
+// ---------------------- AUTH ACTIONS (EMAIL, GOOGLE, PHONE) ----------------------
+
+// Signup
 signupForm?.addEventListener('submit', async e=>{
   e.preventDefault();
-  authMessage.textContent='';
   const name = $('#signup-name').value.trim();
   const email = $('#signup-email').value.trim();
   const password = $('#signup-password').value;
-  if(!name || !email || !password){ authMessage.textContent='Fill all fields'; return; }
   try{
     const cred = await createUserWithEmailAndPassword(auth,email,password);
-    await setDoc(doc(db,'users',cred.user.uid), { name, email, createdAt:serverTimestamp(), friends:[], pendingRequests: [] }); 
-    authMessage.textContent='Account created — signed in';
+    await syncUserProfile(cred.user, name);
   }catch(err){ authMessage.textContent = err.message; }
 });
+
+// Login
 loginForm?.addEventListener('submit', async e=>{
   e.preventDefault();
-  authMessage.textContent='';
   const email = $('#login-email').value.trim();
   const password = $('#login-password').value;
   try{ await signInWithEmailAndPassword(auth,email,password); }catch(err){ authMessage.textContent=err.message; }
 });
-logoutBtn?.addEventListener('click', async ()=>{ await signOut(auth); });
+
+// Google Login
+$('#google-login-btn')?.addEventListener('click', async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+        const result = await signInWithPopup(auth, provider);
+        await syncUserProfile(result.user);
+    } catch (err) { alert("Google Login Failed: " + err.message); }
+});
+
+// Phone Login Step 1
+$('#send-code-btn')?.addEventListener('click', async () => {
+    const phoneNum = $('#phone-number').value.trim();
+    if(!phoneNum.startsWith('+')) return alert("Enter full number with country code (e.g. +234)");
+    const appVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
+    try {
+        confirmationResult = await signInWithPhoneNumber(auth, phoneNum, appVerifier);
+        $('#phone-auth-step-1').style.display = 'none';
+        $('#phone-auth-step-2').style.display = 'block';
+    } catch (err) { alert("SMS Failed: " + err.message); }
+});
+
+// Phone Login Step 2
+$('#verify-code-btn')?.addEventListener('click', async () => {
+    const code = $('#verification-code').value.trim();
+    try {
+        const result = await confirmationResult.confirm(code);
+        await syncUserProfile(result.user);
+    } catch (err) { alert("Invalid Code: " + err.message); }
+});
+
+async function syncUserProfile(user, customName = null) {
+    const docRef = doc(db, 'users', user.uid);
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) {
+        await setDoc(docRef, {
+            name: customName || user.displayName || "Farmer",
+            email: user.email || user.phoneNumber,
+            friends: [],
+            pendingRequests: [],
+            isAdmin: (user.uid === ADMIN_UID),
+            createdAt: serverTimestamp()
+        });
+    }
+}
+
+logoutBtn?.addEventListener('click', async ()=>{ await signOut(auth); location.reload(); });
 
 onAuthStateChanged(auth, async user=>{
   currentUser=user;
   if(user){
     const profileSnap = await getDoc(doc(db, 'users', user.uid));
     currentProfile = profileSnap.exists() ? profileSnap.data() : null;
-
-    if (!currentProfile) {
-      console.error("User profile missing in Firestore!");
-      await signOut(auth); 
-      showAuthModal(true);
-      return;
-    }
+    if(!currentProfile) await syncUserProfile(user);
 
     showAuthModal(false);
     $('#logout-btn').style.display='inline-block';
-    // Admin Check for Navigation
     navAdmin.style.display = (user.uid===ADMIN_UID)?'inline-block':'none';
-    $('#nav-feed').click();
     
     await renderAll(); 
     loadSocialFeed(); 
     setupFriendshipListener(user.uid); 
     setupNotificationListener(user.uid); 
-
   }else{
     showAuthModal(true);
-    $('#logout-btn').style.display='none';
-    navAdmin.style.display='none';
-    showView('feed');
   }
 });
 
-// ---------------------- WHATSAPP BUTTONS ----------------------
+// ---------------------- WHATSAPP ----------------------
 function attachWhatsAppButtons(containerSelector){
   $$(containerSelector + ' .order').forEach(btn=>{
     btn.addEventListener('click', e=>{
       const name = e.currentTarget.dataset.name;
       const price = e.currentTarget.dataset.price;
-      const phone = '2349138938301';
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(`Hello, I want to order ${name} priced at ₦${price}.`)}`,'_blank');
+      window.open(`https://wa.me/2349138938301?text=${encodeURIComponent(`Hello, I want to order ${name} priced at ₦${price}.`)}`,'_blank');
     });
   });
 }
 
-// ---------------------- PRODUCTS ----------------------
+// ---------------------- PRODUCTS RENDERING ----------------------
 async function renderProducts(){
-  const container = $('#product-list'); container.innerHTML='';
+  const container = $('#product-list'); if(!container) return;
+  container.innerHTML='';
   products.forEach(p=>{
     const card = el('div',{class:'card product'},`
       <img src="${p.image}" alt="${p.name}">
@@ -261,14 +281,13 @@ async function renderProducts(){
   attachReadMoreLinks();
 }
 
-// ---------------------- FEED (Enhanced Real-Time Listener) ----------------------
+// ---------------------- SOCIAL FEED ----------------------
 function loadSocialFeed(){
-    const feed = $('#feed'); 
+    const feed = $('#feed'); if(!feed) return;
     const q = query(collection(db,'posts'), orderBy('timestamp','desc'));
 
     onSnapshot(q, async snapshot=>{
         feed.innerHTML='';
-        // Re-render the initial products list at the top of the feed view if desired
         products.forEach(p=>{
             const card = el('div',{class:'card post'},`
                 <img src="${p.image}" alt="${p.name}">
@@ -280,7 +299,6 @@ function loadSocialFeed(){
             feed.appendChild(card);
         });
 
-        // Loop through Firestore posts
         for(const docSnap of snapshot.docs){
             const post = docSnap.data();
             const ownerName = await getUserName(post.uid);
@@ -288,11 +306,11 @@ function loadSocialFeed(){
             const isLiked = currentUser && post.likes && post.likes.includes(currentUser.uid);
 
             card.innerHTML = `
-                <img src="${post.image || (await getUserProfile(post.uid)).profilePic || 'images/default_profile.png'}" alt="">
+                <img src="${post.image || 'images/default_profile.png'}" alt="">
                 <h3>${ownerName}</h3>
                 <p>${post.text}</p>
                 <p>Likes: <span class="like-count">${post.likes?.length||0}</span> 
-                    <button class="btn like-btn" data-liked="${isLiked ? 'true' : 'false'}" style="background-color: ${isLiked ? '#28a745' : '#007bff'};">${isLiked ? 'Liked' : 'Like'}</button>
+                    <button class="btn like-btn" style="background-color: ${isLiked ? '#28a745' : '#007bff'};">${isLiked ? 'Liked' : 'Like'}</button>
                 </p>
                 <div class="comments">
                     <h5>Comments:</h5>
@@ -302,55 +320,23 @@ function loadSocialFeed(){
                 </div>
             `;
             
-            // 1. Like/Unlike Listener (UPGRADED for Notifications)
-            card.querySelector('.like-btn').addEventListener('click', async ()=>{
-                if (!currentUser) return alert('Please sign in to like posts.');
-                const isCurrentlyLiked = post.likes && post.likes.includes(currentUser.uid);
-                const updateAction = isCurrentlyLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid);
-                
-                await updateDoc(doc(db,'posts',docSnap.id), { likes: updateAction });
-                
-                // 🔔 NOTIFICATION LOGIC: Only notify on a new like (not an unlike)
-                if (!isCurrentlyLiked) {
-                    await createNotification(
-                        post.uid,                 // Recipient: Post owner
-                        'like',                   // Type
-                        docSnap.id,               // Source: Post ID
-                        currentUser.uid,          // Sender UID
-                        currentProfile.name       // Sender Name
-                    );
-                }
-            });
+            card.querySelector('.like-btn').onclick = async ()=>{
+                const action = isLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid);
+                await updateDoc(doc(db,'posts',docSnap.id), { likes: action });
+                if (!isLiked) await createNotification(post.uid, 'like', docSnap.id, currentUser.uid, currentProfile.name);
+            };
             
-            // 2. Comment Listener (UPGRADED for Notifications)
-            card.querySelector('.comment-btn').addEventListener('click', async ()=>{
-                if (!currentUser) return alert('Please sign in to comment.');
+            card.querySelector('.comment-btn').onclick = async ()=>{
                 const input = card.querySelector('.comment-input');
-                const text = input.value.trim();
-                if(!text) return;
-
+                if(!input.value.trim()) return;
                 await updateDoc(doc(db,'posts',docSnap.id), { 
-                    comments: arrayUnion({ 
-                        uid: currentUser.uid, 
-                        name: currentProfile.name,
-                        text, 
-                        timestamp: new Date().getTime() 
-                    }) 
+                    comments: arrayUnion({ uid: currentUser.uid, name: currentProfile.name, text: input.value.trim(), timestamp: Date.now() }) 
                 });
+                await createNotification(post.uid, 'comment', docSnap.id, currentUser.uid, currentProfile.name);
                 input.value='';
-
-                // 🔔 NOTIFICATION LOGIC
-                await createNotification(
-                    post.uid,                 // Recipient: Post owner
-                    'comment',                // Type
-                    docSnap.id,               // Source: Post ID
-                    currentUser.uid,          // Sender UID
-                    currentProfile.name       // Sender Name
-                );
-            });
+            };
             feed.appendChild(card);
         }
-
         attachWhatsAppButtons('#feed');
         attachReadMoreLinks();
     });
@@ -358,334 +344,159 @@ function loadSocialFeed(){
 
 // ---------------------- CREATE POST ----------------------
 $('#post-btn')?.addEventListener('click', async ()=>{
-  if(!currentUser){ alert('Sign in first'); return; }
   const text = $('#post-text').value.trim();
   const file = $('#post-image').files[0];
   let imageUrl = '';
-  let authorPfp = currentProfile.profilePic || 'images/default_profile.png'; 
-
   if(file){
-    const fd = new FormData();
-    fd.append('file',file);
-    fd.append('upload_preset',UPLOAD_PRESET);
-    try{
-      const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd});
-      const data = await res.json();
-      imageUrl = data.secure_url;
-    }catch(err){ console.error(err); alert('Image upload failed'); return; }
+    const fd = new FormData(); fd.append('file',file); fd.append('upload_preset',UPLOAD_PRESET);
+    const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd});
+    const data = await res.json(); imageUrl = data.secure_url;
   }
   await addDoc(collection(db,'posts'),{
-    uid: currentUser.uid,
-    email: currentUser.email,
-    name: currentProfile.name || '',
-    authorPfp: authorPfp, 
-    text,
-    image: imageUrl,
-    timestamp: serverTimestamp(),
-    likes: [],
-    comments: []
+    uid: currentUser.uid, text, image: imageUrl, timestamp: serverTimestamp(), likes: [], comments: []
   });
   $('#post-text').value='';
-  $('#post-image').value='';
 });
 
 // ---------------------- PROFILE ----------------------
 $('#save-profile-pic')?.addEventListener('click', async ()=>{
-  if(!currentUser){ alert('Sign in'); return; }
   const file = $('#profile-upload').files[0];
-  if(!file){ alert('Choose file'); return; }
-  const fd = new FormData();
-  fd.append('file',file);
-  fd.append('upload_preset',UPLOAD_PRESET);
-  try{
-    const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd});
-    const data = await res.json();
-    const url = data.secure_url;
-    await updateDoc(doc(db,'users',currentUser.uid), { profilePic:url });
-    currentProfile.profilePic = url;
-    $('#profile-pic').src=url;
-    alert('Profile picture saved');
-  }catch(err){ console.error(err); alert('Upload failed'); }
-});
-$('#save-bio')?.addEventListener('click', async ()=>{
-  if(!currentUser) return alert('Sign in');
-  const bio = $('#bio').value.trim();
-  await updateDoc(doc(db,'users',currentUser.uid), { bio });
-  alert('Bio saved');
+  const fd = new FormData(); fd.append('file',file); fd.append('upload_preset',UPLOAD_PRESET);
+  const res = await fetch(CLOUDINARY_URL,{method:'POST',body:fd});
+  const data = await res.json();
+  await updateDoc(doc(db,'users',currentUser.uid), { profilePic: data.secure_url });
+  alert('Saved');
 });
 
-// ---------------------- FRIENDSHIP & CHAT ----------------------
-const friendsListContainer = $('#friends'); 
-const chatListContainer = $('#chat-list'); 
-const friendRequestsContainer = $('#friend-requests'); 
-
-// Send Friend Request (UPGRADED for Notifications)
+// ---------------------- FRIENDSHIP & CHAT (FIXED) ----------------------
 async function sendFriendRequest(e) {
     const recipientUID = e.currentTarget.dataset.uid;
-
-    if (currentProfile.friends.includes(recipientUID) || (currentProfile.pendingRequests && currentProfile.pendingRequests.includes(recipientUID))) {
-        alert("Already friends or request already sent.");
-        return;
-    }
-
-    try {
-        // 1. Update recipient's document (requires rule change)
-        await updateDoc(doc(db, "users", recipientUID), {
-            pendingRequests: arrayUnion(currentUser.uid) 
-        });
-
-        // 2. Create notification (requires rule change)
-        await createNotification(
-            recipientUID,             
-            'friend_request',         
-            currentUser.uid,          
-            currentUser.uid,          
-            currentProfile.name       
-        );
-        
-        alert("Friend request sent!");
-    } catch (error) {
-        console.error("Error sending request:", error);
-        alert("Failed to send request. Check Firebase Security Rules.");
-    }
+    await updateDoc(doc(db, "users", recipientUID), { pendingRequests: arrayUnion(currentUser.uid) });
+    await createNotification(recipientUID, 'friend_request', currentUser.uid, currentUser.uid, currentProfile.name);
+    alert("Sent");
 }
 
-function handleFriendRequest(action) {
-    return async (e) => {
-        const senderUID = e.currentTarget.dataset.senderUid;
-        const senderRef = doc(db, "users", senderUID);
-        const recipientRef = doc(db, "users", currentUser.uid);
-
-        try {
-            if (action === 'accept') {
-                // 1. Remove from recipient's pending list (Requires recipient self-update)
-                await updateDoc(recipientRef, { pendingRequests: arrayRemove(senderUID) });
-                // 2. Add to recipient's friends list (Requires recipient self-update)
-                await updateDoc(recipientRef, { friends: arrayUnion(senderUID) });
-                // 3. Add to sender's friends list (Requires recipient to update sender's doc - Rule change required)
-                await updateDoc(senderRef, { friends: arrayUnion(currentUser.uid) });
-                
-                alert(`You are now friends!`);
-            } else if (action === 'reject') {
-                // 1. Remove from recipient's pending list (Requires recipient self-update)
-                await updateDoc(recipientRef, { pendingRequests: arrayRemove(senderUID) });
-                alert(`Request rejected.`);
-            }
-        } catch (error) {
-            console.error(`Error handling request (${action}):`, error);
-            alert(`Failed to ${action} request. Check Firebase Security Rules.`);
-        }
+async function handleFriendRequest(action, senderUID) {
+    const senderRef = doc(db, "users", senderUID);
+    const myRef = doc(db, "users", currentUser.uid);
+    if (action === 'accept') {
+        await updateDoc(myRef, { pendingRequests: arrayRemove(senderUID), friends: arrayUnion(senderUID) });
+        await updateDoc(senderRef, { friends: arrayUnion(currentUser.uid) });
+    } else {
+        await updateDoc(myRef, { pendingRequests: arrayRemove(senderUID) });
     }
-}
-
-async function renderFriends(friendUids) {
-    chatListContainer.innerHTML = '';
-    if (friendUids.length === 0) {
-        chatListContainer.innerHTML = '<p>No friends yet. Search below to add someone.</p>';
-        return;
-    }
-
-    const friendProfiles = await Promise.all(
-        friendUids.map(uid => getUserProfile(uid))
-    );
-
-    friendProfiles.forEach(friend => {
-        const card = el('div', { class: 'card chat-user' }, `
-            <img src="${friend.profilePic || 'images/default_profile.png'}" style="width:30px; height:30px; border-radius:50%; margin-right:10px;">
-            ${friend.name || friend.email.split('@')[0]}
-            <button class="btn btn-sm" data-uid="${friend.uid}" style="margin-left:auto;">Chat</button>
-        `);
-        card.querySelector('button').addEventListener('click', startChat);
-        chatListContainer.appendChild(card);
-    });
-}
-
-async function renderFriendRequests(requestUids) {
-    if (friendRequestsContainer) friendRequestsContainer.innerHTML = ''; 
-    else { console.warn("Missing HTML element: #friend-requests"); return; }
-    
-    if (!requestUids || requestUids.length === 0) {
-        friendRequestsContainer.innerHTML = '<p>No pending requests.</p>';
-        return;
-    }
-
-    const senderProfiles = await Promise.all(
-        requestUids.map(uid => getUserProfile(uid))
-    );
-
-    senderProfiles.forEach(sender => {
-        const div = el('div', { class: 'card request-item' }, `
-            <span>${sender.name || sender.email.split('@')[0]} sent a request.</span>
-        `);
-        const acceptBtn = el('button', { 'data-sender-uid': sender.uid, class: 'btn btn-sm' }, 'Accept');
-        const rejectBtn = el('button', { 'data-sender-uid': sender.uid, class: 'btn btn-sm', style: 'background-color:crimson' }, 'Reject');
-        
-        acceptBtn.addEventListener('click', handleFriendRequest('accept'));
-        rejectBtn.addEventListener('click', handleFriendRequest('reject'));
-        
-        div.appendChild(acceptBtn);
-        div.appendChild(rejectBtn);
-        friendRequestsContainer.appendChild(div);
-    });
 }
 
 function setupFriendshipListener(uid) {
-    // Real-time listener for the current user's own profile updates (friends/requests)
-    onSnapshot(doc(db, "users", uid), (docSnap) => {
-        if (docSnap.exists()) {
-            const user = docSnap.data();
-            currentProfile = user; 
-            renderFriends(user.friends || []);
-            renderFriendRequests(user.pendingRequests || []);
+    onSnapshot(doc(db, "users", uid), (snap) => {
+        if (snap.exists()) {
+            const data = snap.data();
+            renderFriends(data.friends || []);
+            renderFriendRequests(data.pendingRequests || []);
         }
     });
-
     renderAllUsersForFriendSearch();
 }
 
 async function renderAllUsersForFriendSearch(){
-    friendsListContainer.innerHTML = '<h4>Find Users</h4>';
+    const container = $('#friends'); if(!container) return;
+    container.innerHTML = '<h4>Find Farmers</h4>';
     const snap = await getDocs(collection(db,'users'));
-    for(const d of snap.docs){
-        if(d.id === currentUser.uid) continue;
+    snap.forEach(d => {
+        if(d.id === currentUser.uid) return;
         const u = d.data();
-        const card = el('div',{class:'card friend-search-item'}, `
-            <p><strong>${u.name || u.email.split('@')[0]}</strong></p>
-        `);
-        const btn = el('button', { 'data-uid': d.id }, 'Send Request'); btn.className='btn btn-sm';
-        btn.addEventListener('click', sendFriendRequest);
-        friendsListContainer.appendChild(card);
-    }
-}
-
-async function startChat(e) {
-    const friendUID = e.currentTarget.dataset.uid;
-    const participants = [currentUser.uid, friendUID].sort();
-    const chatID = participants.join('_');
-    currentChatID = chatID;
-    
-    const friendProfile = await getUserProfile(friendUID);
-    $('#chat-window').style.display = 'block';
-    $('#chat-with').textContent = `💬 Chat with ${friendProfile.name || friendProfile.email.split('@')[0]}`;
-    
-    // Ensure chat room exists (requires chat/create rule)
-    await setDoc(doc(db, "chats", chatID), { 
-        participants: participants, 
-        lastMessageAt: serverTimestamp() 
-    }, { merge: true });
-
-    setupMessageListener(chatID, friendUID);
-}
-
-function setupMessageListener(chatID, friendUID) {
-    if (unsubscribeMessages) unsubscribeMessages(); 
-
-    const messagesContainer = $('#messages'); 
-    messagesContainer.innerHTML=''; 
-    
-    // Real-time listener for messages (requires chat/messages/read rule)
-    const q = query(collection(db, "chats", chatID, "messages"), orderBy("timestamp", "asc"));
-    
-    unsubscribeMessages = onSnapshot(q, (snapshot) => {
-        messagesContainer.innerHTML = '';
-        snapshot.docs.forEach(docSnap => {
-            const message = docSnap.data();
-            const isMe = message.senderUID === currentUser.uid;
-            const fromName = isMe ? 'You' : (message.senderName || 'Friend');
-            
-            const messageDiv = el('div', { class: `message-bubble ${isMe ? 'mine' : 'theirs'}` }, 
-                `<strong>${fromName}:</strong> ${message.text}`
-            );
-            messagesContainer.appendChild(messageDiv);
-        });
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        const card = el('div',{class:'card'}, `<p>${u.name}</p>`);
+        const btn = el('button', { 'data-uid': d.id, class:'btn btn-sm' }, 'Add Friend');
+        btn.onclick = sendFriendRequest;
+        card.appendChild(btn);
+        container.appendChild(card);
     });
 }
 
-$('#send-chat')?.addEventListener('click', async ()=>{
-  if(!currentUser || !currentChatID) return alert('Select a friend to chat with.');
-  const msg = $('#chat-input').value.trim();
-  if(!msg) return;
+function renderFriends(friendUids) {
+    const container = $('#chat-list'); if(!container) return;
+    container.innerHTML = '';
+    friendUids.forEach(async uid => {
+        const friend = await getUserProfile(uid);
+        const div = el('div', { class: 'card' }, `${friend.name} <button class="btn btn-sm" data-uid="${uid}">Chat</button>`);
+        div.querySelector('button').onclick = () => startChat(uid);
+        container.appendChild(div);
+    });
+}
 
-  try {
-      // 1. Add message (requires chat/messages/create rule)
-      await addDoc(collection(db, "chats", currentChatID, "messages"), {
-          senderUID: currentUser.uid,
-          senderName: currentProfile.name || currentProfile.email.split('@')[0],
-          text: msg,
-          timestamp: serverTimestamp()
-      });
-      
-      // 2. Update chat room last message (requires chat/update rule)
-      await updateDoc(doc(db, "chats", currentChatID), {
-          lastMessageText: msg,
-          lastMessageAt: serverTimestamp()
-      });
-      
-      $('#chat-input').value='';
-  } catch (error) {
-      console.error("Error sending message:", error);
-      alert("Failed to send message. Check Firebase Security Rules.");
-  }
+function renderFriendRequests(requestUids) {
+    const container = $('#friend-requests'); if(!container) return;
+    container.innerHTML = '';
+    requestUids.forEach(async uid => {
+        const sender = await getUserProfile(uid);
+        const div = el('div', { class: 'card' }, `${sender.name} sent request.`);
+        const acc = el('button', { class: 'btn btn-sm' }, 'Accept');
+        acc.onclick = () => handleFriendRequest('accept', uid);
+        div.appendChild(acc);
+        container.appendChild(div);
+    });
+}
+
+async function startChat(friendUID) {
+    const participants = [currentUser.uid, friendUID].sort();
+    currentChatID = participants.join('_');
+    $('#chat-window').style.display = 'block';
+    
+    if (unsubscribeMessages) unsubscribeMessages();
+    const q = query(collection(db, "chats", currentChatID, "messages"), orderBy("timestamp", "asc"));
+    unsubscribeMessages = onSnapshot(q, (snap) => {
+        const msgDiv = $('#messages'); msgDiv.innerHTML = '';
+        snap.forEach(d => {
+            const m = d.data();
+            const side = m.senderUID === currentUser.uid ? 'mine' : 'theirs';
+            msgDiv.appendChild(el('div', {class: `message-bubble ${side}`}, m.text));
+        });
+    });
+}
+
+$('#send-chat')?.addEventListener('click', async () => {
+    const text = $('#chat-input').value.trim();
+    if(!text || !currentChatID) return;
+    await addDoc(collection(db, "chats", currentChatID, "messages"), {
+        senderUID: currentUser.uid, text, timestamp: serverTimestamp()
+    });
+    $('#chat-input').value = '';
 });
 
 // ---------------------- NOTIFICATION LISTENER ----------------------
 function setupNotificationListener(uid) { 
-    const notificationCounter = $('#notification-counter');
-    if (!notificationCounter) {
-        console.warn("Missing HTML element: #notification-counter");
-        return;
-    }
-
-    // Real-time listener for unread notifications (requires notifications/read rule)
+    const counter = $('#notification-counter');
     const q = query(collection(db, "notifications"), where("recipientUID", "==", uid), where("read", "==", false));
-
-    onSnapshot(q, (snapshot) => {
-        let unreadCount = snapshot.docs.length;
-        notificationCounter.textContent = unreadCount > 0 ? unreadCount : '';
-        notificationCounter.style.display = unreadCount > 0 ? 'block' : 'none';
+    onSnapshot(q, (snap) => {
+        if(counter) {
+            counter.textContent = snap.docs.length || '';
+            counter.style.display = snap.docs.length > 0 ? 'block' : 'none';
+        }
     });
 }
 
 // ---------------------- ADMIN ----------------------
 async function renderAdmin(){
-  // Check Admin UID (requires correct ADMIN_UID definition)
-  if(!currentUser || currentUser.uid !== ADMIN_UID) return;
-  $('#admin-view').style.display='block';
-
-  const usersContainer = $('#admin-users'); usersContainer.innerHTML='';
-  const usnap = await getDocs(collection(db,'users'));
-  for(const d of usnap.docs){
-    const u = d.data();
-    const card = el('div',{class:'card user'}, `<h4>${u.name||u.email}</h4><p>${d.id}</p>`);
-    usersContainer.appendChild(card);
-  }
-
+  if(currentUser?.uid !== ADMIN_UID) return;
   const postsContainer = $('#admin-posts'); postsContainer.innerHTML='';
   const psnap = await getDocs(collection(db,'posts'));
-  for(const docSnap of psnap.docs){
-    const p = docSnap.data();
-    const card = el('div',{class:'card post'});
-    card.innerHTML = `<h4>${p.name||p.email}</h4><p>${p.text.substring(0, 50)}...</p>`;
-    const del = el('button',{class:'btn'},'Delete'); del.style.background='crimson';
-    del.addEventListener('click', async ()=>{
-      // Admin delete post (requires posts/delete rule with isAdmin() check)
-      await deleteDoc(doc(db,'posts',docSnap.id));
-      renderAdmin();
-    });
+  psnap.forEach(d => {
+    const p = d.data();
+    const card = el('div',{class:'card'}, `<p>${p.text}</p>`);
+    const del = el('button',{class:'btn'},'Delete');
+    del.onclick = async () => { await deleteDoc(doc(db,'posts',d.id)); renderAdmin(); };
     card.appendChild(del);
     postsContainer.appendChild(card);
-  }
+  });
 }
 
 // ---------------------- NAV ----------------------
-$('#nav-feed').addEventListener('click', ()=> { showView('feed'); loadSocialFeed(); });
-$('#nav-products').addEventListener('click', ()=> showView('products'));
-$('#nav-profile').addEventListener('click', ()=> showView('profile'));
-$('#nav-chat').addEventListener('click', ()=> showView('chat'));
-$('#nav-admin').addEventListener('click', ()=> { showView('admin'); renderAdmin(); }); // Ensure renderAdmin is called
+$('#nav-feed').onclick = () => { showView('feed'); loadSocialFeed(); };
+$('#nav-products').onclick = () => showView('products');
+$('#nav-profile').onclick = () => showView('profile');
+$('#nav-chat').onclick = () => showView('chat');
+$('#nav-admin').onclick = () => { showView('admin'); renderAdmin(); };
 
-// ---------------------- RENDER ALL ----------------------
 async function renderAll(){
   await renderProducts();
   if(currentUser){
@@ -693,13 +504,8 @@ async function renderAll(){
     if(udoc.exists()){
       const data = udoc.data();
       if(data.profilePic) $('#profile-pic').src=data.profilePic;
-      if(data.bio) $('#bio').value=data.bio;
     }
-    renderAdmin();
   }
 }
 
-document.addEventListener('DOMContentLoaded', async ()=>{
-  showView('feed');
-  renderProducts(); 
-});
+document.addEventListener('DOMContentLoaded', () => { showView('feed'); renderProducts(); });
