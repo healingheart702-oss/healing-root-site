@@ -6,118 +6,100 @@
     <title>Healing Root Agro Ventures</title>
     <style>
         :root {
-            --fb-bg: #18191a;
-            --fb-card: #242526;
-            --fb-text: #e4e6eb;
-            --fb-secondary: #b0b3b8;
-            --fb-blue: #2374e1;
-            --fb-divider: #3e4042;
+            --hr-green: #2e7d32; /* Brand Green */
+            --hr-bg: #121212;
+            --hr-card: #1e1e1e;
+            --hr-text: #ffffff;
+            --hr-secondary: #a0a0a0;
+            --hr-divider: #333;
         }
-        body { font-family: Segoe UI, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--fb-bg); color: var(--fb-text); padding-bottom: 70px; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--hr-bg); color: var(--hr-text); padding-bottom: 70px; overflow-x: hidden; }
         
-        /* Header & Nav */
-        .header { background: var(--fb-card); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--fb-divider); }
-        .header h1 { font-size: 24px; margin: 0; color: white; letter-spacing: -1px; }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--fb-card); display: flex; border-top: 1px solid var(--fb-divider); z-index: 1000; }
-        .nav-item { flex: 1; text-align: center; padding: 12px 0; font-size: 22px; cursor: pointer; color: var(--fb-secondary); }
-        .nav-item.active { color: var(--fb-blue); border-bottom: 3px solid var(--fb-blue); }
+        /* Branded Header */
+        .header { background: var(--hr-card); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--hr-divider); }
+        .header h1 { color: var(--hr-green); font-size: 20px; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Feed Elements */
-        .composer { background: var(--fb-card); padding: 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-        .composer img { width: 40px; height: 40px; border-radius: 50%; }
-        .composer-input { background: #3a3b3c; border-radius: 20px; padding: 10px 15px; flex: 1; color: var(--fb-secondary); cursor: pointer; }
+        /* Navigation */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--hr-card); display: flex; border-top: 1px solid var(--hr-divider); z-index: 1000; }
+        .nav-item { flex: 1; text-align: center; padding: 15px 0; font-size: 20px; cursor: pointer; color: var(--hr-secondary); transition: 0.3s; }
+        .nav-item.active { color: var(--hr-green); border-top: 3px solid var(--hr-green); }
 
-        /* Stories */
-        .stories { display: flex; gap: 8px; overflow-x: auto; padding: 10px; background: var(--fb-card); margin-bottom: 8px; }
-        .story-card { min-width: 100px; height: 170px; border-radius: 10px; position: relative; background: #333; flex-shrink: 0; border: 1px solid var(--fb-divider); }
-        .story-card img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
-
-        /* Posts */
-        .post-card { background: var(--fb-card); margin-bottom: 8px; border-bottom: 1px solid var(--fb-divider); }
-        .post-header { padding: 12px; display: flex; align-items: center; gap: 10px; }
-        .post-header img { width: 40px; height: 40px; border-radius: 50%; }
-        .post-image { width: 100%; height: auto; display: block; }
-        .post-actions { display: flex; border-top: 1px solid var(--fb-divider); padding: 5px 0; }
-        .action-btn { flex: 1; text-align: center; padding: 10px; font-weight: 600; color: var(--fb-secondary); font-size: 14px; cursor: pointer; }
-        .action-btn.liked { color: var(--fb-blue); }
-
-        /* People You May Know */
-        .pymk-section { background: var(--fb-card); padding: 12px; margin-bottom: 8px; }
-        .pymk-list { display: flex; overflow-x: auto; gap: 10px; padding: 10px 0; }
-        .pymk-card { min-width: 150px; background: #3a3b3c; border-radius: 8px; overflow: hidden; }
-        .pymk-card img { width: 150px; height: 150px; object-fit: cover; }
-        .pymk-card b { display: block; padding: 5px 10px; font-size: 14px; }
-        .add-btn { background: var(--fb-blue); color: white; border: none; width: 90%; margin: 5px 5%; padding: 8px; border-radius: 5px; font-weight: bold; }
-
-        /* View Management */
-        .view { display: none; }
-        #auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--fb-bg); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        /* Real-time Post Cards */
+        .post-card { background: var(--hr-card); margin-bottom: 8px; padding-bottom: 10px; position: relative; }
+        .post-header { padding: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .post-info { display: flex; gap: 10px; align-items: center; }
+        .post-info img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .post-image, .post-video { width: 100%; max-height: 500px; display: block; object-fit: cover; }
         
-        /* Menu Grid */
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
-        .menu-item { background: var(--fb-card); padding: 15px; border-radius: 8px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        /* Comments & Replies */
+        .comment-section { padding: 10px 15px; background: #252525; border-top: 1px solid var(--hr-divider); }
+        .comment-bubble { background: #333; padding: 8px 12px; border-radius: 15px; margin-bottom: 5px; font-size: 14px; }
+        .reply-bubble { margin-left: 30px; background: #444; border-left: 2px solid var(--hr-green); }
+        
+        /* Menu & Profile */
+        .view { display: none; padding: 10px; }
+        .menu-btn { background: #333; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        
+        /* Edit/Delete Dropdown */
+        .post-menu { position: absolute; right: 10px; top: 10px; cursor: pointer; }
+        .dropdown { position: absolute; right: 0; background: #333; border-radius: 5px; display: none; flex-direction: column; z-index: 10; }
+        .dropdown button { background: none; border: none; color: white; padding: 10px 20px; text-align: left; cursor: pointer; }
+        .dropdown button:hover { background: var(--hr-green); }
     </style>
 </head>
 <body>
 
-    <div id="auth-modal">
-        <div style="width: 85%; text-align: center;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png" width="60">
-            <form id="login-form" style="margin-top: 40px;">
-                <input type="email" id="login-email" placeholder="Mobile number or email" style="width: 100%; padding: 15px; background: #1c1e21; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 10px;">
-                <input type="password" id="login-password" placeholder="Password" style="width: 100%; padding: 15px; background: #1c1e21; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 10px;">
-                <button type="submit" style="width: 100%; padding: 12px; background: var(--fb-blue); color: white; border: none; border-radius: 20px; font-weight: bold; font-size: 16px;">Log In</button>
-            </form>
-            <p style="color: var(--fb-blue); margin-top: 20px;">Forgot password?</p>
-            <button style="width: 100%; padding: 12px; background: transparent; color: var(--fb-blue); border: 1px solid var(--fb-blue); border-radius: 20px; margin-top: 50px;">Create new account</button>
-        </div>
-    </div>
-
-    <div id="main-app" style="display:none;">
+    <div id="main-app">
         <div class="header">
-            <h1>facebook</h1>
+            <h1>HEALING ROOT</h1>
             <div style="display: flex; gap: 15px;">
                 <div onclick="openPostModal()">➕</div>
-                <div>🔍</div>
+                <div id="notif-icon">🔔<span id="notif-count" style="display:none; background:red; border-radius:50%; font-size:10px; padding:2px 5px;">0</span></div>
                 <div onclick="showView('chat')">💬</div>
             </div>
         </div>
 
-        <div id="feed-view" class="view" style="display: block;">
-            <div class="composer">
-                <img id="user-avatar-small" src="images/default_profile.png">
-                <div class="composer-input" onclick="openPostModal()">What's on your mind?</div>
-            </div>
-
-            <div class="stories" id="story-list">
-                <div class="story-card">
-                    <img src="images/cassava.JPG" style="opacity: 0.5;">
-                    <div style="position: absolute; bottom: 10px; width: 100%; text-align: center; font-weight: bold; font-size: 12px;">Create story</div>
-                </div>
-            </div>
-
+        <div id="home-view" class="view" style="display: block;">
             <div id="feed-items"></div>
         </div>
 
+        <div id="reels-view" class="view">
+            <div id="reels-container"></div>
+        </div>
+
+        <div id="marketplace-view" class="view">
+            <h2 style="color: var(--hr-green);">Agro Marketplace</h2>
+            <div id="market-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
+        </div>
+
+        <div id="notifications-view" class="view">
+            <h3>Recent Updates</h3>
+            <div id="notif-list"></div>
+        </div>
+
         <div id="menu-view" class="view">
-            <div style="padding: 15px; display: flex; align-items: center; gap: 10px;">
-                <img id="menu-pic" src="images/default_profile.png" style="width: 45px; height: 45px; border-radius: 50%;">
-                <b id="menu-name">Healing Root Agro Ventures</b>
+            <div class="menu-btn" onclick="showView('edit-profile')">
+                <img id="my-profile-pic" src="images/default_profile.png" style="width:50px; border-radius:50%;">
+                <div>
+                    <b id="my-profile-name">Farmer Name</b><br>
+                    <small>Edit your Profile</small>
+                </div>
             </div>
-            <div class="menu-grid">
-                <div class="menu-item">👥 Friends</div>
-                <div class="menu-item" onclick="showView('products')">🏪 Marketplace</div>
-                <div class="menu-item">🕒 Memories</div>
-                <div class="menu-item">🔖 Saved</div>
-                <div class="menu-item">📽️ Reels</div>
-                <div class="menu-item" id="logout-btn" style="color: #f33;">🚪 Logout</div>
-            </div>
+            <div class="menu-btn" onclick="showView('marketplace')">🛒 My Marketplace</div>
+            <div class="menu-btn" onclick="logout()">🚪 Logout</div>
+        </div>
+
+        <div id="edit-profile-view" class="view">
+            <h3>Update Profile</h3>
+            <input type="text" id="edit-name" placeholder="Full Name" style="width:100%; padding:10px; margin-bottom:10px;">
+            <input type="file" id="edit-pic" style="margin-bottom:10px;">
+            <button onclick="updateProfile()" style="background:var(--hr-green); color:white; border:none; padding:10px; width:100%;">Save Changes</button>
         </div>
 
         <div class="bottom-nav">
-            <div class="nav-item active" onclick="showView('feed')">🏠</div>
+            <div class="nav-item active" onclick="showView('home')">🏠</div>
             <div class="nav-item" onclick="showView('reels')">🎞️</div>
-            <div class="nav-item" onclick="showView('products')">🏪</div>
+            <div class="nav-item" onclick="showView('marketplace')">🏪</div>
             <div class="nav-item" onclick="showView('notifications')">🔔</div>
             <div class="nav-item" onclick="showView('menu')">☰</div>
         </div>
