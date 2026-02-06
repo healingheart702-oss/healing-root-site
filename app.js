@@ -1,8 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, doc, updateDoc, query, orderBy, onSnapshot, serverTimestamp, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp, arrayUnion, arrayRemove, where } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
 
-// Your verified config
+// --- FIREBASE CONFIG (Already using your verified keys) ---
 const firebaseConfig = {
   apiKey: "AIzaSyAgjMFw0dbM7CBH4S_zrmPhE69pp84Tpdo",
   authDomain: "healing-root-farm.firebaseapp.com",
@@ -11,7 +11,6 @@ const firebaseConfig = {
   messagingSenderId: "1042258816994",
   appId: "1:1042258816994:web:0b6dd6b7f1c370ee7093bb"
 };
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -19,112 +18,133 @@ const db = getFirestore(app);
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 
+// --- GLOBAL STATE ---
+let currentUser = null;
+
 // --- VIEW CONTROLLER ---
 window.showView = (id) => {
     $$('.view').forEach(v => v.style.display = 'none');
-    const target = $('#' + id + '-view');
-    if (target) target.style.display = 'block';
-    
+    $(`#${id}-view`).style.display = 'block';
     $$('.nav-item').forEach(n => n.classList.remove('active'));
-    // Set active icon based on click
+    // Set active class based on navigation...
 };
 
-// --- AUTH LISTENER ---
-onAuthStateChanged(auth, user => {
-    if (user) {
-        $('#auth-modal').style.display = 'none';
-        $('#main-app').style.display = 'block';
-        loadFeed();
-    } else {
-        $('#auth-modal').style.display = 'flex';
-        $('#main-app').style.display = 'none';
-    }
-});
-
-$('#login-form').onsubmit = async (e) => {
-    e.preventDefault();
-    try {
-        await signInWithEmailAndPassword(auth, $('#login-email').value, $('#login-password').value);
-    } catch (err) { alert("Login failed"); }
-};
-
-$('#logout-btn').onclick = () => signOut(auth);
-
-// --- REAL-TIME FEED ENGINE ---
-function loadFeed() {
+// --- REAL-TIME FEED & REELS ---
+function loadContent() {
     const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
     
     onSnapshot(q, (snapshot) => {
-        const container = $('#feed-items');
-        container.innerHTML = '';
-        
-        // 1. Add "People You May Know" section after 1st post
-        let postCount = 0;
+        const feed = $('#feed-items');
+        const reels = $('#reels-container');
+        feed.innerHTML = '';
+        reels.innerHTML = '';
 
         snapshot.docs.forEach(docSnap => {
             const post = docSnap.data();
-            const postId = docSnap.id;
-            const isLiked = post.likes?.includes(auth.currentUser.uid);
-            
+            const pid = docSnap.id;
+            const isOwner = post.uid === auth.currentUser.uid;
+            const isVideo = post.type === 'video';
+
             const card = document.createElement('div');
             card.className = 'post-card';
             card.innerHTML = `
                 <div class="post-header">
-                    <img src="images/default_profile.png">
-                    <div>
-                        <div style="font-weight:bold;">${post.userName || 'Farmer'}</div>
-                        <div style="font-size:12px; color:var(--fb-secondary);">3h • 🌍</div>
+                    <div class="post-info">
+                        <img src="${post.userPic || 'images/default_profile.png'}">
+                        <b>${post.userName}</b>
                     </div>
+                    ${isOwner ? `<div class="post-menu" onclick="toggleDrop('${pid}')">⋮
+                        <div id="drop-${pid}" class="dropdown">
+                            <button onclick="editPost('${pid}', '${post.text}')">Edit</button>
+                            <button onclick="deletePost('${pid}')" style="color:red;">Delete</button>
+                        </div>
+                    </div>` : ''}
                 </div>
-                <div style="padding:0 12px 12px 12px;">${post.text}</div>
-                ${post.image ? `<img src="${post.image}" class="post-image">` : ''}
+                <div style="padding:10px;">${post.text}</div>
+                ${isVideo ? 
+                    `<video src="${post.content}" class="post-video" controls loop></video>` : 
+                    `<img src="${post.content}" class="post-image">`}
                 
-                <div style="padding:10px 12px; display:flex; justify-content:space-between; font-size:13px; color:var(--fb-secondary);">
-                    <span>👍 ${post.likes?.length || 0}</span>
-                    <span>${post.comments?.length || 0} comments • 2 shares</span>
+                <div class="post-actions" style="display:flex; justify-content:space-around; padding:10px;">
+                    <span onclick="likePost('${pid}')">👍 ${post.likes?.length || 0}</span>
+                    <span onclick="toggleComments('${pid}')">💬 ${post.comments?.length || 0}</span>
                 </div>
-                
-                <div class="post-actions">
-                    <div class="action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${postId}', ${isLiked})">👍 Like</div>
-                    <div class="action-btn" onclick="openComments('${postId}')">💬 Comment</div>
-                    <div class="action-btn">↪️ Share</div>
+
+                <div id="comments-${pid}" style="display:none;" class="comment-section">
+                    <div id="comment-list-${pid}"></div>
+                    <div style="display:flex; gap:5px; margin-top:10px;">
+                        <input type="text" id="input-${pid}" placeholder="Write a comment..." style="flex:1; background:#444; color:white; border:none; padding:8px; border-radius:5px;">
+                        <button onclick="submitComment('${pid}')" style="background:var(--hr-green); color:white; border:none; padding:5px 10px; border-radius:5px;">Send</button>
+                    </div>
                 </div>
             `;
-            container.appendChild(card);
+
+            if (isVideo) reels.appendChild(card.cloneNode(true));
+            feed.appendChild(card);
             
-            // Add PYMK after the first post like in your screenshot
-            if (postCount === 0) {
-                const pymk = document.createElement('div');
-                pymk.className = 'pymk-section';
-                pymk.innerHTML = `
-                    <div style="display:flex; justify-content:space-between;">
-                        <b>People you may know</b>
-                        <span>...</span>
-                    </div>
-                    <div class="pymk-list">
-                        <div class="pymk-card">
-                            <img src="images/coconut.JPG">
-                            <b>Issa Bella</b>
-                            <button class="add-btn">Add Friend</button>
-                        </div>
-                        <div class="pymk-card">
-                            <img src="images/oilpalm.JPG">
-                            <b>Omonike Hammed</b>
-                            <button class="add-btn">Add Friend</button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(pymk);
-            }
-            postCount++;
+            // Render Real-time Comments & Replies
+            renderComments(pid, post.comments);
         });
     });
 }
 
-// --- LIKE & COMMENT HELPERS ---
-window.toggleLike = async (postId, currentlyLiked) => {
-    const ref = doc(db, 'posts', postId);
-    await updateDoc(ref, {
-        likes: currentlyLiked ? arrayRemove(auth.currentUser.uid) : arrayUnion(auth.currentUser.uid)
+// --- REAL-TIME REPLIES ---
+window.submitComment = async (pid) => {
+    const input = $(`#input-${pid}`);
+    if (!input.value) return;
+
+    await updateDoc(doc(db, 'posts', pid), {
+        comments: arrayUnion({
+            id: Date.now().toString(),
+            uid: auth.currentUser.uid,
+            userName: auth.currentUser.displayName || "Farmer",
+            text: input.value,
+            replies: []
+        })
     });
+    input.value = '';
 };
+
+// --- REAL-TIME NOTIFICATIONS ---
+function setupNotifications() {
+    const q = query(collection(db, 'notifications'), where('recipientUID', '==', auth.currentUser.uid), where('read', '==', false));
+    onSnapshot(q, (snap) => {
+        const count = snap.docs.length;
+        if(count > 0) {
+            $('#notif-count').innerText = count;
+            $('#notif-count').style.display = 'block';
+        }
+    });
+}
+
+// --- POST MANAGEMENT ---
+window.deletePost = async (pid) => {
+    if(confirm("Delete this post from Healing Root?")) {
+        await deleteDoc(doc(db, 'posts', pid));
+    }
+};
+
+window.editPost = async (pid, oldText) => {
+    const newText = prompt("Edit your post:", oldText);
+    if(newText) {
+        await updateDoc(doc(db, 'posts', pid), { text: newText });
+    }
+};
+
+// --- PROFILE MANAGEMENT ---
+window.updateProfile = async () => {
+    const name = $('#edit-name').value;
+    const file = $('#edit-pic').files[0];
+    // Use your Cloudinary logic here...
+    await updateDoc(doc(db, 'users', auth.currentUser.uid), { name: name });
+    alert("Profile Updated");
+};
+
+onAuthStateChanged(auth, user => {
+    if(user) {
+        loadContent();
+        setupNotifications();
+    }
+});
+
+window.logout = () => signOut(auth).then(() => location.reload());
