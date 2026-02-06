@@ -8,40 +8,56 @@
     <meta name="google-site-verification" content="cPJ3_emx8r6W7a_9249IO_Aj4NEH15CCtPqEgc18FN8" />
 
     <style>
-        /* --- Basic Styling for App Structure --- */
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; color: #333; }
-        .header { background-color: #28a745; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .nav a, .header button { color: white; text-decoration: none; padding: 8px 15px; margin-left: 10px; border: none; border-radius: 5px; cursor: pointer; background: transparent; transition: background-color 0.3s; }
-        .nav a:hover, .header button:hover { background-color: #218838; }
-        .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
-        .view { display: none; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ddd; }
-        .product img, .post img { max-width: 100%; height: auto; border-radius: 5px; margin-bottom: 10px; }
-        .btn { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; }
-        .btn:hover { background-color: #0056b3; }
-        .btn-sm { padding: 5px 10px; font-size: 0.8em; margin-left: 5px; }
+        /* --- Basic Styling --- */
+        body { font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f2f5; color: #1c1e21; }
+        .header { background-color: #28a745; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+        .nav a, .header button { color: white; text-decoration: none; padding: 8px 12px; margin-left: 5px; border: none; border-radius: 6px; cursor: pointer; background: transparent; transition: 0.3s; font-weight: 600; }
+        .nav a:hover, .header button:hover { background-color: rgba(255,255,255,0.2); }
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        .view { display: none; }
+        .card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .btn { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; width: 100%; }
+        .btn-secondary { background-color: #e4e6eb; color: #050505; }
+
+        /* --- Professional Profile Layout --- */
+        .profile-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .cover-photo { height: 200px; background: linear-gradient(to bottom, #2ecc71, #27ae60); position: relative; }
+        .profile-avatar-wrap { text-align: center; margin-top: -60px; position: relative; }
+        #profile-pic { width: 130px; height: 130px; border-radius: 50%; border: 4px solid white; background: #eee; object-fit: cover; }
+        .profile-info { text-align: center; padding: 15px; }
+        .profile-info h2 { margin: 0; font-size: 24px; }
+        .profile-stats { color: #65676b; font-weight: 600; margin: 10px 0; }
+        .profile-bio { color: #1c1e21; margin: 10px auto; max-width: 500px; line-height: 1.4; }
+        .profile-actions { display: flex; justify-content: center; gap: 10px; padding: 10px; border-top: 1px solid #e5e5e5; }
+        .profile-actions .btn { width: auto; min-width: 120px; }
+
+        /* --- Professional Chat Layout --- */
+        .chat-app { display: flex; height: 75vh; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
+        .chat-sidebar { width: 30%; border-right: 1px solid #eee; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 15px; font-size: 20px; font-weight: bold; border-bottom: 1px solid #eee; }
+        #chat-list { flex: 1; overflow-y: auto; }
+        .chat-main { width: 70%; display: flex; flex-direction: column; background: #f0f2f5; }
+        .chat-header { padding: 15px; background: white; border-bottom: 1px solid #eee; font-weight: bold; }
+        #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .message-bubble { padding: 8px 12px; border-radius: 18px; max-width: 70%; font-size: 15px; }
+        .mine { background-color: #0084ff; color: white; align-self: flex-end; }
+        .theirs { background-color: #e4e6eb; color: black; align-self: flex-start; }
+        .chat-input-bar { padding: 15px; background: white; display: flex; gap: 10px; }
+        .chat-input-bar input { flex: 1; border-radius: 20px; border: 1px solid #ddd; padding: 10px 15px; outline: none; }
 
         /* --- Auth Modal --- */
         #auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .auth-content { background: white; padding: 30px; border-radius: 10px; max-width: 400px; width: 90%; text-align: center; }
-        .auth-content input { width: calc(100% - 22px); padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
-        
-        /* --- Chat Bubbles --- */
-        .message-bubble { padding: 10px; border-radius: 15px; margin-bottom: 10px; max-width: 80%; }
-        .mine { background-color: #dcf8c6; align-self: flex-end; margin-left: auto; }
-        .theirs { background-color: #fff; border: 1px solid #ddd; align-self: flex-start; }
+        .auth-content input { width: calc(100% - 22px); padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; }
 
         #notification-counter { background-color: crimson; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7em; position: absolute; top: -5px; right: -10px; display: none; }
         .nav-item-wrapper { position: relative; display: inline-block; }
-
-        #read-more-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .read-more-content { background: white; padding: 30px; border-radius: 10px; max-width: 600px; width: 90%; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>Healing Root Agro Ventures</h1>
+        <h1>Healing Root</h1>
         <div class="nav">
             <a href="#" id="nav-feed">Feed</a>
             <a href="#" id="nav-products">Products</a>
@@ -57,95 +73,94 @@
 
     <div class="container">
         <div id="feed-view" class="view">
-            <h2>Social Feed</h2>
-            <div class="post-form">
-                <h4>Create a Post</h4>
-                <textarea id="post-text" placeholder="What's on your mind?" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;"></textarea>
-                <input type="file" id="post-image" accept="image/*">
-                <button id="post-btn" class="btn" style="float: right;">Post</button>
-                <div style="clear: both;"></div>
+            <div class="card">
+                <h4>What's on your mind?</h4>
+                <textarea id="post-text" placeholder="Share farm updates..." rows="3" style="width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 10px;"></textarea>
+                <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <input type="file" id="post-image" accept="image/*">
+                    <button id="post-btn" class="btn" style="width: auto;">Post</button>
+                </div>
             </div>
             <div id="feed"></div>
         </div>
 
-        <div id="products-view" class="view">
-            <h2>Our Products</h2>
-            <div id="product-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;"></div>
-        </div>
-
         <div id="profile-view" class="view">
-            <h2>User Profile</h2>
-            <div class="card">
-                <img id="profile-pic" src="images/default_profile.png" alt="Profile Picture" style="width:100px; height:100px; border-radius:50%;">
-                <h4>Change Profile Picture</h4>
-                <input type="file" id="profile-upload" accept="image/*">
-                <button id="save-profile-pic" class="btn btn-sm">Upload</button>
+            <div class="profile-container">
+                <div class="cover-photo"></div>
+                <div class="profile-avatar-wrap">
+                    <img id="profile-pic" src="images/default_profile.png" alt="Profile">
+                </div>
+                <div class="profile-info">
+                    <h2 id="profile-display-name">Farmer Name</h2>
+                    <p class="profile-stats"><span id="follower-count">0</span> followers • <span id="following-count">0</span> following</p>
+                    <p id="profile-bio-text" class="profile-bio">Growing quality, nurturing tomorrow. 🇳🇬🌍</p>
+                </div>
+                <div class="profile-actions">
+                    <button class="btn btn-secondary">📊 Dashboard</button>
+                    <button class="btn" onclick="document.getElementById('nav-feed').click()">📝 Create Reel</button>
+                </div>
             </div>
-            <div class="card">
-                <h3>Friend Requests</h3>
-                <div id="friend-requests"></div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h3>Edit Profile</h3>
+                <label>Change Photo:</label>
+                <input type="file" id="profile-upload" accept="image/*">
+                <button id="save-profile-pic" class="btn" style="margin-top: 10px;">Upload New Picture</button>
+                <hr style="margin: 20px 0;">
+                <label>Update Bio:</label>
+                <textarea id="bio" placeholder="Tell other farmers about your expertise..." rows="3" style="width: 100%; margin-top: 5px;"></textarea>
+                <button id="save-bio" class="btn" style="margin-top: 10px;">Save Changes</button>
             </div>
         </div>
 
         <div id="chat-view" class="view">
-            <h2>Messaging</h2>
-            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 250px;">
-                    <h3>Your Friends</h3>
+            <div class="chat-app">
+                <div class="chat-sidebar">
+                    <div class="sidebar-header">Chats</div>
                     <div id="chat-list"></div>
-                    <h3 style="margin-top: 20px;">Find New Friends</h3>
-                    <div id="friends"></div>
+                    <div style="padding: 15px; border-top: 1px solid #eee;">
+                        <small>Followers you can message:</small>
+                        <div id="friends"></div>
+                    </div>
                 </div>
-                <div style="flex: 2; min-width: 300px;">
-                    <div id="chat-window" style="display: none;">
-                        <h4 id="chat-with">Chat</h4>
-                        <div id="messages" style="height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; display: flex; flex-direction: column;"></div>
-                        <div style="display: flex; margin-top:10px;">
-                            <input type="text" id="chat-input" placeholder="Type a message..." style="flex:1; padding:10px;">
-                            <button id="send-chat" class="btn">Send</button>
+                <div class="chat-main">
+                    <div id="chat-window" style="display: none; height: 100%; flex-direction: column;">
+                        <div class="chat-header" id="chat-with">Chat</div>
+                        <div id="messages"></div>
+                        <div class="chat-input-bar">
+                            <input type="text" id="chat-input" placeholder="Aa">
+                            <button id="send-chat" class="btn" style="width: auto;">Send</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="admin-view" class="view">
-            <h2>Admin Dashboard</h2>
-            <div id="admin-users"></div>
-            <div id="admin-posts"></div>
+        <div id="products-view" class="view">
+            <h2>Marketplace</h2>
+            <div id="product-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;"></div>
         </div>
     </div>
 
     <div id="auth-modal">
         <div class="auth-content">
-            <h3>Welcome to Healing Root</h3>
-            
+            <img src="logo.png" alt="Logo" style="width: 80px; margin-bottom: 10px;">
+            <h3>Healing Root</h3>
             <form id="login-form">
-                <h4>Login</h4>
-                <input type="email" id="login-email" placeholder="Email" required>
+                <input type="email" id="login-email" placeholder="Email address" required>
                 <input type="password" id="login-password" placeholder="Password" required>
-                <button type="submit" class="btn" style="width:100%;">Login</button>
+                <button type="submit" class="btn">Log In</button>
             </form>
-
             <hr style="margin: 20px 0;">
-
-            <form id="signup-form">
-                <h4>Sign Up</h4>
+            <button class="btn btn-secondary" onclick="document.getElementById('signup-form').style.display='block'; document.getElementById('login-form').style.display='none';">Create New Account</button>
+            
+            <form id="signup-form" style="display:none; margin-top: 20px;">
                 <input type="text" id="signup-name" placeholder="Full Name" required>
                 <input type="email" id="signup-email" placeholder="Email" required>
                 <input type="password" id="signup-password" placeholder="Password" required>
-                <button type="submit" class="btn" style="width:100%; background-color: #28a745;">Create Account</button>
+                <button type="submit" class="btn" style="background-color: #28a745;">Sign Up</button>
             </form>
-            
-            <p id="auth-message" style="color: crimson; margin-top: 10px;"></p>
-        </div>
-    </div>
-
-    <div id="read-more-modal">
-        <div class="read-more-content">
-            <span id="read-more-close" style="float:right; cursor:pointer; font-size:24px;">&times;</span>
-            <h3 id="read-more-title"></h3>
-            <p id="read-more-text"></p>
+            <p id="auth-message" style="color: crimson; font-size: 14px; margin-top: 10px;"></p>
         </div>
     </div>
 
