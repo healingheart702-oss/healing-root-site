@@ -10,50 +10,73 @@
     <style>
         /* --- Basic Styling --- */
         body { font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f2f5; color: #1c1e21; }
-        .header { background-color: #28a745; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
-        .nav a, .header button { color: white; text-decoration: none; padding: 8px 12px; margin-left: 5px; border: none; border-radius: 6px; cursor: pointer; background: transparent; transition: 0.3s; font-weight: 600; }
+        
+        /* FIXED: Header layout to prevent stacking/overlap on mobile */
+        .header { 
+            background-color: #28a745; 
+            color: white; 
+            padding: 10px 15px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+        }
+        .header h1 { font-size: 1.2rem; margin: 0; white-space: nowrap; }
+        
+        .nav { display: flex; align-items: center; }
+        .nav a, .header button { color: white; text-decoration: none; padding: 6px 8px; margin-left: 2px; border: none; border-radius: 6px; cursor: pointer; background: transparent; transition: 0.3s; font-weight: 600; font-size: 14px; }
         .nav a:hover, .header button:hover { background-color: rgba(255,255,255,0.2); }
+        
         .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
         .view { display: none; }
         .card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .btn { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; width: 100%; }
         .btn-secondary { background-color: #e4e6eb; color: #050505; }
 
-        /* --- Image Fixes (Normal Size & Quality) --- */
+        /* --- FIXED: Image Fixes (Full visibility, no cropping) --- */
         .product img, .post img { 
             width: 100%; 
-            height: 200px; /* Standardized height */
-            object-fit: cover; /* Keeps quality without stretching */
+            height: auto; /* Changed from 200px to auto to show full image */
+            object-fit: contain; 
             border-radius: 8px; 
             display: block;
             margin-bottom: 10px; 
+            background: #f9f9f9;
         }
+
+        /* --- Read More Modal Styling --- */
+        #read-more-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .read-more-content { background: white; padding: 25px; border-radius: 12px; max-width: 500px; width: 90%; position: relative; }
+        .close-modal { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: #666; }
 
         /* --- Professional Profile Layout --- */
         .profile-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .cover-photo { height: 200px; background: linear-gradient(to bottom, #2ecc71, #27ae60); position: relative; }
+        .cover-photo { height: 150px; background: linear-gradient(to bottom, #2ecc71, #27ae60); position: relative; }
         .profile-avatar-wrap { text-align: center; margin-top: -60px; position: relative; }
-        #profile-pic { width: 130px; height: 130px; border-radius: 50%; border: 4px solid white; background: #eee; object-fit: cover; }
+        #profile-pic { width: 120px; height: 120px; border-radius: 50%; border: 4px solid white; background: #eee; object-fit: cover; }
         .profile-info { text-align: center; padding: 15px; }
-        .profile-info h2 { margin: 0; font-size: 24px; }
-        .profile-stats { color: #65676b; font-weight: 600; margin: 10px 0; }
-        .profile-bio { color: #1c1e21; margin: 10px auto; max-width: 500px; line-height: 1.4; }
-        .profile-actions { display: flex; justify: center; gap: 10px; padding: 10px; border-top: 1px solid #e5e5e5; }
+        .profile-info h2 { margin: 0; font-size: 22px; }
+        .profile-stats { color: #65676b; font-weight: 600; margin: 10px 0; font-size: 14px; }
+        .profile-bio { color: #1c1e21; margin: 10px auto; max-width: 500px; line-height: 1.4; font-size: 15px; }
+        .profile-actions { display: flex; justify-content: center; gap: 10px; padding: 10px; border-top: 1px solid #e5e5e5; }
         .profile-actions .btn { width: auto; min-width: 120px; }
 
         /* --- Professional Chat Layout --- */
         .chat-app { display: flex; height: 75vh; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
-        .chat-sidebar { width: 30%; border-right: 1px solid #eee; display: flex; flex-direction: column; }
-        .sidebar-header { padding: 15px; font-size: 20px; font-weight: bold; border-bottom: 1px solid #eee; }
+        .chat-sidebar { width: 35%; border-right: 1px solid #eee; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 15px; font-size: 18px; font-weight: bold; border-bottom: 1px solid #eee; }
         #chat-list { flex: 1; overflow-y: auto; }
-        .chat-main { width: 70%; display: flex; flex-direction: column; background: #f0f2f5; }
+        .chat-main { width: 65%; display: flex; flex-direction: column; background: #f0f2f5; }
         .chat-header { padding: 15px; background: white; border-bottom: 1px solid #eee; font-weight: bold; }
         #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .message-bubble { padding: 8px 12px; border-radius: 18px; max-width: 70%; font-size: 15px; }
+        .message-bubble { padding: 8px 12px; border-radius: 18px; max-width: 80%; font-size: 15px; }
         .mine { background-color: #0084ff; color: white; align-self: flex-end; }
         .theirs { background-color: #e4e6eb; color: black; align-self: flex-start; }
-        .chat-input-bar { padding: 15px; background: white; display: flex; gap: 10px; }
-        .chat-input-bar input { flex: 1; border-radius: 20px; border: 1px solid #ddd; padding: 10px 15px; outline: none; }
+        .chat-input-bar { padding: 10px; background: white; display: flex; gap: 10px; }
+        .chat-input-bar input { flex: 1; border-radius: 20px; border: 1px solid #ddd; padding: 8px 15px; outline: none; }
 
         /* --- Auth Modal --- */
         #auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
@@ -76,7 +99,6 @@
                 <span id="notification-counter"></span> 
             </div>
             <a href="#" id="nav-profile">Profile</a>
-            <a href="#" id="nav-admin" style="display: none;">Admin</a>
             <button id="logout-btn" style="display: none;">Logout</button>
         </div>
     </div>
@@ -85,7 +107,7 @@
         <div id="feed-view" class="view">
             <div class="card">
                 <h4>What's on your mind?</h4>
-                <textarea id="post-text" placeholder="Share farm updates..." rows="3" style="width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 10px;"></textarea>
+                <textarea id="post-text" placeholder="Share farm updates..." rows="3" style="width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 10px; font-family: inherit;"></textarea>
                 <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
                     <input type="file" id="post-image" accept="image/*">
                     <button id="post-btn" class="btn" style="width: auto;">Post</button>
@@ -109,17 +131,6 @@
                     <button class="btn btn-secondary">📊 Dashboard</button>
                     <button class="btn" onclick="document.getElementById('nav-feed').click()">📝 Create Reel</button>
                 </div>
-            </div>
-
-            <div class="card" style="margin-top: 20px;">
-                <h3>Edit Profile</h3>
-                <label>Change Photo:</label>
-                <input type="file" id="profile-upload" accept="image/*">
-                <button id="save-profile-pic" class="btn" style="margin-top: 10px;">Upload New Picture</button>
-                <hr style="margin: 20px 0;">
-                <label>Update Bio:</label>
-                <textarea id="bio" placeholder="Tell other farmers about your expertise..." rows="3" style="width: 100%; margin-top: 5px;"></textarea>
-                <button id="save-bio" class="btn" style="margin-top: 10px;">Save Changes</button>
             </div>
         </div>
 
@@ -154,7 +165,6 @@
 
     <div id="auth-modal">
         <div class="auth-content">
-            <img src="logo.png" alt="Logo" style="width: 80px; margin-bottom: 10px;">
             <h3>Healing Root</h3>
             <form id="login-form">
                 <input type="email" id="login-email" placeholder="Email address" required>
@@ -163,7 +173,6 @@
             </form>
             <hr style="margin: 20px 0;">
             <button class="btn btn-secondary" onclick="document.getElementById('signup-form').style.display='block'; document.getElementById('login-form').style.display='none';">Create New Account</button>
-            
             <form id="signup-form" style="display:none; margin-top: 20px;">
                 <input type="text" id="signup-name" placeholder="Full Name" required>
                 <input type="email" id="signup-email" placeholder="Email" required>
@@ -171,6 +180,14 @@
                 <button type="submit" class="btn" style="background-color: #28a745;">Sign Up</button>
             </form>
             <p id="auth-message" style="color: crimson; font-size: 14px; margin-top: 10px;"></p>
+        </div>
+    </div>
+
+    <div id="read-more-modal">
+        <div class="read-more-content">
+            <span class="close-modal" id="read-more-close">&times;</span>
+            <h3 id="read-more-title">Product Details</h3>
+            <p id="read-more-text"></p>
         </div>
     </div>
 
