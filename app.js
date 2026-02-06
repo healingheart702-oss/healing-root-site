@@ -31,7 +31,7 @@ let currentUser = null;
 let currentProfile = null;
 let activeChatId = null;
 
-// ---------------------- PRODUCTS ----------------------
+// ---------------------- PRODUCTS (Maintained as requested) ----------------------
 const products = [
   { id:"cassava", name:"Cassava Stems (TME419)", image:"images/cassava.JPG", price:1000, description:`Healing Root Agro Ventures provides premium TME419 cassava stems known for high yield, disease resistance, and strong root development. Each stem is nurtured in a controlled nursery to ensure survival rates above 95%, giving farmers a reliable start. Our cassava stems are ideal for commercial farming, guaranteeing tuber quality and consistent income for small and large-scale farmers across Nigeria. Full planting guidance and farm management tips are provided with every purchase.` },
   { id:"plantain", name:"Hybrid Plantain Suckers", image:"images/plantain.JPG", price:500, description:`Our Hybrid Plantain Suckers are carefully selected for vigor, early fruiting, and high production. Raised in hygienic nurseries, these suckers adapt easily to different soil types and climates in Nigeria. With strong resistance to pests and diseases, they provide farmers with dependable growth and fruiting cycles. Each purchase comes with detailed planting and care instructions to ensure optimal yield and long-term plantation success.` },
@@ -48,19 +48,29 @@ window.showView = (viewId) => {
     $$('.view').forEach(v => v.style.display = 'none');
     const target = $(`#${viewId}-view`);
     if (target) target.style.display = 'block';
+    
+    // Auto-pause videos when leaving Reels
+    if (viewId !== 'reels') {
+        $$('video').forEach(v => v.pause());
+    }
+
     $$('.nav-item').forEach(item => {
-        item.classList.toggle('active', item.getAttribute('onclick')?.includes(`'${viewId}'`));
+        const onclickAttr = item.getAttribute('onclick') || '';
+        item.classList.toggle('active', onclickAttr.includes(`'${viewId}'`));
     });
 };
 
-// ---------------------- PROFESSIONAL AUTH (Login & Signup) ----------------------
+// ---------------------- AUTH LOGIC ----------------------
 let isLoginMode = true;
-$('#auth-toggle').onclick = () => {
-    isLoginMode = !isLoginMode;
-    $('#auth-name').style.display = isLoginMode ? 'none' : 'block';
-    $('#auth-submit-btn').innerText = isLoginMode ? 'Log In' : 'Create Account';
-    $('#auth-toggle').innerText = isLoginMode ? "Don't have an account? Create one" : "Already have an account? Log In";
-};
+const authToggle = $('#auth-toggle');
+if(authToggle) {
+    authToggle.onclick = () => {
+        isLoginMode = !isLoginMode;
+        $('#auth-name').style.display = isLoginMode ? 'none' : 'block';
+        $('#auth-submit-btn').innerText = isLoginMode ? 'Log In' : 'Create Account';
+        $('#auth-toggle').innerText = isLoginMode ? "Don't have an account? Create one" : "Already have an account? Log In";
+    };
+}
 
 $('#auth-form').onsubmit = async (e) => {
     e.preventDefault();
@@ -107,44 +117,42 @@ onAuthStateChanged(auth, async user => {
     }
 });
 
+// ---------------------- SYNCING FB-STYLE UI ----------------------
 function updateProfileUI(profile) {
     const name = profile.name || "Farmer";
     const pic = profile.profilePic || 'images/default_profile.png';
     const cover = profile.coverPic || 'images/HEALING_ROOT_BANNER.jpg';
-    const bio = profile.bio || "No bio set yet.";
+    const bio = profile.bio || "Agro Ventures Community";
     
-    $('#my-profile-name').innerText = name;
-    $('#display-biz-name').innerText = name;
-    $('#display-name-header').innerText = name;
-    $('#display-bio').innerText = bio;
-    $('#display-bio-bold').innerText = bio;
-    $('#my-profile-bio-display').innerText = bio;
+    // Top Bar & Dashboard Name
+    if($('#display-name-top')) $('#display-name-top').innerText = name;
+    if($('#display-name-header')) $('#display-name-header').innerText = name;
+    if($('#my-profile-name')) $('#my-profile-name').innerText = name;
+    if($('#display-biz-name')) $('#display-biz-name').innerText = name;
     
-    $('#my-profile-pic-small').src = pic;
-    $('#my-menu-pic').src = pic;
-    $('#profile-pic-preview').src = pic;
-    $('#cover-pic-preview').src = cover;
+    // Bio sections
+    if($('#display-bio')) $('#display-bio').innerText = bio;
+    if($('#display-bio-bold')) $('#display-bio-bold').innerText = bio;
     
-    // Sync all avatars in feed
+    // Images
+    if($('#profile-pic-preview')) $('#profile-pic-preview').src = pic;
+    if($('#cover-pic-preview')) $('#cover-pic-preview').src = cover;
+    if($('#my-menu-pic')) $('#my-menu-pic').src = pic;
+    if($('#story-my-pic')) $('#story-my-pic').src = pic;
+    
+    // Global Avatar Sync
     $$('.user-avatar-sync').forEach(img => img.src = pic);
 }
 
-window.logout = async () => {
-    if (currentUser) await updateDoc(doc(db, 'users', currentUser.uid), { status: 'offline' });
-    signOut(auth).then(() => location.reload());
+// ---------------------- PROFILE UPDATES ----------------------
+window.uploadNewProfilePic = (input) => {
+    const file = input.files[0];
+    if (file) uploadToCloudinary(file, 'profilePic');
 };
 
-// ---------------------- PROFESSIONAL PROFILE EDITING ----------------------
-window.uploadNewProfilePic = async (input) => {
+window.uploadCoverPic = (input) => {
     const file = input.files[0];
-    if (!file) return;
-    uploadToCloudinary(file, 'profilePic');
-};
-
-window.uploadCoverPic = async (input) => {
-    const file = input.files[0];
-    if (!file) return;
-    uploadToCloudinary(file, 'coverPic');
+    if (file) uploadToCloudinary(file, 'coverPic');
 };
 
 async function uploadToCloudinary(file, field) {
@@ -155,27 +163,28 @@ async function uploadToCloudinary(file, field) {
         const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: fd });
         const data = await res.json();
         await updateDoc(doc(db, 'users', currentUser.uid), { [field]: data.secure_url });
-        alert("Updated successfully!");
+        alert("Photo updated!");
     } catch (err) { alert("Upload failed."); }
 }
 
 window.editBio = async () => {
-    const newBio = prompt("Edit your Bio:", currentProfile?.bio || "");
+    const newBio = prompt("What's your farm's specialty?", currentProfile?.bio || "");
     if (newBio !== null) await updateDoc(doc(db, 'users', currentUser.uid), { bio: newBio });
 };
 
 window.editBusinessName = async () => {
-    const newName = prompt("Edit Business Name:", currentProfile?.name || "");
+    const newName = prompt("Update Business Name:", currentProfile?.name || "");
     if (newName) await updateDoc(doc(db, 'users', currentUser.uid), { name: newName });
 };
 
-// ---------------------- FEED & REELS (Video Filter) ----------------------
+// ---------------------- FB STYLE FEED & REELS ----------------------
 function loadRealtimeFeed() {
     const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
     onSnapshot(q, (snapshot) => {
         const feed = $('#feed-items');
         const reels = $('#reels-container');
         if (!feed || !reels) return;
+        
         feed.innerHTML = '';
         reels.innerHTML = '';
 
@@ -183,42 +192,55 @@ function loadRealtimeFeed() {
             const post = docSnap.data();
             const pid = docSnap.id;
             const reactions = post.reactions || {};
-            const counts = Object.values(reactions).reduce((acc, r) => { acc[r] = (acc[r] || 0) + 1; return acc; }, {});
+            const counts = Object.values(reactions).length;
 
             const postHtml = `
                 <div class="post-card">
                     <div style="display:flex; gap:10px; padding:12px; align-items:center;">
-                        <img src="${post.userPic || 'images/default_profile.png'}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
-                        <b>${post.userName || 'Farmer'}</b>
+                        <img src="${post.userPic || 'images/default_profile.png'}" style="width:38px; height:38px; border-radius:50%; border:1px solid var(--hr-divider);">
+                        <div>
+                            <div style="font-weight:bold; font-size:14px;">${post.userName}</div>
+                            <div style="font-size:11px; color:var(--hr-secondary);">Just now • 🌍</div>
+                        </div>
                     </div>
-                    <div style="padding:0 12px 12px 12px;">${post.text}</div>
-                    ${post.content ? (post.type === 'video' ? 
-                        `<video src="${post.content}" controls style="width:100%;"></video>` : 
-                        `<img src="${post.content}" style="width:100%;">`) : ''}
+                    <div style="padding:0 12px 12px 12px; font-size:15px; line-height:1.4;">${post.text}</div>
                     
-                    <div class="reaction-bar">
+                    ${post.content ? (post.type === 'video' ? 
+                        `<video src="${post.content}" controls style="width:100%; background:#000;"></video>` : 
+                        `<img src="${post.content}" style="width:100%; max-height:450px; object-fit:cover;">`) : ''}
+                    
+                    <div class="reaction-bar" style="padding: 10px 15px; border-bottom: 1px solid var(--hr-divider);">
                         <div id="picker-${pid}" class="reaction-picker">
                             <span onclick="addReaction('${pid}', '👍')">👍</span>
                             <span onclick="addReaction('${pid}', '❤️')">❤️</span>
                             <span onclick="addReaction('${pid}', '😮')">😮</span>
-                            <span onclick="addReaction('${pid}', '😡')">😡</span>
+                            <span onclick="addReaction('${pid}', '🔥')">🔥</span>
                         </div>
-                        <button onclick="showReactions('${pid}')" style="background:none; border:none; color:var(--hr-green); font-weight:bold;">
-                            ${reactions[currentUser.uid] || '👍'} Reaction
-                        </button>
-                        <div style="font-size:12px; color:#aaa; align-self:center;">
-                            ${counts['👍'] ? '👍 '+counts['👍'] : ''} ${counts['❤️'] ? '❤️ '+counts['❤️'] : ''}
+                        <div style="display:flex; gap:20px;">
+                            <div onclick="showReactions('${pid}')" style="cursor:pointer; font-size:13px; color:var(--hr-secondary); font-weight:bold;">
+                                ${reactions[currentUser.uid] || '👍'} Like
+                            </div>
+                            <div onclick="$('#comm-input-${pid}').focus()" style="cursor:pointer; font-size:13px; color:var(--hr-secondary); font-weight:bold;">
+                                💬 Comment
+                            </div>
+                        </div>
+                        <div style="font-size:12px; color:var(--hr-secondary); margin-left:auto;">
+                            ${counts > 0 ? '❤️ ' + counts : ''}
                         </div>
                     </div>
-                    <div style="padding:10px; border-top:1px solid #333;">
+
+                    <div style="padding:10px;">
                         <div id="comments-${pid}">${renderComments(pid, post.comments || [])}</div>
-                        <div style="display:flex; gap:5px; margin-top:10px;">
-                            <input type="text" id="comm-input-${pid}" placeholder="Write a comment..." style="flex:1; background:#333; border:none; color:white; padding:8px; border-radius:20px;">
-                            <button onclick="submitComment('${pid}')" class="btn-green" style="padding:5px 15px;">Send</button>
+                        <div style="display:flex; gap:8px; margin-top:10px; align-items:center;">
+                            <img src="${currentProfile.profilePic}" style="width:30px; height:30px; border-radius:50%;">
+                            <input type="text" id="comm-input-${pid}" placeholder="Write a comment..." 
+                                style="flex:1; background:#3a3b3c; border:none; color:white; padding:8px 15px; border-radius:20px; font-size:13px;">
+                            <button onclick="submitComment('${pid}')" style="background:none; border:none; color:var(--hr-green); font-weight:bold;">Post</button>
                         </div>
                     </div>
                 </div>`;
 
+            // Sort Videos into Reels and everything else into Feed
             if (post.type === 'video') {
                 reels.innerHTML += postHtml;
             } else {
@@ -228,30 +250,16 @@ function loadRealtimeFeed() {
     });
 }
 
-// ---------------------- MARKETPLACE ----------------------
-function renderMarketplace() {
-    const container = $('#market-list');
-    if (!container) return;
-    container.innerHTML = products.map(p => `
-        <div class="card product" style="background: #1e1e1e; border: 1px solid #333; border-radius: 8px; overflow: hidden;">
-            <img src="${p.image}" style="width:100%; height:140px; object-fit:cover;">
-            <div style="padding:10px;">
-                <b style="color:#2e7d32; font-size:14px;">${p.name}</b>
-                <div style="font-size:13px; margin:4px 0;">₦${p.price.toLocaleString()}</div>
-                <button onclick="window.open('https://wa.me/2349138938301?text=Order: ${p.name}')" 
-                        style="width:100%; background:#2e7d32; color:white; border:none; padding:8px; border-radius:5px; font-weight:bold;">
-                    Order Now
-                </button>
-            </div>
-        </div>
-    `).join('');
-}
-
-// ---------------------- POSTING LOGIC ----------------------
+// ---------------------- POST SUBMISSION ----------------------
 window.submitPost = async () => {
     const text = $('#post-text').value;
-    const file = $('#post-file-input').files[0];
+    const fileInput = $('#post-file-input');
+    const file = fileInput.files[0];
+    
     if (!text && !file) return;
+    
+    // Close modal immediately for UX
+    window.closePostModal();
 
     let fileUrl = '';
     let fileType = 'text';
@@ -279,10 +287,28 @@ window.submitPost = async () => {
     });
 
     $('#post-text').value = '';
-    window.closePostModal();
+    fileInput.value = '';
 };
 
-// ---------------------- REACTIONS & COMMENTS ----------------------
+// ---------------------- MARKETPLACE & CHAT ----------------------
+function renderMarketplace() {
+    const container = $('#market-list');
+    if (!container) return;
+    container.innerHTML = products.map(p => `
+        <div class="card product" style="background: var(--hr-card); border-radius: 8px; overflow: hidden; border:1px solid var(--hr-divider);">
+            <img src="${p.image}" style="width:100%; height:140px; object-fit:cover;">
+            <div style="padding:10px;">
+                <b style="color:var(--hr-green); font-size:14px; display:block; margin-bottom:5px;">${p.name}</b>
+                <div style="font-size:13px; margin-bottom:10px;">₦${p.price.toLocaleString()}</div>
+                <button onclick="window.open('https://wa.me/2349138938301?text=Order: ${p.name}')" 
+                        style="width:100%; background:var(--hr-green); color:white; border:none; padding:8px; border-radius:5px; font-weight:bold; font-size:12px;">
+                    Order on WhatsApp
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
 window.addReaction = async (pid, emoji) => {
     const postRef = doc(db, 'posts', pid);
     const snap = await getDoc(postRef);
@@ -292,32 +318,8 @@ window.addReaction = async (pid, emoji) => {
     $(`#picker-${pid}`).style.display = 'none';
 };
 
-function renderComments(pid, comments) {
-    const main = comments.filter(c => !c.parentId);
-    return main.map(c => {
-        const replies = comments.filter(r => r.parentId === c.id);
-        return `
-            <div class="comment-item">
-                <b>${c.userName}</b>: ${c.text}
-                <div>
-                    <span class="reply-btn" onclick="openReplyInput('${c.id}')">Reply</span>
-                </div>
-                <div id="reply-box-${c.id}" style="display:none; margin-top:5px;">
-                    <input type="text" id="reply-input-${c.id}" placeholder="Reply..." style="width:70%; background:#222; border:none; color:white; font-size:12px; padding:4px;">
-                    <button onclick="submitComment('${pid}', '${c.id}')" style="font-size:10px;">Send</button>
-                </div>
-                ${replies.map(r => `<div class="reply-item"><b>${r.userName}</b>: ${r.text}</div>`).join('')}
-            </div>`;
-    }).join('');
-}
-
-window.openReplyInput = (cid) => {
-    $(`#reply-box-${cid}`).style.display = 'block';
-    $(`#reply-input-${cid}`).focus();
-};
-
-window.submitComment = async (pid, parentId = null) => {
-    const input = parentId ? $(`#reply-input-${parentId}`) : $(`#comm-input-${pid}`);
+window.submitComment = async (pid) => {
+    const input = $(`#comm-input-${pid}`);
     if (!input.value.trim()) return;
 
     const newComment = {
@@ -325,16 +327,24 @@ window.submitComment = async (pid, parentId = null) => {
         uid: currentUser.uid,
         userName: currentProfile.name,
         text: input.value,
-        timestamp: Date.now(),
-        parentId: parentId,
-        likes: []
+        timestamp: Date.now()
     };
 
-    await updateDoc(doc(db, 'posts', pid), { comments: arrayUnion(newComment) });
+    await updateDoc(doc(db, 'posts', pid), { 
+        comments: arrayUnion(newComment) 
+    });
     input.value = '';
 };
 
-// ---------------------- CHAT & NOTIFICATIONS ----------------------
+function renderComments(pid, comments) {
+    return comments.map(c => `
+        <div style="background:#3a3b3c; border-radius:12px; padding:8px 12px; margin-bottom:5px; display:inline-block; max-width:90%;">
+            <b style="font-size:12px; color:var(--hr-green);">${c.userName}</b>
+            <div style="font-size:13px;">${c.text}</div>
+        </div>
+    `).join('');
+}
+
 function loadAvailableFarmers() {
     onSnapshot(collection(db, 'users'), (snapshot) => {
         const list = $('#available-farmers');
@@ -391,7 +401,7 @@ function loadMessages() {
             const msg = docSnap.data();
             const isMe = msg.senderId === currentUser.uid;
             const msgDiv = document.createElement('div');
-            msgDiv.style = `align-self: ${isMe ? 'flex-end' : 'flex-start'}; background: ${isMe ? 'var(--hr-green)' : '#333'}; padding: 10px; border-radius: 10px; max-width: 80%; color: white;`;
+            msgDiv.style = `align-self: ${isMe ? 'flex-end' : 'flex-start'}; background: ${isMe ? 'var(--hr-green)' : '#333'}; padding: 10px; border-radius: 12px; max-width: 80%; color: white; margin-bottom: 5px;`;
             msgDiv.innerHTML = msg.text;
             container.appendChild(msgDiv);
         });
@@ -409,3 +419,8 @@ function setupNotifications() {
         }
     });
 }
+
+window.logout = async () => {
+    if (currentUser) await updateDoc(doc(db, 'users', currentUser.uid), { status: 'offline' });
+    signOut(auth).then(() => location.reload());
+};
