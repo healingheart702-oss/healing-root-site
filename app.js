@@ -29,6 +29,7 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 
 let currentUser = null;
 let currentProfile = null;
+let activeChatId = null;
 
 // ---------------------- HEALING ROOT PRODUCTS ----------------------
 const products = [
@@ -45,7 +46,9 @@ const products = [
 // ---------------------- VIEW MANAGEMENT ----------------------
 window.showView = (viewId) => {
     $$('.view').forEach(v => v.style.display = 'none');
-    $(`#${viewId}-view`).style.display = 'block';
+    const target = $(`#${viewId}-view`);
+    if (target) target.style.display = 'block';
+    
     $$('.nav-item').forEach(item => {
         item.classList.toggle('active', item.getAttribute('onclick')?.includes(`'${viewId}'`));
     });
@@ -55,6 +58,9 @@ window.showView = (viewId) => {
 onAuthStateChanged(auth, async user => {
     currentUser = user;
     if (user) {
+        // Set status to online
+        await updateDoc(doc(db, 'users', user.uid), { status: 'online' });
+        
         const snap = await getDoc(doc(db, 'users', user.uid));
         currentProfile = snap.exists() ? snap.data() : null;
         
@@ -62,12 +68,12 @@ onAuthStateChanged(auth, async user => {
         $('#main-app').style.display = 'block';
         
         if (currentProfile) {
-            $('#my-profile-name').innerText = currentProfile.name;
-            if (currentProfile.profilePic) $('#my-profile-pic').src = currentProfile.profilePic;
+            updateProfileUI(currentProfile);
         }
 
         renderMarketplace();
         loadRealtimeFeed();
+        loadAvailableFarmers();
         setupNotifications();
     } else {
         $('#auth-modal').style.display = 'flex';
@@ -75,7 +81,53 @@ onAuthStateChanged(auth, async user => {
     }
 });
 
-window.logout = () => signOut(auth).then(() => location.reload());
+function updateProfileUI(profile) {
+    const name = profile.name || "Farmer";
+    const pic = profile.profilePic || 'images/default_profile.png';
+    
+    $('#my-profile-name').innerText = name;
+    $('#display-biz-name').innerText = name;
+    $('#my-profile-pic-small').src = pic;
+    $('#my-menu-pic').src = pic;
+    $('#profile-pic-preview').src = pic;
+}
+
+window.logout = async () => {
+    if (currentUser) {
+        await updateDoc(doc(db, 'users', currentUser.uid), { status: 'offline' });
+    }
+    signOut(auth).then(() => location.reload());
+};
+
+// ---------------------- PROFILE EDITING ----------------------
+window.uploadNewProfilePic = async (input) => {
+    const file = input.files[0];
+    if (!file) return;
+
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', UPLOAD_PRESET);
+    
+    try {
+        const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: fd });
+        const data = await res.json();
+        const newUrl = data.secure_url;
+
+        await updateDoc(doc(db, 'users', currentUser.uid), { profilePic: newUrl });
+        $('#profile-pic-preview').src = newUrl;
+        $('#my-profile-pic-small').src = newUrl;
+        alert("Profile picture updated!");
+    } catch (err) { alert("Upload failed."); }
+};
+
+window.editBusinessName = async () => {
+    const newName = prompt("Enter new business name:", currentProfile?.name || "");
+    if (newName) {
+        await updateDoc(doc(db, 'users', currentUser.uid), { name: newName });
+        $('#display-biz-name').innerText = newName;
+        $('#my-profile-name').innerText = newName;
+    }
+};
 
 // ---------------------- MARKETPLACE ----------------------
 function renderMarketplace() {
@@ -96,7 +148,7 @@ function renderMarketplace() {
     `).join('');
 }
 
-// ---------------------- REAL-TIME FEED (HEALING ROOT) ----------------------
+// ---------------------- FEED & REELS ----------------------
 function loadRealtimeFeed() {
     const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
     onSnapshot(q, (snapshot) => {
@@ -108,84 +160,120 @@ function loadRealtimeFeed() {
         snapshot.docs.forEach(docSnap => {
             const post = docSnap.data();
             const pid = docSnap.id;
+            const mediaUrl = post.content || post.image;
             const isLiked = post.likes?.includes(currentUser.uid);
-            const isOwner = post.uid === currentUser.uid;
 
             const cardHtml = `
-                <div class="post-card" style="background:#1e1e1e; margin-bottom:10px; border-radius:4px;">
-                    <div class="post-header" style="padding:12px; display:flex; justify-content:space-between;">
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <img src="${post.userPic || 'images/default_profile.png'}" style="width:35px; border-radius:50%;">
-                            <b>${post.userName || 'Farmer'}</b>
-                        </div>
-                        ${isOwner ? `<button onclick="deletePost('${pid}')" style="background:none; border:none; color:#f44;">Delete</button>` : ''}
+                <div class="post-card">
+                    <div style="display:flex; gap:10px; padding:12px; align-items:center;">
+                        <img src="${post.userPic || 'images/default_profile.png'}" style="width:35px; height:35px; border-radius:50%;">
+                        <b>${post.userName || 'Farmer'}</b>
                     </div>
                     <div style="padding:0 12px 12px 12px;">${post.text}</div>
-                    ${post.content ? (post.type === 'video' ? 
-                        `<video src="${post.content}" controls style="width:100%;"></video>` : 
-                        `<img src="${post.content}" style="width:100%;">`) : ''}
-                    <div class="post-actions" style="display:flex; padding:10px; border-top:1px solid #333;">
+                    ${mediaUrl ? (post.type === 'video' ? 
+                        `<video src="${mediaUrl}" controls style="width:100%;"></video>` : 
+                        `<img src="${mediaUrl}" style="width:100%;">`) : ''}
+                    <div style="display:flex; padding:10px; border-top:1px solid #333;">
                         <button onclick="toggleLike('${pid}', ${isLiked})" style="flex:1; background:none; border:none; color:${isLiked ? '#2e7d32' : '#aaa'};">👍 Like (${post.likes?.length || 0})</button>
-                        <button onclick="toggleCommentsSection('${pid}')" style="flex:1; background:none; border:none; color:#aaa;">💬 Comment (${post.comments?.length || 0})</button>
-                    </div>
-                    <div id="comment-area-${pid}" style="display:none; padding:10px; background:#252525;">
-                        <div id="list-${pid}"></div>
-                        <div style="display:flex; gap:5px; margin-top:10px;">
-                            <input type="text" id="input-${pid}" placeholder="Add comment..." style="flex:1; background:#333; color:white; border:none; padding:8px; border-radius:5px;">
-                            <button onclick="addComment('${pid}')" style="background:#2e7d32; color:white; border:none; padding:8px; border-radius:5px;">Send</button>
-                        </div>
+                        <button onclick="toggleCommentsSection('${pid}')" style="flex:1; background:none; border:none; color:#aaa;">💬 Comment</button>
                     </div>
                 </div>`;
             
             if (post.type === 'video' && reels) reels.innerHTML += cardHtml;
             if (feed) feed.innerHTML += cardHtml;
-
-            renderComments(pid, post.comments || []);
         });
     });
 }
 
-// ---------------------- INTERACTIONS ----------------------
-window.toggleLike = async (pid, liked) => {
-    await updateDoc(doc(db, 'posts', pid), {
-        likes: liked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid)
+// ---------------------- CHAT LOGIC ----------------------
+function loadAvailableFarmers() {
+    const q = query(collection(db, 'users'));
+    onSnapshot(q, (snapshot) => {
+        const list = $('#available-farmers');
+        if (!list) return;
+        list.innerHTML = '';
+        snapshot.docs.forEach(docSnap => {
+            const user = docSnap.data();
+            if (user.uid !== currentUser.uid) {
+                const isOnline = user.status === 'online';
+                const item = document.createElement('div');
+                item.className = 'biz-item';
+                item.style.cursor = 'pointer';
+                item.onclick = () => startChat(user.uid, user.name);
+                item.innerHTML = `
+                    <div style="position: relative;">
+                        <img src="${user.profilePic || 'images/default_profile.png'}" style="width:45px; height:45px; border-radius:50%;">
+                        <div style="position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%; background: ${isOnline ? '#4caf50' : '#757575'}; border: 2px solid var(--hr-bg);"></div>
+                    </div>
+                    <div style="flex:1;">
+                        <b>${user.name}</b><br>
+                        <small style="color:${isOnline ? 'var(--hr-green)' : 'var(--hr-secondary)'}">${isOnline ? 'Online' : 'Offline'}</small>
+                    </div>
+                    <span>❯</span>
+                `;
+                list.appendChild(item);
+            }
+        });
     });
-};
-
-window.addComment = async (pid) => {
-    const val = $(`#input-${pid}`).value.trim();
-    if (!val) return;
-    await updateDoc(doc(db, 'posts', pid), {
-        comments: arrayUnion({
-            uid: currentUser.uid,
-            userName: currentProfile?.name || "Farmer",
-            text: val,
-            timestamp: Date.now()
-        })
-    });
-    $(`#input-${pid}`).value = '';
-};
-
-window.deletePost = async (pid) => {
-    if (confirm("Delete this post?")) await deleteDoc(doc(db, 'posts', pid));
-};
-
-function renderComments(pid, list) {
-    setTimeout(() => {
-        const area = $(`#list-${pid}`);
-        if (area) {
-            area.innerHTML = list.map(c => `
-                <div style="margin-bottom:8px; font-size:13px;">
-                    <b style="color:#2e7d32;">${c.userName}:</b> ${c.text}
-                </div>
-            `).join('');
-        }
-    }, 100);
 }
 
-window.toggleCommentsSection = (pid) => {
-    const el = $(`#comment-area-${pid}`);
-    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+window.startChat = (targetUid, targetName) => {
+    activeChatId = [currentUser.uid, targetUid].sort().join('_');
+    $('#chatting-with-name').innerText = targetName;
+    $('#active-chat-window').style.display = 'flex';
+    loadMessages();
+};
+
+window.closeChat = () => $('#active-chat-window').style.display = 'none';
+
+window.sendMessage = async () => {
+    const text = $('#chat-input').value.trim();
+    if (!text || !activeChatId) return;
+    await addDoc(collection(db, 'chats', activeChatId, 'messages'), {
+        senderId: currentUser.uid,
+        text: text,
+        timestamp: serverTimestamp()
+    });
+    $('#chat-input').value = '';
+};
+
+function loadMessages() {
+    const q = query(collection(db, 'chats', activeChatId, 'messages'), orderBy('timestamp', 'asc'));
+    onSnapshot(q, (snapshot) => {
+        const container = $('#chat-messages');
+        container.innerHTML = '';
+        snapshot.docs.forEach(docSnap => {
+            const msg = docSnap.data();
+            const mid = docSnap.id;
+            const isMe = msg.senderId === currentUser.uid;
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.style = `
+                align-self: ${isMe ? 'flex-end' : 'flex-start'}; 
+                background: ${isMe ? 'var(--hr-green)' : '#333'}; 
+                padding: 10px; 
+                border-radius: 10px; 
+                max-width: 80%; 
+                color: white; 
+                cursor: pointer;
+                position: relative;
+            `;
+            msgDiv.innerHTML = `${msg.text}${isMe ? '<br><small style="font-size:8px; opacity:0.6;">Click to delete</small>' : ''}`;
+            
+            if(isMe) {
+                msgDiv.onclick = () => confirmDeleteMessage(mid);
+            }
+            
+            container.appendChild(msgDiv);
+        });
+        container.scrollTop = container.scrollHeight;
+    });
+}
+
+window.confirmDeleteMessage = async (mid) => {
+    if (confirm("Delete this message?")) {
+        await deleteDoc(doc(db, 'chats', activeChatId, 'messages', mid));
+    }
 };
 
 // ---------------------- POSTING LOGIC ----------------------
@@ -220,17 +308,23 @@ window.submitPost = async () => {
     });
 
     $('#post-text').value = '';
+    window.closePostModal();
     window.showView('home');
 };
 
 function setupNotifications() {
-    const q = query(collection(db, 'notifications'), where('recipientUID', '==', currentUser.uid), where('read', '==', false));
+    const q = query(collection(db, 'notifications'), where('recipientUID', '==', currentUser?.uid), where('read', '==', false));
     onSnapshot(q, snap => {
-        const count = snap.docs.length;
         const badge = $('#notif-count');
         if (badge) {
-            badge.innerText = count;
-            badge.style.display = count > 0 ? 'block' : 'none';
+            badge.innerText = snap.docs.length;
+            badge.style.display = snap.docs.length > 0 ? 'block' : 'none';
         }
     });
 }
+
+window.toggleLike = async (pid, liked) => {
+    await updateDoc(doc(db, 'posts', pid), {
+        likes: liked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid)
+    });
+};
