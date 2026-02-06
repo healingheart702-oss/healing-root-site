@@ -1,9 +1,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
 import { 
-  getAuth, signOut, onAuthStateChanged 
+  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 import { 
-  getFirestore, collection, addDoc, doc, updateDoc, getDoc, deleteDoc, query, orderBy, 
+  getFirestore, collection, addDoc, setDoc, doc, updateDoc, getDoc, deleteDoc, query, orderBy, 
   serverTimestamp, onSnapshot, arrayUnion, arrayRemove, where 
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
 
@@ -31,7 +31,7 @@ let currentUser = null;
 let currentProfile = null;
 let activeChatId = null;
 
-// ---------------------- PRODUCTS (Kept exactly as requested) ----------------------
+// ---------------------- PRODUCTS ----------------------
 const products = [
   { id:"cassava", name:"Cassava Stems (TME419)", image:"images/cassava.JPG", price:1000, description:`Healing Root Agro Ventures provides premium TME419 cassava stems known for high yield, disease resistance, and strong root development. Each stem is nurtured in a controlled nursery to ensure survival rates above 95%, giving farmers a reliable start. Our cassava stems are ideal for commercial farming, guaranteeing tuber quality and consistent income for small and large-scale farmers across Nigeria. Full planting guidance and farm management tips are provided with every purchase.` },
   { id:"plantain", name:"Hybrid Plantain Suckers", image:"images/plantain.JPG", price:500, description:`Our Hybrid Plantain Suckers are carefully selected for vigor, early fruiting, and high production. Raised in hygienic nurseries, these suckers adapt easily to different soil types and climates in Nigeria. With strong resistance to pests and diseases, they provide farmers with dependable growth and fruiting cycles. Each purchase comes with detailed planting and care instructions to ensure optimal yield and long-term plantation success.` },
@@ -49,15 +49,45 @@ window.showView = (viewId) => {
     const target = $(`#${viewId}-view`);
     if (target) target.style.display = 'block';
     $$('.nav-item').forEach(item => {
-        item.classList.toggle('active', item.getAttribute('onclick')?.includes(`'${viewId}'` || `"${viewId}"`));
+        item.classList.toggle('active', item.getAttribute('onclick')?.includes(`'${viewId}'`));
     });
 };
 
-// ---------------------- AUTH & PROFILE (Fixed Login/Logout) ----------------------
+// ---------------------- PROFESSIONAL AUTH (Login & Signup) ----------------------
+let isLoginMode = true;
+$('#auth-toggle').onclick = () => {
+    isLoginMode = !isLoginMode;
+    $('#auth-name').style.display = isLoginMode ? 'none' : 'block';
+    $('#auth-submit-btn').innerText = isLoginMode ? 'Log In' : 'Create Account';
+    $('#auth-toggle').innerText = isLoginMode ? "Don't have an account? Create one" : "Already have an account? Log In";
+};
+
+$('#auth-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const email = $('#auth-email').value;
+    const pass = $('#auth-password').value;
+    const name = $('#auth-name').value;
+
+    try {
+        if (isLoginMode) {
+            await signInWithEmailAndPassword(auth, email, pass);
+        } else {
+            const res = await createUserWithEmailAndPassword(auth, email, pass);
+            await setDoc(doc(db, 'users', res.user.uid), {
+                uid: res.user.uid,
+                name: name || "Farmer",
+                bio: "Agricultural Specialist",
+                profilePic: 'images/default_profile.png',
+                coverPic: 'images/HEALING_ROOT_BANNER.jpg',
+                status: 'online'
+            });
+        }
+    } catch (err) { alert(err.message); }
+};
+
 onAuthStateChanged(auth, async user => {
     if (user) {
         currentUser = user;
-        // Monitor profile data in real-time
         onSnapshot(doc(db, 'users', user.uid), (snap) => {
             if (snap.exists()) {
                 currentProfile = snap.data();
@@ -80,53 +110,123 @@ onAuthStateChanged(auth, async user => {
 function updateProfileUI(profile) {
     const name = profile.name || "Farmer";
     const pic = profile.profilePic || 'images/default_profile.png';
+    const cover = profile.coverPic || 'images/HEALING_ROOT_BANNER.jpg';
     const bio = profile.bio || "No bio set yet.";
     
     $('#my-profile-name').innerText = name;
     $('#display-biz-name').innerText = name;
+    $('#display-name-header').innerText = name;
     $('#display-bio').innerText = bio;
+    $('#display-bio-bold').innerText = bio;
     $('#my-profile-bio-display').innerText = bio;
     
     $('#my-profile-pic-small').src = pic;
     $('#my-menu-pic').src = pic;
     $('#profile-pic-preview').src = pic;
+    $('#cover-pic-preview').src = cover;
+    
+    // Sync all avatars in feed
+    $$('.user-avatar-sync').forEach(img => img.src = pic);
 }
 
 window.logout = async () => {
-    if (currentUser) {
-        await updateDoc(doc(db, 'users', currentUser.uid), { status: 'offline' });
-    }
+    if (currentUser) await updateDoc(doc(db, 'users', currentUser.uid), { status: 'offline' });
     signOut(auth).then(() => location.reload());
 };
 
-// ---------------------- PROFILE EDITING (Bio & Pic Fix) ----------------------
+// ---------------------- PROFESSIONAL PROFILE EDITING ----------------------
 window.uploadNewProfilePic = async (input) => {
     const file = input.files[0];
     if (!file) return;
+    uploadToCloudinary(file, 'profilePic');
+};
+
+window.uploadCoverPic = async (input) => {
+    const file = input.files[0];
+    if (!file) return;
+    uploadToCloudinary(file, 'coverPic');
+};
+
+async function uploadToCloudinary(file, field) {
     const fd = new FormData();
     fd.append('file', file);
     fd.append('upload_preset', UPLOAD_PRESET);
     try {
         const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: fd });
         const data = await res.json();
-        await updateDoc(doc(db, 'users', currentUser.uid), { profilePic: data.secure_url });
-        alert("Profile picture updated!");
+        await updateDoc(doc(db, 'users', currentUser.uid), { [field]: data.secure_url });
+        alert("Updated successfully!");
     } catch (err) { alert("Upload failed."); }
-};
+}
 
 window.editBio = async () => {
-    const newBio = prompt("Enter your new farm bio:", currentProfile?.bio || "");
-    if (newBio !== null) {
-        await updateDoc(doc(db, 'users', currentUser.uid), { bio: newBio });
-    }
+    const newBio = prompt("Edit your Bio:", currentProfile?.bio || "");
+    if (newBio !== null) await updateDoc(doc(db, 'users', currentUser.uid), { bio: newBio });
 };
 
 window.editBusinessName = async () => {
-    const newName = prompt("Enter new business name:", currentProfile?.name || "");
-    if (newName) {
-        await updateDoc(doc(db, 'users', currentUser.uid), { name: newName });
-    }
+    const newName = prompt("Edit Business Name:", currentProfile?.name || "");
+    if (newName) await updateDoc(doc(db, 'users', currentUser.uid), { name: newName });
 };
+
+// ---------------------- FEED & REELS (Video Filter) ----------------------
+function loadRealtimeFeed() {
+    const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
+    onSnapshot(q, (snapshot) => {
+        const feed = $('#feed-items');
+        const reels = $('#reels-container');
+        if (!feed || !reels) return;
+        feed.innerHTML = '';
+        reels.innerHTML = '';
+
+        snapshot.docs.forEach(docSnap => {
+            const post = docSnap.data();
+            const pid = docSnap.id;
+            const reactions = post.reactions || {};
+            const counts = Object.values(reactions).reduce((acc, r) => { acc[r] = (acc[r] || 0) + 1; return acc; }, {});
+
+            const postHtml = `
+                <div class="post-card">
+                    <div style="display:flex; gap:10px; padding:12px; align-items:center;">
+                        <img src="${post.userPic || 'images/default_profile.png'}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
+                        <b>${post.userName || 'Farmer'}</b>
+                    </div>
+                    <div style="padding:0 12px 12px 12px;">${post.text}</div>
+                    ${post.content ? (post.type === 'video' ? 
+                        `<video src="${post.content}" controls style="width:100%;"></video>` : 
+                        `<img src="${post.content}" style="width:100%;">`) : ''}
+                    
+                    <div class="reaction-bar">
+                        <div id="picker-${pid}" class="reaction-picker">
+                            <span onclick="addReaction('${pid}', '👍')">👍</span>
+                            <span onclick="addReaction('${pid}', '❤️')">❤️</span>
+                            <span onclick="addReaction('${pid}', '😮')">😮</span>
+                            <span onclick="addReaction('${pid}', '😡')">😡</span>
+                        </div>
+                        <button onclick="showReactions('${pid}')" style="background:none; border:none; color:var(--hr-green); font-weight:bold;">
+                            ${reactions[currentUser.uid] || '👍'} Reaction
+                        </button>
+                        <div style="font-size:12px; color:#aaa; align-self:center;">
+                            ${counts['👍'] ? '👍 '+counts['👍'] : ''} ${counts['❤️'] ? '❤️ '+counts['❤️'] : ''}
+                        </div>
+                    </div>
+                    <div style="padding:10px; border-top:1px solid #333;">
+                        <div id="comments-${pid}">${renderComments(pid, post.comments || [])}</div>
+                        <div style="display:flex; gap:5px; margin-top:10px;">
+                            <input type="text" id="comm-input-${pid}" placeholder="Write a comment..." style="flex:1; background:#333; border:none; color:white; padding:8px; border-radius:20px;">
+                            <button onclick="submitComment('${pid}')" class="btn-green" style="padding:5px 15px;">Send</button>
+                        </div>
+                    </div>
+                </div>`;
+
+            if (post.type === 'video') {
+                reels.innerHTML += postHtml;
+            } else {
+                feed.innerHTML += postHtml;
+            }
+        });
+    });
+}
 
 // ---------------------- MARKETPLACE ----------------------
 function renderMarketplace() {
@@ -147,65 +247,42 @@ function renderMarketplace() {
     `).join('');
 }
 
-// ---------------------- FEED & REACTIONS ----------------------
-function loadRealtimeFeed() {
-    const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
-    onSnapshot(q, (snapshot) => {
-        const feed = $('#feed-items');
-        if (!feed) return;
-        feed.innerHTML = '';
+// ---------------------- POSTING LOGIC ----------------------
+window.submitPost = async () => {
+    const text = $('#post-text').value;
+    const file = $('#post-file-input').files[0];
+    if (!text && !file) return;
 
-        snapshot.docs.forEach(docSnap => {
-            const post = docSnap.data();
-            const pid = docSnap.id;
-            const reactions = post.reactions || {};
-            const myReaction = reactions[currentUser.uid] || '👍';
-            
-            // Count reactions
-            const counts = Object.values(reactions).reduce((acc, r) => {
-                acc[r] = (acc[r] || 0) + 1;
-                return acc;
-            }, {});
+    let fileUrl = '';
+    let fileType = 'text';
 
-            feed.innerHTML += `
-                <div class="post-card">
-                    <div style="display:flex; gap:10px; padding:12px; align-items:center;">
-                        <img src="${post.userPic || 'images/default_profile.png'}" style="width:35px; height:35px; border-radius:50%;">
-                        <b>${post.userName || 'Farmer'}</b>
-                    </div>
-                    <div style="padding:0 12px 12px 12px;">${post.text}</div>
-                    ${post.content ? `<img src="${post.content}" style="width:100%;">` : ''}
-                    
-                    <div class="reaction-bar">
-                        <div id="picker-${pid}" class="reaction-picker">
-                            <span onclick="addReaction('${pid}', '👍')">👍</span>
-                            <span onclick="addReaction('${pid}', '❤️')">❤️</span>
-                            <span onclick="addReaction('${pid}', '😮')">😮</span>
-                            <span onclick="addReaction('${pid}', '😡')">😡</span>
-                        </div>
-                        <button onclick="showReactions('${pid}')" style="background:none; border:none; color:var(--hr-green); font-size:16px;">
-                            ${reactions[currentUser.uid] ? reactions[currentUser.uid] : '👍'} Reaction
-                        </button>
-                        <div style="font-size:12px; color:#aaa; align-self:center;">
-                            ${counts['👍'] ? '👍 '+counts['👍'] : ''} ${counts['❤️'] ? '❤️ '+counts['❤️'] : ''}
-                        </div>
-                    </div>
+    if (file) {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('upload_preset', UPLOAD_PRESET);
+        const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: fd });
+        const data = await res.json();
+        fileUrl = data.secure_url;
+        fileType = file.type.includes('video') ? 'video' : 'image';
+    }
 
-                    <div style="padding:10px; border-top:1px solid #333;">
-                        <div id="comments-${pid}" style="max-height: 200px; overflow-y: auto;">
-                            ${renderComments(pid, post.comments || [])}
-                        </div>
-                        <div style="display:flex; gap:5px; margin-top:10px;">
-                            <input type="text" id="comm-input-${pid}" placeholder="Add a comment..." style="flex:1; background:#333; border:none; color:white; padding:8px; border-radius:15px;">
-                            <button onclick="submitComment('${pid}')" class="btn-green" style="padding:5px 12px;">Send</button>
-                        </div>
-                    </div>
-                </div>`;
-        });
+    await addDoc(collection(db, 'posts'), {
+        uid: currentUser.uid,
+        userName: currentProfile?.name || "Farmer",
+        userPic: currentProfile?.profilePic || "",
+        text: text,
+        content: fileUrl,
+        type: fileType,
+        timestamp: serverTimestamp(),
+        reactions: {},
+        comments: []
     });
-}
 
-// ---------------------- FACEBOOK REACTIONS ----------------------
+    $('#post-text').value = '';
+    window.closePostModal();
+};
+
+// ---------------------- REACTIONS & COMMENTS ----------------------
 window.addReaction = async (pid, emoji) => {
     const postRef = doc(db, 'posts', pid);
     const snap = await getDoc(postRef);
@@ -215,30 +292,22 @@ window.addReaction = async (pid, emoji) => {
     $(`#picker-${pid}`).style.display = 'none';
 };
 
-// ---------------------- COMMENTING & REPLYING ----------------------
 function renderComments(pid, comments) {
-    // Only main comments first
     const main = comments.filter(c => !c.parentId);
     return main.map(c => {
         const replies = comments.filter(r => r.parentId === c.id);
-        const hasLiked = (c.likes || []).includes(currentUser.uid);
-        
         return `
             <div class="comment-item">
                 <b>${c.userName}</b>: ${c.text}
-                <div style="margin-top:4px;">
-                    <span onclick="likeComment('${pid}', '${c.id}')" style="color:${hasLiked ? 'var(--hr-green)' : '#aaa'}; cursor:pointer;">Like (${c.likes?.length || 0})</span>
+                <div>
                     <span class="reply-btn" onclick="openReplyInput('${c.id}')">Reply</span>
                 </div>
                 <div id="reply-box-${c.id}" style="display:none; margin-top:5px;">
                     <input type="text" id="reply-input-${c.id}" placeholder="Reply..." style="width:70%; background:#222; border:none; color:white; font-size:12px; padding:4px;">
-                    <button onclick="submitComment('${pid}', '${c.id}')" style="font-size:10px;">Reply</button>
+                    <button onclick="submitComment('${pid}', '${c.id}')" style="font-size:10px;">Send</button>
                 </div>
-                ${replies.map(r => `
-                    <div class="reply-item"><b>${r.userName}</b>: ${r.text}</div>
-                `).join('')}
-            </div>
-        `;
+                ${replies.map(r => `<div class="reply-item"><b>${r.userName}</b>: ${r.text}</div>`).join('')}
+            </div>`;
     }).join('');
 }
 
@@ -261,26 +330,11 @@ window.submitComment = async (pid, parentId = null) => {
         likes: []
     };
 
-    await updateDoc(doc(db, 'posts', pid), {
-        comments: arrayUnion(newComment)
-    });
+    await updateDoc(doc(db, 'posts', pid), { comments: arrayUnion(newComment) });
     input.value = '';
 };
 
-window.likeComment = async (pid, cid) => {
-    const postRef = doc(db, 'posts', pid);
-    const snap = await getDoc(postRef);
-    const comments = snap.data().comments.map(c => {
-        if (c.id === cid) {
-            const likes = c.likes || [];
-            c.likes = likes.includes(currentUser.uid) ? likes.filter(l => l !== currentUser.uid) : [...likes, currentUser.uid];
-        }
-        return c;
-    });
-    await updateDoc(postRef, { comments });
-};
-
-// ---------------------- CHAT LOGIC ----------------------
+// ---------------------- CHAT & NOTIFICATIONS ----------------------
 function loadAvailableFarmers() {
     onSnapshot(collection(db, 'users'), (snapshot) => {
         const list = $('#available-farmers');
@@ -295,14 +349,13 @@ function loadAvailableFarmers() {
                 item.onclick = () => startChat(user.uid, user.name);
                 item.innerHTML = `
                     <div style="position: relative;">
-                        <img src="${user.profilePic || 'images/default_profile.png'}" style="width:45px; height:45px; border-radius:50%;">
+                        <img src="${user.profilePic || 'images/default_profile.png'}" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
                         <div style="position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%; background: ${isOnline ? '#4caf50' : '#757575'}; border: 2px solid var(--hr-bg);"></div>
                     </div>
                     <div style="flex:1;">
                         <b>${user.name}</b><br>
                         <small style="color:${isOnline ? 'var(--hr-green)' : '#777'}">${isOnline ? 'Online' : 'Offline'}</small>
-                    </div>
-                `;
+                    </div>`;
                 list.appendChild(item);
             }
         });
@@ -338,48 +391,13 @@ function loadMessages() {
             const msg = docSnap.data();
             const isMe = msg.senderId === currentUser.uid;
             const msgDiv = document.createElement('div');
-            msgDiv.style = `align-self: ${isMe ? 'flex-end' : 'flex-start'}; background: ${isMe ? 'var(--hr-green)' : '#333'}; padding: 10px; border-radius: 10px; max-width: 80%; color: white; cursor: pointer;`;
+            msgDiv.style = `align-self: ${isMe ? 'flex-end' : 'flex-start'}; background: ${isMe ? 'var(--hr-green)' : '#333'}; padding: 10px; border-radius: 10px; max-width: 80%; color: white;`;
             msgDiv.innerHTML = msg.text;
-            if(isMe) msgDiv.onclick = () => confirmDeleteMessage(docSnap.id);
             container.appendChild(msgDiv);
         });
         container.scrollTop = container.scrollHeight;
     });
 }
-
-window.confirmDeleteMessage = async (mid) => {
-    if (confirm("Delete this message?")) {
-        await deleteDoc(doc(db, 'chats', activeChatId, 'messages', mid));
-    }
-};
-
-// ---------------------- POSTING LOGIC ----------------------
-window.submitPost = async () => {
-    const text = $('#post-text').value;
-    const file = $('#post-file-input').files[0];
-    if (!text && !file) return;
-    let fileUrl = '';
-    if (file) {
-        const fd = new FormData();
-        fd.append('file', file);
-        fd.append('upload_preset', UPLOAD_PRESET);
-        const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: fd });
-        const data = await res.json();
-        fileUrl = data.secure_url;
-    }
-    await addDoc(collection(db, 'posts'), {
-        uid: currentUser.uid,
-        userName: currentProfile?.name || "Farmer",
-        userPic: currentProfile?.profilePic || "",
-        text: text,
-        content: fileUrl,
-        timestamp: serverTimestamp(),
-        reactions: {},
-        comments: []
-    });
-    $('#post-text').value = '';
-    window.closePostModal();
-};
 
 function setupNotifications() {
     const q = query(collection(db, 'notifications'), where('recipientUID', '==', currentUser?.uid), where('read', '==', false));
