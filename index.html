@@ -5,36 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Healing Root Agro Ventures</title>
     <style>
-        /* --- Core App Styling --- */
         body { font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 0; padding-bottom: 70px; background-color: #f0f2f5; color: #1c1e21; }
-        
         .header { background-color: #28a745; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
         .header h1 { font-size: 18px; margin: 0; text-transform: uppercase; }
-
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; z-index: 1000; }
         .nav-item { text-align: center; color: #65676b; text-decoration: none; font-size: 11px; cursor: pointer; flex: 1; }
         .nav-item.active { color: #28a745; font-weight: bold; }
         .nav-icon { font-size: 22px; display: block; margin-bottom: 2px; }
-
         .container { max-width: 600px; margin: 0 auto; padding: 10px; }
         .view { display: none; }
         .card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 
-        /* --- IMAGE SETTINGS (PROTECTED) --- */
+        /* IMAGE SETTINGS (PRESERVED) */
         .product img, .post img { width: 100%; height: auto; object-fit: contain; border-radius: 8px; display: block; margin-bottom: 10px; }
 
-        /* --- Auth Page (Healing Root Style) --- */
+        /* Auth Screen */
         #auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; display: flex; flex-direction: column; align-items: center; padding-top: 50px; }
         .auth-content { width: 90%; max-width: 400px; text-align: center; }
         .auth-content input { width: 100%; padding: 15px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; background: #f9f9f9; }
         .login-btn { width: 100%; padding: 14px; background: #28a745; color: white; border: none; border-radius: 25px; font-size: 18px; font-weight: bold; margin-top: 10px; cursor: pointer; }
         .create-btn { background: white; color: #28a745; border: 2px solid #28a745; margin-top: 20px; }
 
-        /* --- Menu Grid (From Image 4) --- */
+        /* Menu Grid */
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .menu-card { background: white; padding: 20px; border-radius: 12px; text-align: left; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; border: none; font-weight: 600; font-size: 15px; }
+        .menu-card { background: white; padding: 20px; border-radius: 12px; text-align: left; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; border: none; font-weight: 600; }
 
-        /* --- Modal --- */
+        /* Modal */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 3000; }
         .modal-content { background: white; padding: 25px; border-radius: 15px; width: 85%; max-width: 450px; }
     </style>
@@ -46,8 +42,8 @@
             <img src="logo.png" width="100" style="border-radius: 50%; margin-bottom: 10px;">
             <div style="color: #28a745; font-size: 24px; font-weight: bold; margin-bottom: 30px;">Healing Root</div>
             <form id="login-form">
-                <input type="text" id="login-id" placeholder="Mobile number or email" required>
-                <input type="password" placeholder="Password" required>
+                <input type="email" id="login-email" placeholder="Email Address" required>
+                <input type="password" id="login-password" placeholder="Password" required>
                 <button type="submit" class="login-btn">Log In</button>
             </form>
             <button class="login-btn create-btn" id="toggle-auth">Create new account</button>
@@ -58,7 +54,7 @@
     <div id="main-app" style="display:none;">
         <div class="header">
             <h1>HEALING ROOT</h1>
-            <div style="display: flex; gap: 20px; font-size: 18px;"><span>🔍</span><span>💬</span></div>
+            <div style="display: flex; gap: 20px; font-size: 18px;"><span>🔍</span><span onclick="showView('chat')">💬</span></div>
         </div>
 
         <div class="container">
@@ -72,13 +68,13 @@
             </div>
 
             <div id="menu-view" class="view">
-                <div class="card" style="display: flex; align-items: center; gap: 15px;" onclick="showView('profile-view')">
+                <div class="card" style="display: flex; align-items: center; gap: 15px;" onclick="showView('profile')">
                     <img id="menu-avatar" src="images/default_profile.png" style="width: 50px; height: 50px; border-radius: 50%;">
-                    <b id="menu-name">Farmer Name</b>
+                    <b id="menu-name">Farmer Profile</b>
                 </div>
                 <div class="menu-grid">
+                    <div class="menu-card" onclick="showView('products')">🏪 Marketplace</div>
                     <div class="menu-card">👥 Friends</div>
-                    <div class="menu-card" onclick="showView('products-view')">🏪 Marketplace</div>
                     <div class="menu-card">💾 Saved</div>
                     <div class="menu-card">📊 Dashboard</div>
                     <div class="menu-card" id="logout-trigger" style="color: crimson; grid-column: span 2; text-align: center;">🚪 Logout</div>
@@ -95,88 +91,27 @@
                         <input type="text" id="edit-name" placeholder="Update Name" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
                         <textarea id="edit-bio" placeholder="Update Bio" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;"></textarea>
                         <input type="file" id="pic-upload" style="margin: 10px 0;">
-                        <button id="save-profile" class="login-btn" style="padding: 10px; font-size: 14px;">Save Changes</button>
+                        <button id="save-profile" class="login-btn" style="padding: 10px; font-size: 14px;">Save All Changes</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="bottom-nav">
-            <div class="nav-item active" onclick="showView('feed-view')"><span class="nav-icon">🏠</span>Home</div>
-            <div class="nav-item" onclick="showView('products-view')"><span class="nav-icon">🏪</span>Market</div>
-            <div class="nav-item" onclick="showView('menu-view')"><span class="nav-icon">☰</span>Menu</div>
+            <div class="nav-item active" onclick="showView('feed')"><span class="nav-icon">🏠</span>Home</div>
+            <div class="nav-item" onclick="showView('products')"><span class="nav-icon">🏪</span>Market</div>
+            <div class="nav-item" onclick="showView('menu')"><span class="nav-icon">☰</span>Menu</div>
         </div>
     </div>
 
     <div id="read-more-modal" class="modal">
         <div class="modal-content">
-            <h3 id="modal-title" style="color: #28a745;"></h3>
-            <p id="modal-text" style="line-height: 1.5;"></p>
+            <h3 id="read-more-title" style="color: #28a745;"></h3>
+            <p id="read-more-text" style="line-height: 1.5;"></p>
             <button onclick="document.getElementById('read-more-modal').style.display='none'" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px;">Close</button>
         </div>
     </div>
 
-    <script type="module">
-        import { products } from './app.js';
-
-        // 1. Pull Products Logic
-        const productList = document.getElementById('product-list');
-        const feedItems = document.getElementById('feed-items');
-
-        function loadProducts() {
-            products.forEach(product => {
-                const cardHtml = `
-                    <div class="card product">
-                        <img src="${product.image}" alt="${product.name}">
-                        <h3>${product.name}</h3>
-                        <p><b>Price: ₦${product.price}</b></p>
-                        <p>${product.description.substring(0, 80)}... 
-                           <span style="color:#28a745; cursor:pointer; font-weight:bold;" 
-                           onclick="window.openReadMore('${product.name}', '${product.description}')">Read more</span>
-                        </p>
-                        <button class="login-btn" style="padding:10px; font-size:14px;" onclick="window.location.href='https://wa.me/234XXXXXXXXXX'">Order via WhatsApp</button>
-                    </div>`;
-                productList.innerHTML += cardHtml;
-                feedItems.innerHTML += cardHtml;
-            });
-        }
-        loadProducts();
-
-        // 2. Navigation Fix
-        window.showView = (id) => {
-            document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
-            document.getElementById(id).style.display = 'block';
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        };
-
-        // 3. Logout Fix
-        document.getElementById('logout-trigger').onclick = () => {
-            location.reload(); 
-        };
-
-        // 4. Global Read More
-        window.openReadMore = (title, text) => {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-text').innerText = text;
-            document.getElementById('read-more-modal').style.display = 'flex';
-        };
-
-        // 5. Auth Action
-        document.getElementById('login-form').onsubmit = (e) => {
-            e.preventDefault();
-            document.getElementById('auth-modal').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
-        };
-        
-        // 6. Profile Sync
-        document.getElementById('save-profile').onclick = () => {
-            const name = document.getElementById('edit-name').value;
-            if(name) {
-                document.getElementById('user-name-display').innerText = name;
-                document.getElementById('menu-name').innerText = name;
-            }
-            alert("Profile Updated!");
-        };
-    </script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
