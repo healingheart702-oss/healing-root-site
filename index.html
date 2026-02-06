@@ -6,7 +6,7 @@
     <title>Healing Root Agro Ventures</title>
     <style>
         :root {
-            --hr-green: #2e7d32; /* Brand Green */
+            --hr-green: #2e7d32;
             --hr-bg: #121212;
             --hr-card: #1e1e1e;
             --hr-text: #ffffff;
@@ -15,51 +15,64 @@
         }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--hr-bg); color: var(--hr-text); padding-bottom: 70px; overflow-x: hidden; }
         
-        /* Branded Header */
+        /* Header */
         .header { background: var(--hr-card); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--hr-divider); }
-        .header h1 { color: var(--hr-green); font-size: 20px; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+        .header h1 { color: var(--hr-green); font-size: 18px; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
 
         /* Navigation */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--hr-card); display: flex; border-top: 1px solid var(--hr-divider); z-index: 1000; }
-        .nav-item { flex: 1; text-align: center; padding: 15px 0; font-size: 20px; cursor: pointer; color: var(--hr-secondary); transition: 0.3s; }
-        .nav-item.active { color: var(--hr-green); border-top: 3px solid var(--hr-green); }
+        .nav-item { flex: 1; text-align: center; padding: 15px 0; font-size: 22px; cursor: pointer; color: var(--hr-secondary); }
+        .nav-item.active { color: var(--hr-green); border-bottom: 3px solid var(--hr-green); }
 
-        /* Real-time Post Cards */
-        .post-card { background: var(--hr-card); margin-bottom: 8px; padding-bottom: 10px; position: relative; }
-        .post-header { padding: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .post-info { display: flex; gap: 10px; align-items: center; }
-        .post-info img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .post-image, .post-video { width: 100%; max-height: 500px; display: block; object-fit: cover; }
+        /* Feed Elements */
+        .view { display: none; }
+        .composer { background: var(--hr-card); padding: 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px; border-bottom: 1px solid var(--hr-divider); }
+        .composer img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .composer-input { background: #333; border-radius: 20px; padding: 10px 15px; flex: 1; color: var(--hr-secondary); cursor: pointer; }
+
+        /* Marketplace & Cards */
+        #market-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+        .post-card { background: var(--hr-card); margin-bottom: 10px; border-bottom: 1px solid var(--hr-divider); }
+        .post-image, video { width: 100%; display: block; }
         
-        /* Comments & Replies */
-        .comment-section { padding: 10px 15px; background: #252525; border-top: 1px solid var(--hr-divider); }
-        .comment-bubble { background: #333; padding: 8px 12px; border-radius: 15px; margin-bottom: 5px; font-size: 14px; }
-        .reply-bubble { margin-left: 30px; background: #444; border-left: 2px solid var(--hr-green); }
-        
-        /* Menu & Profile */
-        .view { display: none; padding: 10px; }
-        .menu-btn { background: #333; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        
-        /* Edit/Delete Dropdown */
-        .post-menu { position: absolute; right: 10px; top: 10px; cursor: pointer; }
-        .dropdown { position: absolute; right: 0; background: #333; border-radius: 5px; display: none; flex-direction: column; z-index: 10; }
-        .dropdown button { background: none; border: none; color: white; padding: 10px 20px; text-align: left; cursor: pointer; }
-        .dropdown button:hover { background: var(--hr-green); }
+        /* Modals */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--hr-bg); z-index: 2000; display: none; flex-direction: column; }
+        .modal-header { padding: 15px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--hr-divider); align-items: center; }
+        .btn-green { background: var(--hr-green); color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; }
+
+        /* Notification Badge */
+        #notif-count { background: red; color: white; border-radius: 50%; font-size: 10px; padding: 2px 6px; position: absolute; margin-left: 12px; margin-top: -10px; }
     </style>
 </head>
 <body>
 
-    <div id="main-app">
+    <div id="auth-modal" style="display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center;">
+        <div style="width: 85%;">
+            <h1 style="color: var(--hr-green);">HEALING ROOT</h1>
+            <p>Agro Ventures Platform</p>
+            <form id="login-form" style="margin-top: 30px;">
+                <input type="email" id="login-email" placeholder="Email" style="width: 100%; padding: 15px; background: #1c1e21; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 10px;">
+                <input type="password" id="login-password" placeholder="Password" style="width: 100%; padding: 15px; background: #1c1e21; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 10px;">
+                <button type="submit" class="btn-green" style="width: 100%; padding: 15px; border-radius: 25px;">Log In</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="main-app" style="display: none;">
         <div class="header">
             <h1>HEALING ROOT</h1>
-            <div style="display: flex; gap: 15px;">
+            <div style="display: flex; gap: 20px; font-size: 20px;">
                 <div onclick="openPostModal()">➕</div>
-                <div id="notif-icon">🔔<span id="notif-count" style="display:none; background:red; border-radius:50%; font-size:10px; padding:2px 5px;">0</span></div>
+                <div onclick="showView('notifications')">🔔<span id="notif-count" style="display:none;">0</span></div>
                 <div onclick="showView('chat')">💬</div>
             </div>
         </div>
 
         <div id="home-view" class="view" style="display: block;">
+            <div class="composer">
+                <img id="my-profile-pic-small" src="images/default_profile.png">
+                <div class="composer-input" onclick="openPostModal()">What's on your mind?</div>
+            </div>
             <div id="feed-items"></div>
         </div>
 
@@ -68,43 +81,51 @@
         </div>
 
         <div id="marketplace-view" class="view">
-            <h2 style="color: var(--hr-green);">Agro Marketplace</h2>
-            <div id="market-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
-        </div>
-
-        <div id="notifications-view" class="view">
-            <h3>Recent Updates</h3>
-            <div id="notif-list"></div>
+            <h3 style="padding: 10px 15px; margin: 0; color: var(--hr-green);">Agro Marketplace</h3>
+            <div id="market-list"></div>
         </div>
 
         <div id="menu-view" class="view">
-            <div class="menu-btn" onclick="showView('edit-profile')">
-                <img id="my-profile-pic" src="images/default_profile.png" style="width:50px; border-radius:50%;">
+            <div style="padding: 20px; background: var(--hr-card); margin-bottom: 10px; display: flex; align-items: center; gap: 15px;">
+                <img id="my-profile-pic" src="images/default_profile.png" style="width: 60px; height: 60px; border-radius: 50%;">
                 <div>
-                    <b id="my-profile-name">Farmer Name</b><br>
-                    <small>Edit your Profile</small>
+                    <h3 id="my-profile-name" style="margin:0;">Farmer</h3>
+                    <small style="color: var(--hr-green);" onclick="showView('edit-profile')">Edit Profile</small>
                 </div>
             </div>
-            <div class="menu-btn" onclick="showView('marketplace')">🛒 My Marketplace</div>
-            <div class="menu-btn" onclick="logout()">🚪 Logout</div>
+            <div style="padding: 15px;">
+                <button onclick="logout()" style="width: 100%; padding: 12px; background: #333; color: #f44; border: none; border-radius: 8px; font-weight: bold;">Logout</button>
+            </div>
         </div>
 
-        <div id="edit-profile-view" class="view">
-            <h3>Update Profile</h3>
-            <input type="text" id="edit-name" placeholder="Full Name" style="width:100%; padding:10px; margin-bottom:10px;">
-            <input type="file" id="edit-pic" style="margin-bottom:10px;">
-            <button onclick="updateProfile()" style="background:var(--hr-green); color:white; border:none; padding:10px; width:100%;">Save Changes</button>
+        <div id="post-modal" class="modal">
+            <div class="modal-header">
+                <span onclick="closePostModal()">✕</span>
+                <b>Create Post</b>
+                <button class="btn-green" onclick="submitPost()">Post</button>
+            </div>
+            <textarea id="post-text" placeholder="Share your agricultural progress..." style="width: 100%; height: 200px; background: transparent; color: white; border: none; padding: 15px; font-size: 16px; outline: none;"></textarea>
+            <div style="padding: 15px; border-top: 1px solid var(--hr-divider);">
+                <label style="cursor: pointer; color: var(--hr-green);">
+                    📷 Add Photo/Video
+                    <input type="file" id="post-file-input" style="display: none;" accept="image/*,video/*">
+                </label>
+            </div>
         </div>
 
         <div class="bottom-nav">
             <div class="nav-item active" onclick="showView('home')">🏠</div>
             <div class="nav-item" onclick="showView('reels')">🎞️</div>
             <div class="nav-item" onclick="showView('marketplace')">🏪</div>
-            <div class="nav-item" onclick="showView('notifications')">🔔</div>
             <div class="nav-item" onclick="showView('menu')">☰</div>
         </div>
     </div>
 
     <script type="module" src="app.js"></script>
+    <script>
+        // Modal helpers
+        window.openPostModal = () => document.getElementById('post-modal').style.display = 'flex';
+        window.closePostModal = () => document.getElementById('post-modal').style.display = 'none';
+    </script>
 </body>
 </html>
