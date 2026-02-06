@@ -40,8 +40,20 @@
         .modal-header { padding: 15px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--hr-divider); align-items: center; }
         .btn-green { background: var(--hr-green); color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; }
 
-        /* Notification Badge */
+        /* Profile Edit Specifics */
+        .profile-container { position: relative; height: 220px; background: #000; margin-bottom: 50px; }
+        .cover-photo { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
+        .profile-pic-wrapper { position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); }
+        .profile-pic-main { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--hr-bg); object-fit: cover; }
+        .cam-icon { position: absolute; bottom: 5px; right: 5px; background: #3a3b3c; padding: 8px; border-radius: 50%; font-size: 14px; }
+        .biz-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid var(--hr-divider); gap: 15px; }
+
         #notif-count { background: red; color: white; border-radius: 50%; font-size: 10px; padding: 2px 6px; position: absolute; margin-left: 12px; margin-top: -10px; }
+
+        /* Chat Specific Styles */
+        #chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: var(--hr-bg); }
+        .chat-footer { padding: 15px; display: flex; gap: 10px; background: var(--hr-card); border-top: 1px solid var(--hr-divider); }
+        .chat-input-field { flex: 1; background: #333; border: none; padding: 12px; border-radius: 20px; color: white; outline: none; }
     </style>
 </head>
 <body>
@@ -62,9 +74,9 @@
         <div class="header">
             <h1>HEALING ROOT</h1>
             <div style="display: flex; gap: 20px; font-size: 20px;">
-                <div onclick="openPostModal()">➕</div>
-                <div onclick="showView('notifications')">🔔<span id="notif-count" style="display:none;">0</span></div>
-                <div onclick="showView('chat')">💬</div>
+                <div onclick="openPostModal()" style="cursor:pointer;">➕</div>
+                <div onclick="showView('notifications')" style="cursor:pointer;">🔔<span id="notif-count" style="display:none;">0</span></div>
+                <div onclick="showView('chat')" style="cursor:pointer;">💬</div>
             </div>
         </div>
 
@@ -85,12 +97,37 @@
             <div id="market-list"></div>
         </div>
 
+        <div id="chat-view" class="view">
+            <div class="header">
+                <span onclick="showView('home')" style="cursor:pointer;">❮</span>
+                <b>Messages</b>
+                <span></span>
+            </div>
+            <div id="chat-user-list">
+                <div style="padding: 15px; color: var(--hr-secondary); font-size: 12px; font-weight: bold; text-transform: uppercase;">Farmer Network</div>
+                <div id="available-farmers"></div>
+            </div>
+
+            <div id="active-chat-window" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--hr-bg); z-index: 3000; flex-direction: column;">
+                <div class="header">
+                    <span onclick="closeChat()" style="cursor:pointer;">❮</span>
+                    <b id="chatting-with-name">Farmer</b>
+                    <span></span>
+                </div>
+                <div id="chat-messages"></div>
+                <div class="chat-footer">
+                    <input type="text" id="chat-input" class="chat-input-field" placeholder="Type a message...">
+                    <button onclick="sendMessage()" class="btn-green">Send</button>
+                </div>
+            </div>
+        </div>
+
         <div id="menu-view" class="view">
             <div style="padding: 20px; background: var(--hr-card); margin-bottom: 10px; display: flex; align-items: center; gap: 15px;">
-                <img id="my-profile-pic" src="images/default_profile.png" style="width: 60px; height: 60px; border-radius: 50%;">
+                <img id="my-menu-pic" src="images/default_profile.png" style="width: 60px; height: 60px; border-radius: 50%;">
                 <div>
                     <h3 id="my-profile-name" style="margin:0;">Farmer</h3>
-                    <small style="color: var(--hr-green);" onclick="showView('edit-profile')">Edit Profile</small>
+                    <small style="color: var(--hr-green); cursor: pointer;" onclick="showView('edit-profile')">Edit Profile</small>
                 </div>
             </div>
             <div style="padding: 15px;">
@@ -98,9 +135,54 @@
             </div>
         </div>
 
+        <div id="edit-profile-view" class="view">
+            <div class="header">
+                <span onclick="showView('menu')" style="cursor:pointer;">❮</span>
+                <b>Edit business profile</b>
+                <span></span>
+            </div>
+            
+            <div class="profile-container">
+                <img src="images/HEALING_ROOT_BANNER.jpg" class="cover-photo">
+                <div class="profile-pic-wrapper">
+                    <img id="profile-pic-preview" src="images/default_profile.png" class="profile-pic-main">
+                    <div class="cam-icon" onclick="$('#pic-upload').click()" style="cursor:pointer;">📷</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 10px;">
+                <h3 style="margin-bottom: 5px; color: var(--hr-green); cursor:pointer;" onclick="$('#pic-upload').click()">Edit</h3>
+                <p style="color: var(--hr-secondary); font-size: 13px;">Your profile is public. <span style="color: var(--hr-green);">Learn more</span></p>
+            </div>
+
+            <div style="padding: 20px;">
+                <h4 style="margin-bottom: 15px;">Business information</h4>
+                
+                <div class="biz-item" onclick="editBusinessName()" style="cursor:pointer;">
+                    <span>🏪</span>
+                    <div style="flex:1;">
+                        <div style="font-size: 14px; color: var(--hr-secondary);">Business name</div>
+                        <b id="display-biz-name">Healing Root Agro Ventures</b>
+                    </div>
+                    <span>❯</span>
+                </div>
+
+                <div class="biz-item">
+                    <span>📋</span>
+                    <div style="flex:1;">
+                        <div style="font-size: 14px; color: var(--hr-secondary);">Category</div>
+                        <b>Shopping & retail, Agricultural Service...</b>
+                    </div>
+                    <span>❯</span>
+                </div>
+            </div>
+
+            <input type="file" id="pic-upload" style="display:none;" accept="image/*" onchange="uploadNewProfilePic(this)">
+        </div>
+
         <div id="post-modal" class="modal">
             <div class="modal-header">
-                <span onclick="closePostModal()">✕</span>
+                <span onclick="closePostModal()" style="cursor:pointer;">✕</span>
                 <b>Create Post</b>
                 <button class="btn-green" onclick="submitPost()">Post</button>
             </div>
@@ -123,7 +205,6 @@
 
     <script type="module" src="app.js"></script>
     <script>
-        // Modal helpers
         window.openPostModal = () => document.getElementById('post-modal').style.display = 'flex';
         window.closePostModal = () => document.getElementById('post-modal').style.display = 'none';
     </script>
