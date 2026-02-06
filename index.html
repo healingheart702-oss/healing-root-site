@@ -23,12 +23,9 @@
 
         /* --- Auth Modal --- */
         #auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .auth-content { background: white; padding: 20px; border-radius: 10px; max-width: 400px; width: 90%; text-align: center; max-height: 90vh; overflow-y: auto; }
+        .auth-content { background: white; padding: 30px; border-radius: 10px; max-width: 400px; width: 90%; text-align: center; }
         .auth-content input { width: calc(100% - 22px); padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
         
-        .google-btn { background-color: #db4437; color: white; width: 100%; margin-top: 10px; }
-        .phone-btn { background-color: #6c757d; color: white; width: 100%; margin-top: 10px; }
-
         /* --- Chat Bubbles --- */
         .message-bubble { padding: 10px; border-radius: 15px; margin-bottom: 10px; max-width: 80%; }
         .mine { background-color: #dcf8c6; align-self: flex-end; margin-left: auto; }
@@ -121,45 +118,32 @@
 
     <div id="auth-modal">
         <div class="auth-content">
-            <h3>Login / Sign Up</h3>
-            <button id="google-login-btn" class="btn google-btn">Continue with Google</button>
+            <h3>Welcome to Healing Root</h3>
             
-            <hr style="margin: 20px 0;">
-
-            <div id="phone-auth-step-1">
-                <p>Login via Phone Number</p>
-                <input type="text" id="phone-number" placeholder="+234 800 000 0000">
-                <button id="send-code-btn" class="btn phone-btn">Send SMS Code</button>
-            </div>
-            
-            <div id="phone-auth-step-2" style="display:none;">
-                <p>Enter 6-digit Code</p>
-                <input type="text" id="verification-code" placeholder="123456">
-                <button id="verify-code-btn" class="btn" style="width:100%;">Verify & Login</button>
-            </div>
-            <div id="recaptcha-container"></div>
-
-            <hr style="margin: 20px 0;">
-
             <form id="login-form">
+                <h4>Login</h4>
                 <input type="email" id="login-email" placeholder="Email" required>
                 <input type="password" id="login-password" placeholder="Password" required>
-                <button type="submit" class="btn" style="width:100%;">Email Login</button>
+                <button type="submit" class="btn" style="width:100%;">Login</button>
             </form>
-            
-            <form id="signup-form" style="display:none; margin-top:10px;">
+
+            <hr style="margin: 20px 0;">
+
+            <form id="signup-form">
+                <h4>Sign Up</h4>
                 <input type="text" id="signup-name" placeholder="Full Name" required>
                 <input type="email" id="signup-email" placeholder="Email" required>
                 <input type="password" id="signup-password" placeholder="Password" required>
                 <button type="submit" class="btn" style="width:100%; background-color: #28a745;">Create Account</button>
             </form>
-            <p id="auth-message"></p>
+            
+            <p id="auth-message" style="color: crimson; margin-top: 10px;"></p>
         </div>
     </div>
 
     <div id="read-more-modal">
         <div class="read-more-content">
-            <span id="read-more-close" style="float:right; cursor:pointer;">&times;</span>
+            <span id="read-more-close" style="float:right; cursor:pointer; font-size:24px;">&times;</span>
             <h3 id="read-more-title"></h3>
             <p id="read-more-text"></p>
         </div>
