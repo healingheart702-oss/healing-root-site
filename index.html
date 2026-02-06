@@ -10,7 +10,7 @@
         
         /* Top Header */
         .header { background-color: #28a745; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
-        .header h1 { font-size: 20px; margin: 0; }
+        .header h1 { font-size: 18px; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
 
         /* Bottom Navigation Bar */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; z-index: 1000; }
@@ -32,19 +32,22 @@
             margin-bottom: 10px; 
         }
 
+        /* --- Healing Root Custom Auth --- */
+        #auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; display: flex; flex-direction: column; align-items: center; padding-top: 50px; }
+        .auth-content { width: 90%; max-width: 400px; text-align: center; }
+        .brand-logo { width: 100px; margin-bottom: 10px; border-radius: 50%; }
+        .brand-name { color: #28a745; font-size: 24px; font-weight: bold; margin-bottom: 30px; }
+        
+        .auth-content input { width: 100%; padding: 15px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; background: #f9f9f9; }
+        .login-btn { width: 100%; padding: 14px; background: #28a745; color: white; border: none; border-radius: 25px; font-size: 18px; font-weight: bold; margin-top: 10px; cursor: pointer; box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2); }
+        .create-btn { background: white; color: #28a745; border: 2px solid #28a745; margin-top: 20px; }
+        .footer-brand { margin-top: auto; padding-bottom: 30px; color: #28a745; font-weight: bold; font-size: 14px; }
+
         /* --- Stories Row --- */
         .stories-container { display: flex; gap: 10px; overflow-x: auto; padding: 5px 0 15px 0; scrollbar-width: none; }
         .story-card { min-width: 100px; height: 170px; background: #ddd; border-radius: 12px; position: relative; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .story-card.create { background-color: #fff; border: 1px solid #ddd; }
-        .story-img { width: 100%; height: 100%; object-fit: cover; }
         .story-overlay { position: absolute; bottom: 0; width: 100%; background: white; text-align: center; padding: 8px 0; font-size: 11px; font-weight: bold; }
-
-        /* --- Meta Style Auth --- */
-        #auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; display: flex; flex-direction: column; align-items: center; padding-top: 50px; }
-        .auth-content { width: 90%; max-width: 400px; text-align: center; }
-        .auth-content input { width: 100%; padding: 15px; margin: 5px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; background: #f5f6f7; }
-        .login-btn { width: 100%; padding: 12px; background: #1877f2; color: white; border: none; border-radius: 25px; font-size: 18px; font-weight: bold; margin-top: 10px; cursor: pointer; }
-        .create-btn { background: transparent; color: #1877f2; border: 1px solid #1877f2; margin-top: 150px; }
 
         /* --- Read More Modal --- */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 3000; }
@@ -55,33 +58,35 @@
 
     <div id="auth-modal">
         <div class="auth-content">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" width="60" style="margin-bottom: 40px;">
+            <img src="logo.png" class="brand-logo" alt="Healing Root Logo">
+            <div class="brand-name">Healing Root</div>
+            
             <form id="login-form">
-                <input type="text" placeholder="Mobile number or email" required>
+                <input type="text" placeholder="Email or Phone number" required>
                 <input type="password" placeholder="Password" required>
                 <button type="submit" class="login-btn">Log In</button>
-                <p style="color: #1877f2; font-size: 14px; margin-top: 15px;">Forgot password?</p>
+                <p style="color: #28a745; font-size: 14px; margin-top: 15px; cursor: pointer;">Forgotten account?</p>
             </form>
 
             <form id="signup-form" style="display:none;">
-                <input type="text" id="new-name" placeholder="Full Name" required>
-                <input type="email" placeholder="Email" required>
-                <input type="password" placeholder="Password" required>
-                <button type="submit" class="login-btn" style="background: #42b72a;">Create Account</button>
+                <input type="text" id="new-name" placeholder="Farmer Full Name" required>
+                <input type="email" placeholder="Email Address" required>
+                <input type="password" placeholder="Create Password" required>
+                <button type="submit" class="login-btn">Join Community</button>
             </form>
 
             <button class="login-btn create-btn" id="toggle-auth">Create new account</button>
-            <p style="margin-top: 20px; color: #65676b; font-size: 12px;">Meta</p>
         </div>
+        <div class="footer-brand">Healing Root Agro Ventures</div>
     </div>
 
     <div id="main-app" style="display:none;">
         <div class="header">
-            <h1>Healing Root</h1>
-            <div style="display: flex; gap: 20px; font-size: 20px;">
+            <h1>HEALING ROOT</h1>
+            <div style="display: flex; gap: 20px; font-size: 18px; cursor: pointer;">
                 <span>➕</span>
                 <span>🔍</span>
-                <span>💬</span>
+                <span onclick="showView('chat-view')">💬</span>
             </div>
         </div>
 
@@ -89,65 +94,59 @@
             <div id="feed-view" class="view" style="display: block;">
                 <div class="stories-container">
                     <div class="story-card create">
-                        <img src="logo.png" class="story-img" style="height: 70%; object-fit: contain; margin-top: 10px;">
+                        <img src="logo.png" style="width: 100%; height: 70%; object-fit: contain; margin-top: 10px;">
                         <div class="story-overlay">Create story</div>
                     </div>
                 </div>
                 
                 <div class="card">
                     <div style="display: flex; gap: 10px;">
-                        <img id="user-mini-pic" src="images/default_profile.png" style="width: 40px; height: 40px; border-radius: 50%;">
-                        <textarea id="post-text" placeholder="What's on your mind?" style="flex:1; border:none; outline:none; font-size:16px; resize:none;"></textarea>
+                        <img class="user-avatar" src="images/default_profile.png" style="width: 40px; height: 40px; border-radius: 50%;">
+                        <textarea id="post-text" placeholder="What's happening on your farm?" style="flex:1; border:none; outline:none; font-size:16px; resize:none;"></textarea>
                     </div>
                     <hr style="opacity:0.2;">
-                    <input type="file" id="post-image" accept="image/*">
-                    <button id="post-btn" style="float:right; background:#28a745; color:white; border:none; padding:8px 20px; border-radius:20px;">Post</button>
-                    <div style="clear:both;"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <input type="file" id="post-image" accept="image/*" style="font-size: 12px;">
+                        <button id="post-btn" style="background:#28a745; color:white; border:none; padding:8px 20px; border-radius:20px; font-weight: bold;">Post</button>
+                    </div>
                 </div>
 
-                <div id="feed-items">
-                    <div class="card post">
-                        <div style="display:flex; gap:10px; margin-bottom:10px;">
-                            <img src="logo.png" style="width:40px; height:40px; border-radius:50%;">
-                            <div><b>Healing Root</b><br><small>Sponsored</small></div>
-                        </div>
-                        <img src="images/banner.png" alt="Ad">
-                        <p>Growing quality, nurturing tomorrow. 🇳🇬🌍</p>
-                        <button class="btn" style="background:#1877f2; color:white; border:none; width:100%; padding:10px; border-radius:5px;">Like</button>
+                <div id="feed-content">
+                    <div class="card product">
+                        <img src="images/yam_setts.jpg" alt="Yam Setts">
+                        <h3 style="margin: 5px 0;">Treated Yam Setts</h3>
+                        <p style="font-weight: bold; color: #28a745;">Price: ₦700</p>
+                        <p>Our Treated Yam Setts are carefully selected tubers... <span style="color:#28a745; cursor:pointer; font-weight:bold;" onclick="openReadMore('Treated Yam Setts', 'Our Treated Yam Setts are carefully selected tubers treated for disease resistance and enhanced sprouting. Each sett is ideal for both smallholder and commercial farming.')">Read more</span></p>
+                        <button class="login-btn" style="padding: 10px; font-size: 14px;">Order via WhatsApp</button>
                     </div>
                 </div>
             </div>
 
             <div id="products-view" class="view">
-                <h2>Marketplace</h2>
+                <h2 style="margin-bottom: 15px;">Marketplace</h2>
                 <div id="product-list">
-                    <div class="card product">
-                        <img src="images/yam_setts.jpg" alt="Yam Setts">
-                        <h3>Treated Yam Setts</h3>
-                        <p>Price: ₦700</p>
-                        <p>Our Treated Yam Setts are carefully selected tubers... <span style="color:#1877f2; cursor:pointer;" onclick="openReadMore('Treated Yam Setts', 'Our Treated Yam Setts are carefully selected tubers treated for disease resistance and enhanced sprouting. Each sett is ideal for both smallholder and commercial farming.')">Read more</span></p>
-                        <button class="btn" style="background:#007bff; color:white; border:none; width:100%; padding:10px; border-radius:5px;">Order via WhatsApp</button>
                     </div>
-                </div>
             </div>
 
             <div id="profile-view" class="view">
                 <div class="card" style="text-align: center;">
-                    <img id="profile-pic-display" src="images/default_profile.png" style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid white;">
-                    <h2 id="user-name-display">Farmer Name</h2>
-                    <p id="user-bio-display">Growing quality, nurturing tomorrow.</p>
+                    <img id="profile-pic-display" src="images/default_profile.png" style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid #28a745; padding: 3px;">
+                    <h2 id="user-name-display" style="margin-top: 10px;">Farmer Name</h2>
+                    <p id="user-bio-display" style="color: #65676b;">Agro Enthusiast</p>
                     
-                    <div style="text-align: left; background: #f0f2f5; padding: 15px; border-radius: 10px; margin-top: 15px;">
-                        <label>Update Name:</label>
-                        <input type="text" id="edit-name" style="width:100%; padding:8px; margin-bottom:10px; border-radius:5px; border:1px solid #ddd;">
+                    <div style="text-align: left; background: #f9f9f9; padding: 20px; border-radius: 12px; margin-top: 20px;">
+                        <h4 style="margin: 0 0 15px 0;">Edit Your Profile</h4>
                         
-                        <label>Update Bio:</label>
-                        <textarea id="edit-bio" style="width:100%; padding:8px; border-radius:5px; border:1px solid #ddd;"></textarea>
+                        <label style="font-size: 12px; color: #65676b;">Full Name:</label>
+                        <input type="text" id="edit-name" placeholder="Update your name" style="width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd;">
                         
-                        <label>Change Profile Pic:</label>
-                        <input type="file" id="pic-upload" accept="image/*" style="margin-bottom:10px;">
+                        <label style="font-size: 12px; color: #65676b;">Farm Bio:</label>
+                        <textarea id="edit-bio" placeholder="Describe your farm" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; height: 60px;"></textarea>
                         
-                        <button id="save-profile" style="width:100%; padding:12px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold;">Save Changes</button>
+                        <label style="font-size: 12px; color: #65676b;">Profile Picture:</label>
+                        <input type="file" id="pic-upload" accept="image/*" style="margin: 10px 0;">
+                        
+                        <button id="save-profile" style="width:100%; padding:14px; background:#28a745; color:white; border:none; border-radius:10px; font-weight:bold; margin-top: 10px;">Save All Changes</button>
                     </div>
                 </div>
             </div>
@@ -164,14 +163,14 @@
 
     <div id="read-more-modal" class="modal">
         <div class="modal-content">
-            <h3 id="modal-title"></h3>
-            <p id="modal-text"></p>
-            <button onclick="document.getElementById('read-more-modal').style.display='none'" style="width: 100%; padding: 10px; border: none; border-radius: 8px;">Close</button>
+            <h3 id="modal-title" style="color: #28a745;"></h3>
+            <p id="modal-text" style="line-height: 1.5; color: #444;"></p>
+            <button onclick="document.getElementById('read-more-modal').style.display='none'" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Back to Feed</button>
         </div>
     </div>
 
     <script>
-        // Auth Toggle
+        // Auth Toggle Logic
         document.getElementById('toggle-auth').addEventListener('click', function() {
             const login = document.getElementById('login-form');
             const signup = document.getElementById('signup-form');
@@ -182,7 +181,7 @@
             } else {
                 login.style.display = 'none';
                 signup.style.display = 'block';
-                this.innerText = "Back to Login";
+                this.innerText = "Log in to existing account";
             }
         });
 
@@ -193,14 +192,16 @@
             document.getElementById('main-app').style.display = 'block';
         };
 
-        // Navigation
+        // View Switching
         function showView(id) {
             document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
             document.getElementById(id).style.display = 'block';
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            // This is a simple logic to highlight active tab
+            event.currentTarget.classList.add('active');
         }
 
-        // Profile Edit Logic
+        // Profile Update Logic
         document.getElementById('save-profile').onclick = () => {
             const name = document.getElementById('edit-name').value;
             const bio = document.getElementById('edit-bio').value;
@@ -213,14 +214,15 @@
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     document.getElementById('profile-pic-display').src = e.target.result;
-                    document.getElementById('user-mini-pic').src = e.target.result;
+                    // Update all profile icon instances in the app
+                    document.querySelectorAll('.user-avatar').forEach(img => img.src = e.target.result);
                 };
                 reader.readAsDataURL(file);
             }
-            alert("Profile Updated!");
+            alert("Healing Root Profile Updated!");
         };
 
-        // Read More Logic
+        // Read More Modal Logic
         window.openReadMore = function(title, text) {
             document.getElementById('modal-title').innerText = title;
             document.getElementById('modal-text').innerText = text;
