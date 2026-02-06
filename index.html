@@ -3,177 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Healing Root Agro Ventures - Social Platform</title>
-    
-    <meta name="google-site-verification" content="cPJ3_emx8r6W7a_9249IO_Aj4NEH15CCtPqEgc18FN8" />
-
+    <title>Healing Root Agro Ventures</title>
     <style>
-        /* --- Basic Styling --- */
-        body { font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f0f2f5; color: #1c1e21; }
-        .header { background-color: #28a745; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
-        .nav a, .header button { color: white; text-decoration: none; padding: 8px 12px; margin-left: 5px; border: none; border-radius: 6px; cursor: pointer; background: transparent; transition: 0.3s; font-weight: 600; }
-        .nav a:hover, .header button:hover { background-color: rgba(255,255,255,0.2); }
-        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
-        .view { display: none; }
-        .card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .btn { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; width: 100%; }
-        .btn-secondary { background-color: #e4e6eb; color: #050505; }
+        /* --- Core App Styling --- */
+        body { font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 0; padding-bottom: 70px; background-color: #f0f2f5; color: #1c1e21; }
+        
+        /* Top Header */
+        .header { background-color: #28a745; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .header h1 { font-size: 20px; margin: 0; }
 
-        /* --- FIXED: Image Only Fix --- */
+        /* Bottom Navigation Bar */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; z-index: 1000; }
+        .nav-item { text-align: center; color: #65676b; text-decoration: none; font-size: 11px; cursor: pointer; flex: 1; transition: 0.2s; }
+        .nav-item.active { color: #28a745; font-weight: bold; }
+        .nav-icon { font-size: 22px; display: block; margin-bottom: 2px; }
+
+        .container { max-width: 600px; margin: 0 auto; padding: 10px; }
+        .view { display: none; }
+        .card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+
+        /* --- IMAGE SETTINGS (STRICTLY PRESERVED) --- */
         .product img, .post img { 
             width: 100%; 
-            height: auto; /* Shows full image height */
-            object-fit: contain; /* Prevents cropping or stretching */
+            height: auto; 
+            object-fit: contain; 
             border-radius: 8px; 
             display: block;
             margin-bottom: 10px; 
         }
 
-        /* --- Professional Profile Layout --- */
-        .profile-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .cover-photo { height: 200px; background: linear-gradient(to bottom, #2ecc71, #27ae60); position: relative; }
-        .profile-avatar-wrap { text-align: center; margin-top: -60px; position: relative; }
-        #profile-pic { width: 130px; height: 130px; border-radius: 50%; border: 4px solid white; background: #eee; object-fit: cover; }
-        .profile-info { text-align: center; padding: 15px; }
-        .profile-info h2 { margin: 0; font-size: 24px; }
-        .profile-stats { color: #65676b; font-weight: 600; margin: 10px 0; }
-        .profile-bio { color: #1c1e21; margin: 10px auto; max-width: 500px; line-height: 1.4; }
-        .profile-actions { display: flex; justify: center; gap: 10px; padding: 10px; border-top: 1px solid #e5e5e5; }
-        .profile-actions .btn { width: auto; min-width: 120px; }
+        /* --- Stories Row (From Image 1) --- */
+        .stories-container { display: flex; gap: 10px; overflow-x: auto; padding: 5px 0 15px 0; scrollbar-width: none; }
+        .story-card { min-width: 100px; height: 170px; background: #ddd; border-radius: 12px; position: relative; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .story-card.create { background-color: #fff; border: 1px solid #ddd; }
+        .story-img { width: 100%; height: 100%; object-fit: cover; }
+        .story-overlay { position: absolute; bottom: 0; width: 100%; background: white; text-align: center; padding: 8px 0; font-size: 11px; font-weight: bold; }
 
-        /* --- Professional Chat Layout --- */
-        .chat-app { display: flex; height: 75vh; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
-        .chat-sidebar { width: 30%; border-right: 1px solid #eee; display: flex; flex-direction: column; }
-        .sidebar-header { padding: 15px; font-size: 20px; font-weight: bold; border-bottom: 1px solid #eee; }
-        #chat-list { flex: 1; overflow-y: auto; }
-        .chat-main { width: 70%; display: flex; flex-direction: column; background: #f0f2f5; }
-        .chat-header { padding: 15px; background: white; border-bottom: 1px solid #eee; font-weight: bold; }
-        #messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .message-bubble { padding: 8px 12px; border-radius: 18px; max-width: 70%; font-size: 15px; }
-        .mine { background-color: #0084ff; color: white; align-self: flex-end; }
-        .theirs { background-color: #e4e6eb; color: black; align-self: flex-start; }
-        .chat-input-bar { padding: 15px; background: white; display: flex; gap: 10px; }
-        .chat-input-bar input { flex: 1; border-radius: 20px; border: 1px solid #ddd; padding: 10px 15px; outline: none; }
+        /* --- Menu Grid (From Image 4) --- */
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+        .menu-item { background: white; padding: 20px; border-radius: 12px; text-align: left; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: none; cursor: pointer; font-size: 16px; display: flex; flex-direction: column; gap: 10px; }
 
-        /* --- Auth Modal --- */
-        #auth-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .auth-content { background: white; padding: 30px; border-radius: 10px; max-width: 400px; width: 90%; text-align: center; }
-        .auth-content input { width: calc(100% - 22px); padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; }
-
-        #notification-counter { background-color: crimson; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7em; position: absolute; top: -5px; right: -10px; display: none; }
-        .nav-item-wrapper { position: relative; display: inline-block; }
+        /* --- Modals (Read More Fix) --- */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 85%; max-width: 450px; }
+        
+        #notif-badge { background: crimson; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; position: absolute; top: 0; right: 15%; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>Healing Root</h1>
-        <div class="nav">
-            <a href="#" id="nav-feed">Feed</a>
-            <a href="#" id="nav-products">Products</a>
-            <div class="nav-item-wrapper">
-                <a href="#" id="nav-chat">Chat</a>
-                <span id="notification-counter"></span> 
-            </div>
-            <a href="#" id="nav-profile">Profile</a>
-            <a href="#" id="nav-admin" style="display: none;">Admin</a>
-            <button id="logout-btn" style="display: none;">Logout</button>
+        <div style="display: flex; gap: 20px; font-size: 20px; cursor: pointer;">
+            <span>➕</span>
+            <span>🔍</span>
         </div>
     </div>
 
     <div class="container">
-        <div id="feed-view" class="view">
+        <div id="feed-view" class="view" style="display: block;">
+            <div class="stories-container">
+                <div class="story-card create">
+                    <img src="logo.png" class="story-img" style="height: 70%; object-fit: contain; margin-top: 10px;">
+                    <div class="story-overlay">Create story</div>
+                </div>
+                </div>
+
             <div class="card">
-                <h4>What's on your mind?</h4>
-                <textarea id="post-text" placeholder="Share farm updates..." rows="3" style="width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 10px;"></textarea>
-                <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
-                    <input type="file" id="post-image" accept="image/*">
-                    <button id="post-btn" class="btn" style="width: auto;">Post</button>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <img src="images/default_profile.png" style="width: 40px; height: 40px; border-radius: 50%;">
+                    <textarea id="post-text" placeholder="What's on your mind?" style="flex: 1; border: none; outline: none; font-size: 16px; resize: none;"></textarea>
+                </div>
+                <hr style="opacity: 0.3; margin: 15px 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <input type="file" id="post-image" accept="image/*" style="font-size: 12px;">
+                    <button id="post-btn" style="background: #28a745; color: white; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold;">Post</button>
                 </div>
             </div>
             <div id="feed"></div>
         </div>
 
-        <div id="profile-view" class="view">
-            <div class="profile-container">
-                <div class="cover-photo"></div>
-                <div class="profile-avatar-wrap">
-                    <img id="profile-pic" src="images/default_profile.png" alt="Profile">
-                </div>
-                <div class="profile-info">
-                    <h2 id="profile-display-name">Farmer Name</h2>
-                    <p class="profile-stats"><span id="follower-count">0</span> followers • <span id="following-count">0</span> following</p>
-                    <p id="profile-bio-text" class="profile-bio">Growing quality, nurturing tomorrow. 🇳🇬🌍</p>
-                </div>
-                <div class="profile-actions">
-                    <button class="btn btn-secondary">📊 Dashboard</button>
-                    <button class="btn" onclick="document.getElementById('nav-feed').click()">📝 Create Reel</button>
-                </div>
-            </div>
-
-            <div class="card" style="margin-top: 20px;">
-                <h3>Edit Profile</h3>
-                <label>Change Photo:</label>
-                <input type="file" id="profile-upload" accept="image/*">
-                <button id="save-profile-pic" class="btn" style="margin-top: 10px;">Upload New Picture</button>
-                <hr style="margin: 20px 0;">
-                <label>Update Bio:</label>
-                <textarea id="bio" placeholder="Tell other farmers about your expertise..." rows="3" style="width: 100%; margin-top: 5px;"></textarea>
-                <button id="save-bio" class="btn" style="margin-top: 10px;">Save Changes</button>
-            </div>
-        </div>
-
-        <div id="chat-view" class="view">
-            <div class="chat-app">
-                <div class="chat-sidebar">
-                    <div class="sidebar-header">Chats</div>
-                    <div id="chat-list"></div>
-                    <div style="padding: 15px; border-top: 1px solid #eee;">
-                        <small>Followers you can message:</small>
-                        <div id="friends"></div>
-                    </div>
-                </div>
-                <div class="chat-main">
-                    <div id="chat-window" style="display: none; height: 100%; flex-direction: column;">
-                        <div class="chat-header" id="chat-with">Chat</div>
-                        <div id="messages"></div>
-                        <div class="chat-input-bar">
-                            <input type="text" id="chat-input" placeholder="Aa">
-                            <button id="send-chat" class="btn" style="width: auto;">Send</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div id="products-view" class="view">
-            <h2>Marketplace</h2>
-            <div id="product-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px;"></div>
+            <h2 style="margin-left: 5px;">Marketplace</h2>
+            <div id="product-list" style="display: grid; grid-template-columns: 1fr; gap: 15px;"></div>
+        </div>
+
+        <div id="menu-view" class="view">
+            <h2 style="margin-left: 5px;">Menu</h2>
+            <div class="menu-grid">
+                <button class="menu-item" onclick="showView('profile-view')">👤<br>Profile</button>
+                <button class="menu-item">👥<br>Friends</button>
+                <button class="menu-item">📦<br>Groups</button>
+                <button class="menu-item">💾<br>Saved</button>
+                <button class="menu-item">📊<br>Dashboard</button>
+                <button class="menu-item" id="logout-btn" style="color: crimson;">🚪<br>Logout</button>
+            </div>
+        </div>
+
+        <div id="profile-view" class="view">
+            <div class="card" style="text-align: center; padding-top: 30px;">
+                <img id="profile-pic" src="images/default_profile.png" style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h2 id="profile-display-name" style="margin-bottom: 5px;">Farmer Name</h2>
+                <p id="profile-bio-text" style="color: #65676b; margin-top: 0;">Growing quality, nurturing tomorrow. 🇳🇬</p>
+                
+                <div style="background: #f0f2f5; padding: 15px; border-radius: 10px; margin-top: 20px;">
+                    <h4 style="margin: 0 0 10px 0;">Edit Bio</h4>
+                    <textarea id="bio-input" placeholder="Tell us about your farm..." style="width: 100%; border: 1px solid #ddd; border-radius: 8px; padding: 10px; height: 60px;"></textarea>
+                    <button id="save-bio" style="background: #28a745; color: white; border: none; padding: 10px; width: 100%; margin-top: 10px; border-radius: 8px; font-weight: bold;">Save Changes</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="auth-modal">
-        <div class="auth-content">
-            <img src="logo.png" alt="Logo" style="width: 80px; margin-bottom: 10px;">
-            <h3>Healing Root</h3>
-            <form id="login-form">
-                <input type="email" id="login-email" placeholder="Email address" required>
-                <input type="password" id="login-password" placeholder="Password" required>
-                <button type="submit" class="btn">Log In</button>
-            </form>
-            <hr style="margin: 20px 0;">
-            <button class="btn btn-secondary" onclick="document.getElementById('signup-form').style.display='block'; document.getElementById('login-form').style.display='none';">Create New Account</button>
-            
-            <form id="signup-form" style="display:none; margin-top: 20px;">
-                <input type="text" id="signup-name" placeholder="Full Name" required>
-                <input type="email" id="signup-email" placeholder="Email" required>
-                <input type="password" id="signup-password" placeholder="Password" required>
-                <button type="submit" class="btn" style="background-color: #28a745;">Sign Up</button>
-            </form>
-            <p id="auth-message" style="color: crimson; font-size: 14px; margin-top: 10px;"></p>
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="showView('feed-view')">
+            <span class="nav-icon">🏠</span>Home
+        </div>
+        <div class="nav-item" onclick="showView('products-view')">
+            <span class="nav-icon">🏪</span>Market
+        </div>
+        <div class="nav-item" onclick="showView('chat-view')" style="position: relative;">
+            <span class="nav-icon">💬</span>Chat
+            <span id="notif-badge" style="display:none;">0</span>
+        </div>
+        <div class="nav-item" onclick="showView('menu-view')">
+            <span class="nav-icon">☰</span>Menu
         </div>
     </div>
 
+    <div id="read-more-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="read-more-title" style="margin-top: 0; color: #28a745;"></h3>
+            <p id="read-more-text" style="line-height: 1.6; color: #444;"></p>
+            <button onclick="document.getElementById('read-more-modal').style.display='none'" style="width: 100%; padding: 12px; background: #f0f2f5; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;">Close</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // View Switching Logic
+        window.showView = function(viewId) {
+            document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+            const targetView = document.getElementById(viewId);
+            if(targetView) targetView.style.display = 'block';
+
+            // Update active state in bottom nav
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if(item.innerText.includes(viewId.split('-')[0].charAt(0).toUpperCase() + viewId.split('-')[0].slice(1))) {
+                    item.classList.add('active');
+                }
+            });
+        };
+
+        // Bio Fix
+        document.getElementById('save-bio').addEventListener('click', () => {
+            const bioText = document.getElementById('bio-input').value;
+            if(bioText.trim() !== "") {
+                document.getElementById('profile-bio-text').innerText = bioText;
+                alert("Bio Updated Successfully!");
+            }
+        });
+
+        // Global Read More Function
+        window.openReadMore = function(title, text) {
+            document.getElementById('read-more-title').innerText = title;
+            document.getElementById('read-more-text').innerText = text;
+            document.getElementById('read-more-modal').style.display = 'flex';
+        };
+    </script>
     <script type="module" src="app.js"></script>
 </body>
 </html>
