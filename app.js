@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
 import { 
-  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged 
+  getAuth, signOut, onAuthStateChanged 
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 import { 
   getFirestore, collection, addDoc, doc, updateDoc, getDoc, deleteDoc, query, orderBy, 
@@ -31,7 +31,7 @@ let currentUser = null;
 let currentProfile = null;
 let activeChatId = null;
 
-// ---------------------- HEALING ROOT PRODUCTS ----------------------
+// ---------------------- PRODUCTS (Kept exactly as requested) ----------------------
 const products = [
   { id:"cassava", name:"Cassava Stems (TME419)", image:"images/cassava.JPG", price:1000, description:`Healing Root Agro Ventures provides premium TME419 cassava stems known for high yield, disease resistance, and strong root development. Each stem is nurtured in a controlled nursery to ensure survival rates above 95%, giving farmers a reliable start. Our cassava stems are ideal for commercial farming, guaranteeing tuber quality and consistent income for small and large-scale farmers across Nigeria. Full planting guidance and farm management tips are provided with every purchase.` },
   { id:"plantain", name:"Hybrid Plantain Suckers", image:"images/plantain.JPG", price:500, description:`Our Hybrid Plantain Suckers are carefully selected for vigor, early fruiting, and high production. Raised in hygienic nurseries, these suckers adapt easily to different soil types and climates in Nigeria. With strong resistance to pests and diseases, they provide farmers with dependable growth and fruiting cycles. Each purchase comes with detailed planting and care instructions to ensure optimal yield and long-term plantation success.` },
@@ -48,29 +48,25 @@ window.showView = (viewId) => {
     $$('.view').forEach(v => v.style.display = 'none');
     const target = $(`#${viewId}-view`);
     if (target) target.style.display = 'block';
-    
     $$('.nav-item').forEach(item => {
-        item.classList.toggle('active', item.getAttribute('onclick')?.includes(`'${viewId}'`));
+        item.classList.toggle('active', item.getAttribute('onclick')?.includes(`'${viewId}'` || `"${viewId}"`));
     });
 };
 
-// ---------------------- AUTH & PROFILE ----------------------
+// ---------------------- AUTH & PROFILE (Fixed Login/Logout) ----------------------
 onAuthStateChanged(auth, async user => {
-    currentUser = user;
     if (user) {
-        // Set status to online
-        await updateDoc(doc(db, 'users', user.uid), { status: 'online' });
-        
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        currentProfile = snap.exists() ? snap.data() : null;
-        
+        currentUser = user;
+        // Monitor profile data in real-time
+        onSnapshot(doc(db, 'users', user.uid), (snap) => {
+            if (snap.exists()) {
+                currentProfile = snap.data();
+                updateProfileUI(currentProfile);
+                updateDoc(doc(db, 'users', user.uid), { status: 'online' });
+            }
+        });
         $('#auth-modal').style.display = 'none';
         $('#main-app').style.display = 'block';
-        
-        if (currentProfile) {
-            updateProfileUI(currentProfile);
-        }
-
         renderMarketplace();
         loadRealtimeFeed();
         loadAvailableFarmers();
@@ -84,9 +80,13 @@ onAuthStateChanged(auth, async user => {
 function updateProfileUI(profile) {
     const name = profile.name || "Farmer";
     const pic = profile.profilePic || 'images/default_profile.png';
+    const bio = profile.bio || "No bio set yet.";
     
     $('#my-profile-name').innerText = name;
     $('#display-biz-name').innerText = name;
+    $('#display-bio').innerText = bio;
+    $('#my-profile-bio-display').innerText = bio;
+    
     $('#my-profile-pic-small').src = pic;
     $('#my-menu-pic').src = pic;
     $('#profile-pic-preview').src = pic;
@@ -99,33 +99,32 @@ window.logout = async () => {
     signOut(auth).then(() => location.reload());
 };
 
-// ---------------------- PROFILE EDITING ----------------------
+// ---------------------- PROFILE EDITING (Bio & Pic Fix) ----------------------
 window.uploadNewProfilePic = async (input) => {
     const file = input.files[0];
     if (!file) return;
-
     const fd = new FormData();
     fd.append('file', file);
     fd.append('upload_preset', UPLOAD_PRESET);
-    
     try {
         const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: fd });
         const data = await res.json();
-        const newUrl = data.secure_url;
-
-        await updateDoc(doc(db, 'users', currentUser.uid), { profilePic: newUrl });
-        $('#profile-pic-preview').src = newUrl;
-        $('#my-profile-pic-small').src = newUrl;
+        await updateDoc(doc(db, 'users', currentUser.uid), { profilePic: data.secure_url });
         alert("Profile picture updated!");
     } catch (err) { alert("Upload failed."); }
+};
+
+window.editBio = async () => {
+    const newBio = prompt("Enter your new farm bio:", currentProfile?.bio || "");
+    if (newBio !== null) {
+        await updateDoc(doc(db, 'users', currentUser.uid), { bio: newBio });
+    }
 };
 
 window.editBusinessName = async () => {
     const newName = prompt("Enter new business name:", currentProfile?.name || "");
     if (newName) {
         await updateDoc(doc(db, 'users', currentUser.uid), { name: newName });
-        $('#display-biz-name').innerText = newName;
-        $('#my-profile-name').innerText = newName;
     }
 };
 
@@ -148,47 +147,142 @@ function renderMarketplace() {
     `).join('');
 }
 
-// ---------------------- FEED & REELS ----------------------
+// ---------------------- FEED & REACTIONS ----------------------
 function loadRealtimeFeed() {
     const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
     onSnapshot(q, (snapshot) => {
         const feed = $('#feed-items');
-        const reels = $('#reels-container');
-        if (feed) feed.innerHTML = '';
-        if (reels) reels.innerHTML = '';
+        if (!feed) return;
+        feed.innerHTML = '';
 
         snapshot.docs.forEach(docSnap => {
             const post = docSnap.data();
             const pid = docSnap.id;
-            const mediaUrl = post.content || post.image;
-            const isLiked = post.likes?.includes(currentUser.uid);
+            const reactions = post.reactions || {};
+            const myReaction = reactions[currentUser.uid] || '👍';
+            
+            // Count reactions
+            const counts = Object.values(reactions).reduce((acc, r) => {
+                acc[r] = (acc[r] || 0) + 1;
+                return acc;
+            }, {});
 
-            const cardHtml = `
+            feed.innerHTML += `
                 <div class="post-card">
                     <div style="display:flex; gap:10px; padding:12px; align-items:center;">
                         <img src="${post.userPic || 'images/default_profile.png'}" style="width:35px; height:35px; border-radius:50%;">
                         <b>${post.userName || 'Farmer'}</b>
                     </div>
                     <div style="padding:0 12px 12px 12px;">${post.text}</div>
-                    ${mediaUrl ? (post.type === 'video' ? 
-                        `<video src="${mediaUrl}" controls style="width:100%;"></video>` : 
-                        `<img src="${mediaUrl}" style="width:100%;">`) : ''}
-                    <div style="display:flex; padding:10px; border-top:1px solid #333;">
-                        <button onclick="toggleLike('${pid}', ${isLiked})" style="flex:1; background:none; border:none; color:${isLiked ? '#2e7d32' : '#aaa'};">👍 Like (${post.likes?.length || 0})</button>
-                        <button onclick="toggleCommentsSection('${pid}')" style="flex:1; background:none; border:none; color:#aaa;">💬 Comment</button>
+                    ${post.content ? `<img src="${post.content}" style="width:100%;">` : ''}
+                    
+                    <div class="reaction-bar">
+                        <div id="picker-${pid}" class="reaction-picker">
+                            <span onclick="addReaction('${pid}', '👍')">👍</span>
+                            <span onclick="addReaction('${pid}', '❤️')">❤️</span>
+                            <span onclick="addReaction('${pid}', '😮')">😮</span>
+                            <span onclick="addReaction('${pid}', '😡')">😡</span>
+                        </div>
+                        <button onclick="showReactions('${pid}')" style="background:none; border:none; color:var(--hr-green); font-size:16px;">
+                            ${reactions[currentUser.uid] ? reactions[currentUser.uid] : '👍'} Reaction
+                        </button>
+                        <div style="font-size:12px; color:#aaa; align-self:center;">
+                            ${counts['👍'] ? '👍 '+counts['👍'] : ''} ${counts['❤️'] ? '❤️ '+counts['❤️'] : ''}
+                        </div>
+                    </div>
+
+                    <div style="padding:10px; border-top:1px solid #333;">
+                        <div id="comments-${pid}" style="max-height: 200px; overflow-y: auto;">
+                            ${renderComments(pid, post.comments || [])}
+                        </div>
+                        <div style="display:flex; gap:5px; margin-top:10px;">
+                            <input type="text" id="comm-input-${pid}" placeholder="Add a comment..." style="flex:1; background:#333; border:none; color:white; padding:8px; border-radius:15px;">
+                            <button onclick="submitComment('${pid}')" class="btn-green" style="padding:5px 12px;">Send</button>
+                        </div>
                     </div>
                 </div>`;
-            
-            if (post.type === 'video' && reels) reels.innerHTML += cardHtml;
-            if (feed) feed.innerHTML += cardHtml;
         });
     });
 }
 
+// ---------------------- FACEBOOK REACTIONS ----------------------
+window.addReaction = async (pid, emoji) => {
+    const postRef = doc(db, 'posts', pid);
+    const snap = await getDoc(postRef);
+    const reactions = snap.data().reactions || {};
+    reactions[currentUser.uid] = emoji;
+    await updateDoc(postRef, { reactions });
+    $(`#picker-${pid}`).style.display = 'none';
+};
+
+// ---------------------- COMMENTING & REPLYING ----------------------
+function renderComments(pid, comments) {
+    // Only main comments first
+    const main = comments.filter(c => !c.parentId);
+    return main.map(c => {
+        const replies = comments.filter(r => r.parentId === c.id);
+        const hasLiked = (c.likes || []).includes(currentUser.uid);
+        
+        return `
+            <div class="comment-item">
+                <b>${c.userName}</b>: ${c.text}
+                <div style="margin-top:4px;">
+                    <span onclick="likeComment('${pid}', '${c.id}')" style="color:${hasLiked ? 'var(--hr-green)' : '#aaa'}; cursor:pointer;">Like (${c.likes?.length || 0})</span>
+                    <span class="reply-btn" onclick="openReplyInput('${c.id}')">Reply</span>
+                </div>
+                <div id="reply-box-${c.id}" style="display:none; margin-top:5px;">
+                    <input type="text" id="reply-input-${c.id}" placeholder="Reply..." style="width:70%; background:#222; border:none; color:white; font-size:12px; padding:4px;">
+                    <button onclick="submitComment('${pid}', '${c.id}')" style="font-size:10px;">Reply</button>
+                </div>
+                ${replies.map(r => `
+                    <div class="reply-item"><b>${r.userName}</b>: ${r.text}</div>
+                `).join('')}
+            </div>
+        `;
+    }).join('');
+}
+
+window.openReplyInput = (cid) => {
+    $(`#reply-box-${cid}`).style.display = 'block';
+    $(`#reply-input-${cid}`).focus();
+};
+
+window.submitComment = async (pid, parentId = null) => {
+    const input = parentId ? $(`#reply-input-${parentId}`) : $(`#comm-input-${pid}`);
+    if (!input.value.trim()) return;
+
+    const newComment = {
+        id: Math.random().toString(36).substr(2, 9),
+        uid: currentUser.uid,
+        userName: currentProfile.name,
+        text: input.value,
+        timestamp: Date.now(),
+        parentId: parentId,
+        likes: []
+    };
+
+    await updateDoc(doc(db, 'posts', pid), {
+        comments: arrayUnion(newComment)
+    });
+    input.value = '';
+};
+
+window.likeComment = async (pid, cid) => {
+    const postRef = doc(db, 'posts', pid);
+    const snap = await getDoc(postRef);
+    const comments = snap.data().comments.map(c => {
+        if (c.id === cid) {
+            const likes = c.likes || [];
+            c.likes = likes.includes(currentUser.uid) ? likes.filter(l => l !== currentUser.uid) : [...likes, currentUser.uid];
+        }
+        return c;
+    });
+    await updateDoc(postRef, { comments });
+};
+
 // ---------------------- CHAT LOGIC ----------------------
 function loadAvailableFarmers() {
-    const q = query(collection(db, 'users'));
-    onSnapshot(q, (snapshot) => {
+    onSnapshot(collection(db, 'users'), (snapshot) => {
         const list = $('#available-farmers');
         if (!list) return;
         list.innerHTML = '';
@@ -198,7 +292,6 @@ function loadAvailableFarmers() {
                 const isOnline = user.status === 'online';
                 const item = document.createElement('div');
                 item.className = 'biz-item';
-                item.style.cursor = 'pointer';
                 item.onclick = () => startChat(user.uid, user.name);
                 item.innerHTML = `
                     <div style="position: relative;">
@@ -207,9 +300,8 @@ function loadAvailableFarmers() {
                     </div>
                     <div style="flex:1;">
                         <b>${user.name}</b><br>
-                        <small style="color:${isOnline ? 'var(--hr-green)' : 'var(--hr-secondary)'}">${isOnline ? 'Online' : 'Offline'}</small>
+                        <small style="color:${isOnline ? 'var(--hr-green)' : '#777'}">${isOnline ? 'Online' : 'Offline'}</small>
                     </div>
-                    <span>❯</span>
                 `;
                 list.appendChild(item);
             }
@@ -244,26 +336,11 @@ function loadMessages() {
         container.innerHTML = '';
         snapshot.docs.forEach(docSnap => {
             const msg = docSnap.data();
-            const mid = docSnap.id;
             const isMe = msg.senderId === currentUser.uid;
-            
             const msgDiv = document.createElement('div');
-            msgDiv.style = `
-                align-self: ${isMe ? 'flex-end' : 'flex-start'}; 
-                background: ${isMe ? 'var(--hr-green)' : '#333'}; 
-                padding: 10px; 
-                border-radius: 10px; 
-                max-width: 80%; 
-                color: white; 
-                cursor: pointer;
-                position: relative;
-            `;
-            msgDiv.innerHTML = `${msg.text}${isMe ? '<br><small style="font-size:8px; opacity:0.6;">Click to delete</small>' : ''}`;
-            
-            if(isMe) {
-                msgDiv.onclick = () => confirmDeleteMessage(mid);
-            }
-            
+            msgDiv.style = `align-self: ${isMe ? 'flex-end' : 'flex-start'}; background: ${isMe ? 'var(--hr-green)' : '#333'}; padding: 10px; border-radius: 10px; max-width: 80%; color: white; cursor: pointer;`;
+            msgDiv.innerHTML = msg.text;
+            if(isMe) msgDiv.onclick = () => confirmDeleteMessage(docSnap.id);
             container.appendChild(msgDiv);
         });
         container.scrollTop = container.scrollHeight;
@@ -281,10 +358,7 @@ window.submitPost = async () => {
     const text = $('#post-text').value;
     const file = $('#post-file-input').files[0];
     if (!text && !file) return;
-
     let fileUrl = '';
-    let fileType = 'text';
-
     if (file) {
         const fd = new FormData();
         fd.append('file', file);
@@ -292,24 +366,19 @@ window.submitPost = async () => {
         const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: fd });
         const data = await res.json();
         fileUrl = data.secure_url;
-        fileType = file.type.includes('video') ? 'video' : 'image';
     }
-
     await addDoc(collection(db, 'posts'), {
         uid: currentUser.uid,
         userName: currentProfile?.name || "Farmer",
         userPic: currentProfile?.profilePic || "",
         text: text,
         content: fileUrl,
-        type: fileType,
         timestamp: serverTimestamp(),
-        likes: [],
+        reactions: {},
         comments: []
     });
-
     $('#post-text').value = '';
     window.closePostModal();
-    window.showView('home');
 };
 
 function setupNotifications() {
@@ -322,9 +391,3 @@ function setupNotifications() {
         }
     });
 }
-
-window.toggleLike = async (pid, liked) => {
-    await updateDoc(doc(db, 'posts', pid), {
-        likes: liked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid)
-    });
-};
