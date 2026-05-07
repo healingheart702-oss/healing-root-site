@@ -31,25 +31,12 @@ let currentUser = null;
 let currentProfile = null;
 let activeChatId = null;
 
-// ---------------------- PRODUCTS (Maintained as requested) ----------------------
-const products = [
-  { id:"cassava", name:"Cassava Stems (TME419)", image:"images/cassava.JPG", price:1000, description:`Healing Root Agro Ventures provides premium TME419 cassava stems known for high yield, disease resistance, and strong root development. Each stem is nurtured in a controlled nursery to ensure survival rates above 95%, giving farmers a reliable start. Our cassava stems are ideal for commercial farming, guaranteeing tuber quality and consistent income for small and large-scale farmers across Nigeria. Full planting guidance and farm management tips are provided with every purchase.` },
-  { id:"plantain", name:"Hybrid Plantain Suckers", image:"images/plantain.JPG", price:500, description:`Our Hybrid Plantain Suckers are carefully selected for vigor, early fruiting, and high production. Raised in hygienic nurseries, these suckers adapt easily to different soil types and climates in Nigeria. With strong resistance to pests and diseases, they provide farmers with dependable growth and fruiting cycles. Each purchase comes with detailed planting and care instructions to ensure optimal yield and long-term plantation success.` },
-  { id:"banana", name:"Hybrid Dwarf Banana", image:"images/giant_banana.JPG", price:500, description:`The Hybrid Dwarf Banana from Healing Root Agro Ventures offers early maturation, high fruit quality, and strong resistance to common diseases. Ideal for both backyard gardens and commercial plantations, these banana seedlings ensure consistent yield and minimal maintenance. Raised in controlled nurseries, each seedling is ready for immediate transplantation, helping farmers secure profitable banana production with long-term benefits.` },
-  { id:"oilpalm", name:"Tenera Oil Palm Seedlings", image:"images/oilpalm.JPG", price:1000, description:`Healing Root Agro Ventures Tenera Oil Palm Seedlings are top-quality planting materials carefully raised to ensure maximum yield, disease resistance, and early fruiting. Each seedling undergoes rigorous nursery management including proper fertilization, pest control, and root development enhancement. Suitable for commercial plantations, these seedlings guarantee consistent bunch production, high oil content, and longevity of palms. Farmers are provided with full planting guidelines, soil preparation techniques, and maintenance tips to achieve optimal growth, minimize losses, and maximize return on investment. Our seedlings are acclimatized to different soil types and Nigerian climatic conditions, making them ideal for large and small-scale farming. With a focus on sustainable practices, every purchase ensures not only high productivity but also long-term farm profitability. This comprehensive package enables growers to establish healthy plantations, increase oil extraction efficiency, and secure a dependable income from the first harvest to full maturity.` },
-  { id:"coconut", name:"Hybrid Dwarf Coconut Seedlings", image:"images/coconut.JPG", price:4500, description:`Our Hybrid Dwarf Coconut Seedlings are fast-growing, high-yielding, and ideal for small to medium-scale farms. Each seedling is carefully raised to ensure healthy root systems, strong stem development, and early fruiting. Farmers benefit from reliable growth, superior nut quality, and high survival rates. Planting instructions and care guidance are included with every purchase for optimal results.` },
-  { id:"giant_cocoa", name:"Hybrid Giant Cocoa Seedlings", image:"images/giant_cocoa.JPG", price:500, description:`Healing Root Agro Ventures offers Hybrid Giant Cocoa Seedlings that combine high yield with strong resistance to common diseases. Raised in clean nurseries, these seedlings adapt well to Nigerian soils and climates, giving farmers dependable growth and fruiting cycles. Each purchase comes with expert guidance on planting, maintenance, and pest control to maximize long-term cocoa production.` },
-  { id:"pineapple", name:"Pineapple Seedlings", image:"images/pineapple.JPG", price:400, description:`Premium Pineapple Seedlings from Healing Root Agro Ventures are selected for rapid growth, high fruit quality, and uniformity. They are raised in controlled nursery conditions to ensure strong establishment and survival. Ideal for both commercial and backyard planting, these seedlings come with planting and care instructions to guarantee maximum fruit yield and consistent quality.` },
-  { id:"yam", name:"Treated Yam Setts", image:"images/Yamsett.JPG", price:700, description:`Our Treated Yam Setts are carefully selected tubers treated for disease resistance and enhanced sprouting. Each sett is ideal for both smallholder and commercial farms, ensuring rapid germination, uniform growth, and high tuber yield. Healing Root Agro Ventures provides full guidance on soil preparation, planting, and maintenance for maximum productivity and profitable harvests.` }
-];
-
 // ---------------------- VIEW MANAGEMENT ----------------------
 window.showView = (viewId) => {
     $$('.view').forEach(v => v.style.display = 'none');
     const target = $(`#${viewId}-view`);
     if (target) target.style.display = 'block';
     
-    // Auto-pause videos when leaving Reels
     if (viewId !== 'reels') {
         $$('video').forEach(v => v.pause());
     }
@@ -68,7 +55,7 @@ if(authToggle) {
         isLoginMode = !isLoginMode;
         $('#auth-name').style.display = isLoginMode ? 'none' : 'block';
         $('#auth-submit-btn').innerText = isLoginMode ? 'Log In' : 'Create Account';
-        $('#auth-toggle').innerText = isLoginMode ? "Don't have an account? Create one" : "Already have an account? Log In";
+        $('#auth-toggle').innerText = isLoginMode ? "Don't have an account? Join Healing Social" : "Already have an account? Log In";
     };
 }
 
@@ -85,11 +72,13 @@ $('#auth-form').onsubmit = async (e) => {
             const res = await createUserWithEmailAndPassword(auth, email, pass);
             await setDoc(doc(db, 'users', res.user.uid), {
                 uid: res.user.uid,
-                name: name || "Farmer",
-                bio: "Agricultural Specialist",
+                name: name || "User",
+                bio: "Welcome to my profile!",
                 profilePic: 'images/default_profile.png',
                 coverPic: 'images/HEALING_ROOT_BANNER.jpg',
-                status: 'online'
+                status: 'online',
+                followers: [],
+                following: []
             });
         }
     } catch (err) { alert(err.message); }
@@ -107,9 +96,9 @@ onAuthStateChanged(auth, async user => {
         });
         $('#auth-modal').style.display = 'none';
         $('#main-app').style.display = 'block';
-        renderMarketplace();
         loadRealtimeFeed();
-        loadAvailableFarmers();
+        loadAvailableUsers();
+        loadPeopleDiscovery();
         setupNotifications();
     } else {
         $('#auth-modal').style.display = 'flex';
@@ -117,31 +106,91 @@ onAuthStateChanged(auth, async user => {
     }
 });
 
-// ---------------------- SYNCING FB-STYLE UI ----------------------
+// ---------------------- SOCIAL UI SYNC ----------------------
 function updateProfileUI(profile) {
-    const name = profile.name || "Farmer";
+    const name = profile.name || "User";
     const pic = profile.profilePic || 'images/default_profile.png';
     const cover = profile.coverPic || 'images/HEALING_ROOT_BANNER.jpg';
-    const bio = profile.bio || "Agro Ventures Community";
+    const bio = profile.bio || "Healing Social Member";
     
-    // Top Bar & Dashboard Name
+    const fCount = profile.followers ? profile.followers.length : 0;
+    const flCount = profile.following ? profile.following.length : 0;
+
+    // Names & Bio
     if($('#display-name-top')) $('#display-name-top').innerText = name;
     if($('#display-name-header')) $('#display-name-header').innerText = name;
     if($('#my-profile-name')) $('#my-profile-name').innerText = name;
-    if($('#display-biz-name')) $('#display-biz-name').innerText = name;
-    
-    // Bio sections
+    if($('#display-full-name')) $('#display-full-name').innerText = name;
     if($('#display-bio')) $('#display-bio').innerText = bio;
     if($('#display-bio-bold')) $('#display-bio-bold').innerText = bio;
     
+    // Stats
+    if($('#follower-count')) $('#follower-count').innerHTML = `${fCount} <span style="font-weight:normal;">followers</span>`;
+    if($('#following-count')) $('#following-count').innerHTML = `${flCount} <span style="font-weight:normal;">following</span>`;
+
     // Images
     if($('#profile-pic-preview')) $('#profile-pic-preview').src = pic;
     if($('#cover-pic-preview')) $('#cover-pic-preview').src = cover;
     if($('#my-menu-pic')) $('#my-menu-pic').src = pic;
     if($('#story-my-pic')) $('#story-my-pic').src = pic;
     
-    // Global Avatar Sync
     $$('.user-avatar-sync').forEach(img => img.src = pic);
+}
+
+// ---------------------- FOLLOW SYSTEM ----------------------
+window.toggleFollow = async (targetUid) => {
+    if (!currentUser || targetUid === currentUser.uid) return;
+
+    const myDocRef = doc(db, 'users', currentUser.uid);
+    const targetDocRef = doc(db, 'users', targetUid);
+    const isFollowing = currentProfile.following?.includes(targetUid);
+
+    try {
+        if (isFollowing) {
+            await updateDoc(myDocRef, { following: arrayRemove(targetUid) });
+            await updateDoc(targetDocRef, { followers: arrayRemove(currentUser.uid) });
+        } else {
+            await updateDoc(myDocRef, { following: arrayUnion(targetUid) });
+            await updateDoc(targetDocRef, { followers: arrayUnion(currentUser.uid) });
+            
+            await addDoc(collection(db, 'notifications'), {
+                recipientUID: targetUid,
+                senderName: currentProfile.name,
+                senderPic: currentProfile.profilePic,
+                type: 'follow',
+                timestamp: serverTimestamp(),
+                read: false
+            });
+        }
+    } catch (err) { console.error("Follow error:", err); }
+};
+
+function loadPeopleDiscovery() {
+    onSnapshot(collection(db, 'users'), (snapshot) => {
+        const list = $('#people-list');
+        if (!list) return;
+        list.innerHTML = '';
+        snapshot.docs.forEach(docSnap => {
+            const user = docSnap.data();
+            if (user.uid !== currentUser.uid) {
+                const isFollowing = user.followers?.includes(currentUser.uid);
+                list.innerHTML += `
+                    <div class="user-row">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <img src="${user.profilePic}" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
+                            <div>
+                                <div style="font-weight:bold;">${user.name}</div>
+                                <div style="font-size:12px; color:var(--hr-secondary);">${user.followers?.length || 0} followers</div>
+                            </div>
+                        </div>
+                        <button onclick="toggleFollow('${user.uid}')" class="${isFollowing ? 'fb-btn-secondary' : 'btn-green'}" style="padding:6px 15px; font-size:13px;">
+                            ${isFollowing ? 'Following' : 'Follow'}
+                        </button>
+                    </div>
+                `;
+            }
+        });
+    });
 }
 
 // ---------------------- PROFILE UPDATES ----------------------
@@ -163,21 +212,21 @@ async function uploadToCloudinary(file, field) {
         const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: fd });
         const data = await res.json();
         await updateDoc(doc(db, 'users', currentUser.uid), { [field]: data.secure_url });
-        alert("Photo updated!");
+        alert("Updated successfully!");
     } catch (err) { alert("Upload failed."); }
 }
 
 window.editBio = async () => {
-    const newBio = prompt("What's your farm's specialty?", currentProfile?.bio || "");
+    const newBio = prompt("Write something about yourself:", currentProfile?.bio || "");
     if (newBio !== null) await updateDoc(doc(db, 'users', currentUser.uid), { bio: newBio });
 };
 
-window.editBusinessName = async () => {
-    const newName = prompt("Update Business Name:", currentProfile?.name || "");
+window.editProfileName = async () => {
+    const newName = prompt("Enter your full name:", currentProfile?.name || "");
     if (newName) await updateDoc(doc(db, 'users', currentUser.uid), { name: newName });
 };
 
-// ---------------------- FB STYLE FEED & REELS ----------------------
+// ---------------------- FEED & POSTS ----------------------
 function loadRealtimeFeed() {
     const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
     onSnapshot(q, (snapshot) => {
@@ -197,68 +246,46 @@ function loadRealtimeFeed() {
             const postHtml = `
                 <div class="post-card">
                     <div style="display:flex; gap:10px; padding:12px; align-items:center;">
-                        <img src="${post.userPic || 'images/default_profile.png'}" style="width:38px; height:38px; border-radius:50%; border:1px solid var(--hr-divider);">
+                        <img src="${post.userPic || 'images/default_profile.png'}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
                         <div>
                             <div style="font-weight:bold; font-size:14px;">${post.userName}</div>
                             <div style="font-size:11px; color:var(--hr-secondary);">Just now • 🌍</div>
                         </div>
                     </div>
-                    <div style="padding:0 12px 12px 12px; font-size:15px; line-height:1.4;">${post.text}</div>
-                    
+                    <div style="padding:0 12px 12px 12px; font-size:16px;">${post.text}</div>
                     ${post.content ? (post.type === 'video' ? 
-                        `<video src="${post.content}" controls style="width:100%; background:#000;"></video>` : 
-                        `<img src="${post.content}" style="width:100%; max-height:450px; object-fit:cover;">`) : ''}
+                        `<video src="${post.content}" controls></video>` : 
+                        `<img src="${post.content}" style="width:100%; max-height:500px; object-fit:cover;">`) : ''}
                     
-                    <div class="reaction-bar" style="padding: 10px 15px; border-bottom: 1px solid var(--hr-divider);">
-                        <div id="picker-${pid}" class="reaction-picker">
-                            <span onclick="addReaction('${pid}', '👍')">👍</span>
-                            <span onclick="addReaction('${pid}', '❤️')">❤️</span>
-                            <span onclick="addReaction('${pid}', '😮')">😮</span>
-                            <span onclick="addReaction('${pid}', '🔥')">🔥</span>
+                    <div class="reaction-bar" style="padding:10px 15px; border-top:1px solid var(--hr-divider); display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; gap:15px;">
+                            <div onclick="addReaction('${pid}', '👍')" style="cursor:pointer; font-weight:bold; font-size:13px; color:var(--hr-secondary);">👍 Like</div>
+                            <div onclick="$('#comm-input-${pid}').focus()" style="cursor:pointer; font-weight:bold; font-size:13px; color:var(--hr-secondary);">💬 Comment</div>
                         </div>
-                        <div style="display:flex; gap:20px;">
-                            <div onclick="showReactions('${pid}')" style="cursor:pointer; font-size:13px; color:var(--hr-secondary); font-weight:bold;">
-                                ${reactions[currentUser.uid] || '👍'} Like
-                            </div>
-                            <div onclick="$('#comm-input-${pid}').focus()" style="cursor:pointer; font-size:13px; color:var(--hr-secondary); font-weight:bold;">
-                                💬 Comment
-                            </div>
-                        </div>
-                        <div style="font-size:12px; color:var(--hr-secondary); margin-left:auto;">
-                            ${counts > 0 ? '❤️ ' + counts : ''}
-                        </div>
+                        <div style="font-size:12px; color:var(--hr-secondary);">${counts > 0 ? '❤️ ' + counts : ''}</div>
                     </div>
 
-                    <div style="padding:10px;">
-                        <div id="comments-${pid}">${renderComments(pid, post.comments || [])}</div>
-                        <div style="display:flex; gap:8px; margin-top:10px; align-items:center;">
-                            <img src="${currentProfile.profilePic}" style="width:30px; height:30px; border-radius:50%;">
+                    <div style="padding:10px; background:#1c1e21;">
+                        <div id="comments-${pid}">${renderComments(post.comments || [])}</div>
+                        <div style="display:flex; gap:8px; margin-top:10px;">
                             <input type="text" id="comm-input-${pid}" placeholder="Write a comment..." 
-                                style="flex:1; background:#3a3b3c; border:none; color:white; padding:8px 15px; border-radius:20px; font-size:13px;">
+                                style="flex:1; background:#3a3b3c; border:none; color:white; padding:8px 12px; border-radius:20px; font-size:13px;">
                             <button onclick="submitComment('${pid}')" style="background:none; border:none; color:var(--hr-green); font-weight:bold;">Post</button>
                         </div>
                     </div>
                 </div>`;
 
-            // Sort Videos into Reels and everything else into Feed
-            if (post.type === 'video') {
-                reels.innerHTML += postHtml;
-            } else {
-                feed.innerHTML += postHtml;
-            }
+            if (post.type === 'video') reels.innerHTML += postHtml;
+            else feed.innerHTML += postHtml;
         });
     });
 }
 
-// ---------------------- POST SUBMISSION ----------------------
 window.submitPost = async () => {
     const text = $('#post-text').value;
-    const fileInput = $('#post-file-input');
-    const file = fileInput.files[0];
-    
+    const file = $('#post-file-input').files[0];
     if (!text && !file) return;
     
-    // Close modal immediately for UX
     window.closePostModal();
 
     let fileUrl = '';
@@ -276,8 +303,8 @@ window.submitPost = async () => {
 
     await addDoc(collection(db, 'posts'), {
         uid: currentUser.uid,
-        userName: currentProfile?.name || "Farmer",
-        userPic: currentProfile?.profilePic || "",
+        userName: currentProfile.name,
+        userPic: currentProfile.profilePic,
         text: text,
         content: fileUrl,
         type: fileType,
@@ -287,35 +314,16 @@ window.submitPost = async () => {
     });
 
     $('#post-text').value = '';
-    fileInput.value = '';
+    $('#post-file-input').value = '';
 };
 
-// ---------------------- MARKETPLACE & CHAT ----------------------
-function renderMarketplace() {
-    const container = $('#market-list');
-    if (!container) return;
-    container.innerHTML = products.map(p => `
-        <div class="card product" style="background: var(--hr-card); border-radius: 8px; overflow: hidden; border:1px solid var(--hr-divider);">
-            <img src="${p.image}" style="width:100%; height:140px; object-fit:cover;">
-            <div style="padding:10px;">
-                <b style="color:var(--hr-green); font-size:14px; display:block; margin-bottom:5px;">${p.name}</b>
-                <div style="font-size:13px; margin-bottom:10px;">₦${p.price.toLocaleString()}</div>
-                <button onclick="window.open('https://wa.me/2349138938301?text=Order: ${p.name}')" 
-                        style="width:100%; background:var(--hr-green); color:white; border:none; padding:8px; border-radius:5px; font-weight:bold; font-size:12px;">
-                    Order on WhatsApp
-                </button>
-            </div>
-        </div>
-    `).join('');
-}
-
+// ---------------------- INTERACTIONS ----------------------
 window.addReaction = async (pid, emoji) => {
     const postRef = doc(db, 'posts', pid);
     const snap = await getDoc(postRef);
     const reactions = snap.data().reactions || {};
     reactions[currentUser.uid] = emoji;
     await updateDoc(postRef, { reactions });
-    $(`#picker-${pid}`).style.display = 'none';
 };
 
 window.submitComment = async (pid) => {
@@ -330,43 +338,39 @@ window.submitComment = async (pid) => {
         timestamp: Date.now()
     };
 
-    await updateDoc(doc(db, 'posts', pid), { 
-        comments: arrayUnion(newComment) 
-    });
+    await updateDoc(doc(db, 'posts', pid), { comments: arrayUnion(newComment) });
     input.value = '';
 };
 
-function renderComments(pid, comments) {
-    return comments.map(c => `
-        <div style="background:#3a3b3c; border-radius:12px; padding:8px 12px; margin-bottom:5px; display:inline-block; max-width:90%;">
-            <b style="font-size:12px; color:var(--hr-green);">${c.userName}</b>
-            <div style="font-size:13px;">${c.text}</div>
+function renderComments(comments) {
+    return comments.slice(-3).map(c => `
+        <div style="margin-bottom:6px; font-size:13px;">
+            <b style="color:var(--hr-green);">${c.userName}</b> ${c.text}
         </div>
     `).join('');
 }
 
-function loadAvailableFarmers() {
+// ---------------------- CHAT ENGINE ----------------------
+function loadAvailableUsers() {
     onSnapshot(collection(db, 'users'), (snapshot) => {
-        const list = $('#available-farmers');
+        const list = $('#available-users');
         if (!list) return;
         list.innerHTML = '';
         snapshot.docs.forEach(docSnap => {
             const user = docSnap.data();
             if (user.uid !== currentUser.uid) {
                 const isOnline = user.status === 'online';
-                const item = document.createElement('div');
-                item.className = 'biz-item';
-                item.onclick = () => startChat(user.uid, user.name);
-                item.innerHTML = `
-                    <div style="position: relative;">
-                        <img src="${user.profilePic || 'images/default_profile.png'}" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
-                        <div style="position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%; background: ${isOnline ? '#4caf50' : '#757575'}; border: 2px solid var(--hr-bg);"></div>
-                    </div>
-                    <div style="flex:1;">
-                        <b>${user.name}</b><br>
-                        <small style="color:${isOnline ? 'var(--hr-green)' : '#777'}">${isOnline ? 'Online' : 'Offline'}</small>
+                list.innerHTML += `
+                    <div class="user-row" onclick="startChat('${user.uid}', '${user.name}')">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div style="position:relative;">
+                                <img src="${user.profilePic}" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
+                                <div style="position:absolute; bottom:2px; right:2px; width:10px; height:10px; border-radius:50%; background:${isOnline ? '#4caf50' : '#757575'}; border:2px solid black;"></div>
+                            </div>
+                            <b>${user.name}</b>
+                        </div>
+                        <span style="color:var(--hr-secondary); font-size:12px;">${isOnline ? 'Online' : 'Offline'}</span>
                     </div>`;
-                list.appendChild(item);
             }
         });
     });
@@ -401,8 +405,8 @@ function loadMessages() {
             const msg = docSnap.data();
             const isMe = msg.senderId === currentUser.uid;
             const msgDiv = document.createElement('div');
-            msgDiv.style = `align-self: ${isMe ? 'flex-end' : 'flex-start'}; background: ${isMe ? 'var(--hr-green)' : '#333'}; padding: 10px; border-radius: 12px; max-width: 80%; color: white; margin-bottom: 5px;`;
-            msgDiv.innerHTML = msg.text;
+            msgDiv.style = `align-self:${isMe ? 'flex-end' : 'flex-start'}; background:${isMe ? 'var(--hr-green)' : '#333'}; padding:10px 15px; border-radius:18px; max-width:75%; color:white; margin-bottom:4px; font-size:14px;`;
+            msgDiv.innerText = msg.text;
             container.appendChild(msgDiv);
         });
         container.scrollTop = container.scrollHeight;
