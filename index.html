@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Healing Root Agro Ventures</title>
+    <title>Healing Social</title>
     <style>
         :root {
             --hr-green: #2e7d32;
@@ -17,7 +17,7 @@
         
         /* Header */
         .header { background: var(--hr-card); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--hr-divider); }
-        .header h1 { color: var(--hr-green); font-size: 18px; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+        .header h1 { color: var(--hr-green); font-size: 18px; margin: 0; text-transform: uppercase; letter-spacing: 2px; font-weight: 900; }
 
         /* Navigation */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--hr-card); display: flex; border-top: 1px solid var(--hr-divider); z-index: 1000; }
@@ -44,8 +44,9 @@
         #reels-container { display: flex; flex-direction: column; gap: 2px; background: #000; }
         video { width: 100%; max-height: 80vh; background: #000; }
 
-        /* Marketplace */
-        #market-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+        /* Discovery List */
+        #people-list { display: flex; flex-direction: column; gap: 10px; padding: 10px; }
+        .user-row { background: var(--hr-card); padding: 12px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; }
         
         /* Professional Profile (FB Style Overlay) */
         .profile-header-area { position: relative; background: var(--hr-bg); padding-bottom: 15px; border-bottom: 1px solid var(--hr-divider); }
@@ -63,27 +64,32 @@
         /* Chat */
         #chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: var(--hr-bg); }
         .chat-footer { padding: 15px; display: flex; gap: 10px; background: var(--hr-card); border-top: 1px solid var(--hr-divider); }
+        .btn-green { background: var(--hr-green); color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+
+        /* Modals */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--hr-bg); z-index: 2000; display: none; flex-direction: column; }
+        .modal-header { padding: 15px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--hr-divider); align-items: center; }
     </style>
 </head>
 <body>
 
     <div id="auth-modal" style="display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; background: #000;">
         <div style="width: 85%; max-width: 400px;">
-            <h1 style="color: var(--hr-green); margin-bottom: 5px;">HEALING ROOT</h1>
-            <p style="color: var(--hr-secondary); margin-bottom: 30px;">Agro Ventures Community</p>
+            <h1 style="color: var(--hr-green); margin-bottom: 5px;">HEALING SOCIAL</h1>
+            <p style="color: var(--hr-secondary); margin-bottom: 30px;">Connect with the World</p>
             <form id="auth-form">
-                <input type="text" id="auth-name" placeholder="Full Business Name" class="auth-input" style="display: none;">
+                <input type="text" id="auth-name" placeholder="Full Name" class="auth-input" style="display: none;">
                 <input type="email" id="auth-email" placeholder="Email Address" class="auth-input" required>
                 <input type="password" id="auth-password" placeholder="Password" class="auth-input" required>
                 <button type="submit" id="auth-submit-btn" class="btn-green" style="width: 100%; padding: 15px; border-radius: 25px; margin-top: 10px;">Log In</button>
             </form>
-            <p id="auth-toggle" style="margin-top: 25px; color: var(--hr-green); cursor: pointer; font-size: 14px; font-weight: bold;">Don't have an account? Create one</p>
+            <p id="auth-toggle" style="margin-top: 25px; color: var(--hr-green); cursor: pointer; font-size: 14px; font-weight: bold;">Don't have an account? Join Healing Social</p>
         </div>
     </div>
 
     <div id="main-app" style="display: none;">
         <div class="header">
-            <h1>HEALING ROOT</h1>
+            <h1>HEALING</h1>
             <div style="display: flex; gap: 20px; font-size: 20px;">
                 <div onclick="openPostModal()" style="cursor:pointer;">➕</div>
                 <div onclick="showView('notifications')" style="cursor:pointer;">🔔<span id="notif-count" style="display:none;">0</span></div>
@@ -117,22 +123,23 @@
             <div id="reels-container"></div>
         </div>
 
-        <div id="marketplace-view" class="view">
-            <h3 style="padding: 10px 15px; margin: 0; color: var(--hr-green);">Agro Marketplace</h3>
-            <div id="market-list"></div>
+        <div id="people-view" class="view">
+            <h3 style="padding: 15px; margin: 0; color: var(--hr-green);">Discover People</h3>
+            <div id="people-list">
+                </div>
         </div>
 
         <div id="chat-view" class="view">
             <div class="header">
                 <span onclick="showView('home')" style="cursor:pointer;">❮</span>
-                <b>Messages</b>
+                <b>Conversations</b>
                 <span></span>
             </div>
-            <div id="chat-user-list"><div id="available-farmers"></div></div>
+            <div id="chat-user-list"><div id="available-users"></div></div>
             <div id="active-chat-window" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--hr-bg); z-index: 3000; flex-direction: column;">
                 <div class="header">
                     <span onclick="closeChat()" style="cursor:pointer;">❮</span>
-                    <b id="chatting-with-name">Farmer</b>
+                    <b id="chatting-with-name">User</b>
                     <span></span>
                 </div>
                 <div id="chat-messages"></div>
@@ -147,8 +154,8 @@
             <div style="padding: 20px; background: var(--hr-card); display: flex; align-items: center; gap: 15px;">
                 <img id="my-menu-pic" src="images/default_profile.png" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
                 <div style="flex:1;">
-                    <h3 id="my-profile-name" style="margin:0;">Farmer</h3>
-                    <small style="color: var(--hr-green); cursor: pointer; font-weight: bold;" onclick="showView('edit-profile')">See your profile</small>
+                    <h3 id="my-profile-name" style="margin:0;">User</h3>
+                    <small style="color: var(--hr-green); cursor: pointer; font-weight: bold;" onclick="showView('edit-profile')">View Profile</small>
                 </div>
             </div>
             <div style="padding: 15px;">
@@ -159,13 +166,13 @@
         <div id="edit-profile-view" class="view">
             <div class="header">
                 <span onclick="showView('menu')" style="cursor:pointer;">❮</span>
-                <b id="display-name-top">Profile</b>
+                <b id="display-name-top">My Profile</b>
                 <span style="color: var(--hr-green); font-weight: bold;" onclick="showView('menu')">Done</span>
             </div>
             
             <div class="profile-header-area">
                 <img id="cover-pic-preview" src="images/HEALING_ROOT_BANNER.jpg" class="cover-photo">
-                <div onclick="$('#cover-upload').click()" style="position:absolute; top:160px; right:15px; background:rgba(0,0,0,0.6); padding:8px 12px; border-radius:5px; font-size:12px; cursor:pointer;">📷 Edit</div>
+                <div onclick="$('#cover-upload').click()" style="position:absolute; top:160px; right:15px; background:rgba(0,0,0,0.6); padding:8px 12px; border-radius:5px; font-size:12px; cursor:pointer;">📷 Edit Cover</div>
                 
                 <div style="position: relative;">
                     <img id="profile-pic-preview" src="images/default_profile.png" class="profile-pic-overlap">
@@ -173,36 +180,30 @@
                 </div>
 
                 <div class="profile-info-block">
-                    <h2 id="display-name-header" style="margin:0;">Farmer Name</h2>
+                    <h2 id="display-name-header" style="margin:0;">Name</h2>
                     <div style="display: flex; gap: 10px; margin: 8px 0; font-size: 14px; color: var(--hr-secondary);">
-                        <b>1.2K <span style="font-weight:normal;">followers</span></b> • <b>850 <span style="font-weight:normal;">following</span></b>
+                        <b id="follower-count">0 <span style="font-weight:normal;">followers</span></b> • <b id="following-count">0 <span style="font-weight:normal;">following</span></b>
                     </div>
-                    <p id="display-bio" style="margin: 5px 0; font-size: 15px;">Tell us about your farm...</p>
+                    <p id="display-bio" style="margin: 5px 0; font-size: 15px;">Welcome to my profile!</p>
                     
                     <div class="fb-btn-group">
-                        <button class="btn-green" style="flex: 2; border-radius: 6px;" onclick="editBusinessName()">Edit profile</button>
-                        <button class="fb-btn-secondary" style="flex: 2;">Professional dashboard</button>
+                        <button class="btn-green" style="flex: 2; border-radius: 6px;" onclick="editProfileName()">Edit Profile</button>
+                        <button class="fb-btn-secondary" style="flex: 2;">Insights</button>
                         <button class="fb-btn-secondary" style="flex: 0.5;">•••</button>
                     </div>
                 </div>
             </div>
 
             <div style="padding: 15px;">
-                <div class="biz-item" onclick="editBusinessName()">
-                    <span>🏪</span>
-                    <div style="flex:1;">
-                        <div style="font-size: 12px; color: var(--hr-secondary);">Business Name</div>
-                        <b id="display-biz-name">Healing Root Agro Ventures</b>
+                <div style="background: var(--hr-card); border-radius: 10px; padding: 15px;">
+                    <div onclick="editProfileName()" style="display:flex; justify-content:space-between; margin-bottom: 15px;">
+                        <span>👤 Name</span>
+                        <b id="display-full-name" style="color:var(--hr-green)">Edit</b>
                     </div>
-                    <span>Edit</span>
-                </div>
-                <div class="biz-item" onclick="editBio()">
-                    <span>📝</span>
-                    <div style="flex:1;">
-                        <div style="font-size: 12px; color: var(--hr-secondary);">Bio</div>
-                        <b id="display-bio-bold">Farmer</b>
+                    <div onclick="editBio()" style="display:flex; justify-content:space-between;">
+                        <span>📝 Bio</span>
+                        <b id="display-bio-bold" style="color:var(--hr-green)">Edit</b>
                     </div>
-                    <span>Edit</span>
                 </div>
             </div>
 
@@ -216,9 +217,9 @@
                 <b>Create Post</b>
                 <button class="btn-green" onclick="submitPost()">Post</button>
             </div>
-            <textarea id="post-text" placeholder="Share your agricultural progress..." style="width: 100%; height: 200px; background: transparent; color: white; border: none; padding: 15px; font-size: 16px; outline: none;"></textarea>
+            <textarea id="post-text" placeholder="What's happening?" style="width: 100%; height: 200px; background: transparent; color: white; border: none; padding: 15px; font-size: 18px; outline: none;"></textarea>
             <div style="padding: 15px; border-top: 1px solid var(--hr-divider);">
-                <label style="cursor: pointer; color: var(--hr-green);">
+                <label style="cursor: pointer; color: var(--hr-green); font-weight: bold;">
                     📷 Add Photo/Video
                     <input type="file" id="post-file-input" style="display: none;" accept="image/*,video/*">
                 </label>
@@ -228,7 +229,7 @@
         <div class="bottom-nav">
             <div class="nav-item active" onclick="showView('home')">🏠</div>
             <div class="nav-item" onclick="showView('reels')">🎞️</div>
-            <div class="nav-item" onclick="showView('marketplace')">🏪</div>
+            <div class="nav-item" onclick="showView('people')">👥</div>
             <div class="nav-item" onclick="showView('menu')">☰</div>
         </div>
     </div>
