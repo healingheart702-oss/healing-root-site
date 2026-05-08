@@ -2,190 +2,217 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google-site-verification" content="cPJ3_emx8r6W7a_9249IO_Aj4NEH15CCtPqEgc18FN8" />
     <title>Healing Social</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --hr-green: #2e7d32;
-            --hr-bg: #121212;
-            --hr-card: #1e1e1e;
-            --hr-text: #ffffff;
-            --hr-secondary: #a0a0a0;
-            --hr-divider: #333;
-            --fb-blue: #1877f2;
+            --hr-bg: #000000;
+            --hr-card: #18191a;
+            --hr-hover: #3a3b3c;
+            --hr-text: #e4e6eb;
+            --hr-secondary: #b0b3b8;
+            --hr-divider: #3e4042;
+            --fb-blue: #0866ff;
         }
         body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; margin: 0; background: var(--hr-bg); color: var(--hr-text); padding-bottom: 70px; overflow-x: hidden; }
         
-        /* Header & Navigation */
-        .header { background: var(--hr-card); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--hr-divider); }
-        .header h1 { color: var(--hr-green); font-size: 22px; margin: 0; font-weight: 800; letter-spacing: -1px; }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--hr-card); display: flex; border-top: 1px solid var(--hr-divider); z-index: 1000; height: 60px; }
-        .nav-item { flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; color: var(--hr-secondary); transition: 0.2s; }
-        .nav-item.active { color: var(--hr-green); border-top: 3px solid var(--hr-green); margin-top: -3px; }
+        /* Layout Controls */
+        .view { display: none; min-height: 100vh; }
+        .view.active { display: block; }
 
-        /* FB Style Profile Section */
-        .profile-container { background: var(--hr-card); margin-bottom: 10px; }
-        .cover-area { position: relative; height: 220px; background: #222; overflow: hidden; }
-        .cover-photo { width: 100%; height: 100%; object-fit: cover; }
-        .profile-avatar-area { position: relative; margin-top: -60px; padding-left: 20px; display: flex; align-items: flex-end; gap: 15px; }
-        .profile-pic-overlap { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--hr-bg); background: #1a1a1a; object-fit: cover; }
-        .cam-btn { position: absolute; background: #3a3b3c; border: none; color: white; padding: 8px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; border: 2px solid var(--hr-bg); transition: 0.3s; }
-        .cam-btn:active { transform: scale(0.9); }
-        
-        /* Feed & Posts */
-        .composer { background: var(--hr-card); padding: 15px; margin-bottom: 10px; border-bottom: 1px solid var(--hr-divider); }
+        /* Header */
+        .header { background: var(--hr-card); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--hr-divider); }
+        .header h1 { color: white; font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -1px; }
+        .header-icons { display: flex; gap: 10px; }
+        .circle-icon { background: var(--hr-hover); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 18px; position: relative; }
+
+        /* Bottom Navigation */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--hr-card); display: flex; border-top: 1px solid var(--hr-divider); z-index: 1001; height: 65px; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: var(--hr-secondary); transition: 0.2s; font-size: 22px; position: relative; }
+        .nav-item.active { color: var(--fb-blue); }
+        .badge { position: absolute; top: 8px; right: 20%; background: #e41e3f; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; border: 2px solid var(--hr-card); }
+
+        /* Home Feed UI */
+        .composer { background: var(--hr-card); padding: 12px 15px; margin-bottom: 10px; }
         .composer-top { display: flex; align-items: center; gap: 10px; }
-        .composer-top img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .composer-input { background: #3a3b3c; border-radius: 20px; padding: 10px 15px; flex: 1; color: var(--hr-secondary); cursor: pointer; font-size: 15px; }
-        .post-card { background: var(--hr-card); margin-bottom: 10px; border-bottom: 1px solid var(--hr-divider); width: 100%; }
+        .avatar-small { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--hr-divider); }
+        .composer-input { background: var(--hr-hover); border-radius: 20px; padding: 10px 15px; flex: 1; color: var(--hr-secondary); cursor: pointer; font-size: 15px; }
+
+        /* Reels Styling (Vertical Video) */
+        #reels-view { background: #000; height: 100vh; overflow-y: scroll; snap-type: y mandatory; }
+        .reel-video-container { height: calc(100vh - 65px); width: 100%; snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; }
+        .reel-actions { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+
+        /* Menu Grid */
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
+        .menu-item { background: var(--hr-card); border-radius: 10px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .menu-item i { font-size: 24px; margin-bottom: 10px; }
+
+        /* Profile Styles */
+        .profile-header { position: relative; background: var(--hr-card); padding-bottom: 15px; }
+        .cover-photo-box { height: 200px; background: #333; position: relative; }
+        .profile-avatar-box { margin-top: -80px; padding: 0 15px; position: relative; }
+        .profile-img-large { width: 160px; height: 160px; border-radius: 50%; border: 4px solid var(--hr-bg); object-fit: cover; }
         
-        /* UI Elements */
-        .btn-green { background: var(--hr-green); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
-        .btn-gray { background: #3a3b3c; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
-        .user-row { background: #242526; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border: 1px solid #333; }
-        
+        /* Chat Styles */
+        .chat-row { display: flex; align-items: center; gap: 12px; padding: 10px 15px; cursor: pointer; }
+        .online-dot { width: 12px; height: 12px; background: #31a24c; border-radius: 50%; border: 2px solid var(--hr-bg); position: absolute; bottom: 2px; right: 2px; }
+
         /* Modals */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--hr-bg); z-index: 2000; display: none; flex-direction: column; }
-        textarea { width: 100%; background: transparent; color: white; border: none; padding: 15px; font-size: 18px; resize: none; outline: none; }
         
-        /* Auth Screen */
-        .auth-container { width: 100%; max-width: 400px; padding: 20px; text-align: center; }
-        .auth-input { width: 100%; padding: 14px; background: #242526; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; font-size: 16px; }
+        /* Utils */
+        .btn-full { width: 100%; padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .bg-blue { background: var(--fb-blue); color: white; }
+        .bg-gray { background: var(--hr-hover); color: white; }
     </style>
 </head>
 <body>
 
-    <div id="auth-modal" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #000;">
-        <div class="auth-container">
-            <h1 style="color: var(--hr-green); font-size: 32px; margin-bottom: 5px;">Healing Social</h1>
-            <p style="color: var(--hr-secondary); margin-bottom: 30px;">Grow together, connect forever.</p>
-            
-            <button onclick="loginWithGoogle()" class="btn-green" style="width:100%; background:white; color:black; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:20px; border-radius:8px; padding:12px; font-weight: bold;">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/button/google/web/1x/btn_google_light_normal_ios.svg" width="18">
-                Continue with Google
-            </button>
-
-            <form id="auth-form">
-                <input type="text" id="auth-name" placeholder="Full Name" class="auth-input" style="display: none;">
-                <input type="email" id="auth-email" placeholder="Email Address" class="auth-input" required>
-                <input type="password" id="auth-password" placeholder="Password" class="auth-input" required>
-                <button type="submit" id="auth-submit-btn" class="btn-green" style="width: 100%; font-size:18px;">Log In</button>
-            </form>
-            <p id="auth-toggle" onclick="toggleAuthMode()" style="margin-top: 20px; color: var(--hr-green); cursor: pointer; font-weight: 600;">
-                Create New Account
-            </p>
-        </div>
-    </div>
-
-    <div id="main-app" style="display: none;">
-        <div class="header">
+    <div id="main-app">
+        <div id="app-header" class="header">
             <h1>HEALING</h1>
-            <div style="display: flex; gap: 15px;">
-                <div onclick="openPostModal()" style="cursor:pointer; background:#3a3b3c; width:35px; height:35px; display:flex; align-items:center; justify-content:center; border-radius:50%;">➕</div>
-                <div onclick="showView('notifications')" style="cursor:pointer; background:#3a3b3c; width:35px; height:35px; display:flex; align-items:center; justify-content:center; border-radius:50%; position:relative;">
-                    🔔<span id="notif-count" style="display:none; position:absolute; top:-5px; right:-5px; background:red; font-size:10px; padding:2px 5px; border-radius:50%;">0</span>
+            <div class="header-icons">
+                <div class="circle-icon" onclick="openPostModal()"><i class="fa-solid fa-plus"></i></div>
+                <div class="circle-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+                <div class="circle-icon" onclick="showView('chats')">
+                    <i class="fa-solid fa-comment"></i>
+                    <span class="badge" id="chat-badge" style="display:none">0</span>
                 </div>
             </div>
         </div>
 
-        <div id="home-view" class="view" style="display: block;">
+        <div id="home-view" class="view active">
             <div class="composer">
                 <div class="composer-top">
-                    <img class="user-avatar-sync" src="images/default_profile.png">
+                    <img class="user-avatar-sync avatar-small" src="images/default_profile.png">
                     <div class="composer-input" onclick="openPostModal()">What's on your mind?</div>
                 </div>
             </div>
+            <div id="discovery-scroller"></div>
             <div id="feed-items"></div>
         </div>
 
-        <div id="people-view" class="view">
-            <div style="padding:15px; border-bottom:1px solid #333;">
-                <h2 style="margin:0; font-size: 20px;">People You May Know</h2>
+        <div id="reels-view" class="view">
+            <div id="reels-container"></div>
+        </div>
+
+        <div id="chats-view" class="view">
+            <div style="padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin:0">Chats</h2>
+                <div class="circle-icon"><i class="fa-solid fa-pen-to-square"></i></div>
             </div>
-            <div id="people-list" style="padding: 15px;"></div>
+            <div id="active-notes" style="display: flex; gap: 15px; padding: 10px 15px; overflow-x: auto;">
+                </div>
+            <div id="chat-list"></div>
+        </div>
+
+        <div id="profile-view" class="view">
+            <div class="profile-header">
+                <div class="cover-photo-box">
+                    <img id="cover-pic-preview" src="images/HEALING_ROOT_BANNER.jpg" style="width:100%; height:100%; object-fit:cover;">
+                    <button class="circle-icon" style="position:absolute; bottom:10px; right:10px;" onclick="$('#cover-upload').click()"><i class="fa-solid fa-camera"></i></button>
+                </div>
+                <div class="profile-avatar-box">
+                    <div style="position:relative; display:inline-block;">
+                        <img id="profile-pic-preview" src="images/default_profile.png" class="profile-img-large">
+                        <button class="circle-icon" style="position:absolute; bottom:10px; right:5px; border:3px solid var(--hr-bg);" onclick="$('#pic-upload').click()"><i class="fa-solid fa-camera"></i></button>
+                    </div>
+                    <h2 id="profile-name" style="margin: 10px 0 2px 0;">Loading...</h2>
+                    <p id="profile-bio" style="margin:0; color: var(--hr-secondary);">Student / Agro-Developer</p>
+                </div>
+                <div style="padding: 0 15px; display: flex; gap: 10px;">
+                    <button class="btn-full bg-blue"><i class="fa-solid fa-plus"></i> Add to story</button>
+                    <button class="btn-full bg-gray" onclick="editProfile()">Edit profile</button>
+                </div>
+            </div>
+            <div id="user-own-posts"></div>
         </div>
 
         <div id="notifications-view" class="view">
-            <h2 style="padding:15px;">Notifications</h2>
-            <div id="notifications-list" style="padding: 0 15px;"></div>
+            <div style="padding: 15px; display:flex; justify-content: space-between;">
+                <h2 style="margin:0">Notifications</h2>
+                <i class="fa-solid fa-magnifying-glass" style="font-size: 20px;"></i>
+            </div>
+            <div id="notifications-list"></div>
         </div>
 
-        <div id="edit-profile-view" class="view">
-            <div class="profile-container">
-                <div class="cover-area">
-                    <img id="cover-pic-preview" src="images/HEALING_ROOT_BANNER.jpg" class="cover-photo">
-                    <button class="cam-btn" style="bottom:10px; right:10px;" onclick="$('#cover-upload').click()">📷</button>
-                </div>
-                <div class="profile-avatar-area">
-                    <div style="position:relative;">
-                        <img id="profile-pic-preview" src="images/default_profile.png" class="profile-pic-overlap">
-                        <button class="cam-btn" style="bottom:5px; right:5px;" onclick="$('#pic-upload').click()">📷</button>
+        <div id="menu-view" class="view">
+            <div style="padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin:0">Menu</h2>
+                <div class="circle-icon" onclick="logout()"><i class="fa-solid fa-gear"></i></div>
+            </div>
+            
+            <div style="padding: 0 15px;">
+                <div class="menu-item" style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+                    <img class="user-avatar-sync avatar-small" src="images/default_profile.png">
+                    <div>
+                        <b id="menu-user-name">Your Name</b>
+                        <div style="font-size:12px; color:var(--hr-secondary);">See your profile</div>
                     </div>
-                    <div style="margin-bottom:10px;">
-                        <h2 id="display-name-header" style="margin:0; font-size:24px;">Loading...</h2>
-                        <p id="follower-count" style="margin:0; color:var(--hr-secondary); font-size:14px;">0 friends</p>
-                    </div>
-                </div>
-                
-                <div style="padding: 15px;">
-                    <p id="display-bio" style="margin: 10px 0; color: #ccc; line-height: 1.4;">No bio set yet...</p>
-                    <div style="display: flex; gap: 10px; margin-top: 15px;">
-                        <button class="btn-green" style="flex:1" onclick="editProfileName()">Edit Name</button>
-                        <button class="btn-gray" style="flex:1" onclick="editBio()">Edit Bio</button>
-                    </div>
-                    <button class="btn-gray" style="width:100%; margin-top:10px; background:#4e4f50; color: #ff4d4d; border: 1px solid #ff4d4d;" onclick="logout()">Log Out</button>
                 </div>
             </div>
-            <input type="file" id="pic-upload" style="display:none;" accept="image/*" onchange="uploadNewProfilePic(this)">
-            <input type="file" id="cover-upload" style="display:none;" accept="image/*" onchange="uploadCoverPic(this)">
-        </div>
 
-        <div id="post-modal" class="modal">
-            <div style="padding: 15px; display: flex; justify-content: space-between; align-items:center; border-bottom: 1px solid var(--hr-divider);">
-                <span onclick="closePostModal()" style="font-size:24px; cursor:pointer; padding: 5px;">✕</span>
-                <b style="font-size:18px;">Create Post</b>
-                <button class="btn-green" onclick="submitPost()">Post</button>
-            </div>
-            <textarea id="post-text" placeholder="What's on your mind?"></textarea>
-            <div style="padding: 15px; border-top:1px solid #333;">
-                <p style="margin-bottom:10px; font-size:14px; color:var(--hr-secondary);">Add to your post</p>
-                <input type="file" id="post-file-input" accept="image/*" style="color:white; font-size: 12px;">
+            <div class="menu-grid">
+                <div class="menu-item"><i class="fa-solid fa-user-group" style="color: #2aa4f4;"></i><br><b>Friends</b></div>
+                <div class="menu-item"><i class="fa-solid fa-bookmark" style="color: #c065cc;"></i><br><b>Saved</b></div>
+                <div class="menu-item"><i class="fa-solid fa-clock-rotate-left" style="color: #2aa4f4;"></i><br><b>Memories</b></div>
+                <div class="menu-item"><i class="fa-solid fa-users" style="color: #2aa4f4;"></i><br><b>Groups</b></div>
+                <div class="menu-item"><i class="fa-solid fa-video" style="color: #f3425f;"></i><br><b>Video</b></div>
+                <div class="menu-item" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i><br><b>Log Out</b></div>
             </div>
         </div>
 
         <div class="bottom-nav">
-            <div class="nav-item active" onclick="showView('home')">🏠</div>
-            <div class="nav-item" onclick="showView('people')">👥</div>
-            <div class="nav-item" onclick="showView('notifications')">🔔</div>
-            <div class="nav-item" onclick="showView('edit-profile')">👤</div>
+            <div class="nav-item active" onclick="showView('home')"><i class="fa-solid fa-house"></i></div>
+            <div class="nav-item" onclick="showView('reels')"><i class="fa-solid fa-clapperboard"></i></div>
+            <div class="nav-item" onclick="showView('chats')"><i class="fa-solid fa-comment-dots"></i></div>
+            <div class="nav-item" onclick="showView('profile')"><i class="fa-solid fa-circle-user"></i></div>
+            <div class="nav-item" onclick="showView('notifications')"><i class="fa-solid fa-bell"></i><span class="badge" id="notif-badge" style="display:none">0</span></div>
+            <div class="nav-item" onclick="showView('menu')"><i class="fa-solid fa-bars"></i></div>
         </div>
     </div>
+
+    <div id="post-modal" class="modal">
+        <div style="padding: 15px; display: flex; justify-content: space-between; align-items:center; border-bottom: 1px solid var(--hr-divider);">
+            <span onclick="closePostModal()" style="font-size:24px; cursor:pointer;">✕</span>
+            <b style="font-size:18px;">Create Post</b>
+            <button class="btn-green" onclick="submitPost()" style="background:var(--fb-blue); color:white; border:none; padding:8px 15px; border-radius:5px;">Post</button>
+        </div>
+        <textarea id="post-text" placeholder="What's on your mind?" style="width:100%; height:200px; background:transparent; color:white; border:none; padding:15px; font-size:18px; outline:none;"></textarea>
+        <div style="padding:15px; border-top:1px solid var(--hr-divider);">
+            <input type="file" id="post-file-input" accept="image/*">
+        </div>
+    </div>
+
+    <input type="file" id="pic-upload" style="display:none;" accept="image/*" onchange="uploadNewProfilePic(this)">
+    <input type="file" id="cover-upload" style="display:none;" accept="image/*" onchange="uploadCoverPic(this)">
 
     <script type="module" src="app.js"></script>
     <script>
         const $ = s => document.querySelector(s);
         
+        window.showView = (v) => {
+            // Header is only visible on Home, Chats, Notifications, and Menu
+            $('#app-header').style.display = (v === 'home') ? 'flex' : 'none';
+            
+            document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            
+            $(`#${v}-view`).classList.add('active');
+            
+            // Find nav item by icon or onclick and activate it
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                if(item.getAttribute('onclick').includes(v)) item.classList.add('active');
+            });
+        };
+
         window.openPostModal = () => $('#post-modal').style.display = 'flex';
         window.closePostModal = () => $('#post-modal').style.display = 'none';
-        
-        window.showView = (v) => {
-            // Hide all views
-            document.querySelectorAll('.view').forEach(view => view.style.display = 'none');
-            
-            // Remove active class from all nav items
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-                // Re-add active class if the onclick matches the view name
-                if(item.getAttribute('onclick').includes(v)) {
-                    item.classList.add('active');
-                }
-            });
-            
-            // Special case for profile view naming
-            const targetView = (v === 'edit-profile') ? 'edit-profile-view' : `${v}-view`;
-            if($(`#${targetView}`)) $(`#${targetView}`).style.display = 'block';
-        };
     </script>
 </body>
 </html>
