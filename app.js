@@ -5,7 +5,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 import { 
   getFirestore, collection, addDoc, setDoc, doc, updateDoc, getDoc, query, orderBy, 
-  serverTimestamp, onSnapshot, arrayUnion, where, limit 
+  serverTimestamp, onSnapshot, arrayUnion, arrayRemove, where, limit, increment 
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
 
 // --- CONFIGURATION ---
@@ -83,7 +83,6 @@ function syncUI(profile) {
     // Sync names and bio
     if ($('#display-name-header')) $('#display-name-header').innerText = profile.name;
     if ($('#display-bio')) $('#display-bio').innerText = profile.bio || "No bio set.";
-    if ($('#my-profile-name')) $('#my-profile-name').innerText = profile.name;
 }
 
 // --- 3. PROFILE EDITING (INSTANT UPDATES) ---
@@ -91,8 +90,6 @@ window.editProfileName = async () => {
     const newName = prompt("Enter your full name:", currentProfile.name);
     if (newName) {
         await updateDoc(doc(db, 'users', currentUser.uid), { name: newName });
-        // After updating name, we must also update posts to show the new name
-        alert("Name updated successfully!");
     }
 };
 
@@ -126,7 +123,7 @@ function loadDiscovery() {
         list.innerHTML = '';
         snap.forEach(userDoc => {
             const user = userDoc.data();
-            if (user.uid === currentUser.uid) return; // Hide self
+            if (user.uid === currentUser.uid) return; 
 
             const div = document.createElement('div');
             div.className = 'user-row';
@@ -142,7 +139,7 @@ function loadDiscovery() {
     });
 }
 
-// --- 5. FEED & REAL-TIME COMMENTS ---
+// --- 5. FEED, LIKES & REPLIES ---
 window.submitPost = async () => {
     const text = $('#post-text').value;
     const file = $('#post-file-input').files[0];
@@ -156,6 +153,8 @@ window.submitPost = async () => {
         userPic: currentProfile.profilePic,
         text: text,
         content: fileUrl,
+        likes: [],
+        likeCount: 0,
         timestamp: serverTimestamp(),
         comments: []
     });
@@ -163,6 +162,24 @@ window.submitPost = async () => {
     $('#post-text').value = '';
     $('#post-file-input').value = '';
     window.closePostModal();
+};
+
+window.likePost = async (pid) => {
+    const postRef = doc(db, 'posts', pid);
+    const postSnap = await getDoc(postRef);
+    const postData = postSnap.data();
+    
+    if (postData.likes && postData.likes.includes(currentUser.uid)) {
+        await updateDoc(postRef, {
+            likes: arrayRemove(currentUser.uid),
+            likeCount: increment(-1)
+        });
+    } else {
+        await updateDoc(postRef, {
+            likes: arrayUnion(currentUser.uid),
+            likeCount: increment(1)
+        });
+    }
 };
 
 function initFeed() {
@@ -173,24 +190,45 @@ function initFeed() {
         snapshot.forEach(docSnap => {
             const post = docSnap.data();
             const pid = docSnap.id;
+            const hasLiked = post.likes && post.likes.includes(currentUser.uid);
+            
             const card = document.createElement('div');
             card.className = 'post-card';
+            card.style.cssText = "background:var(--hr-card); margin-bottom:10px; border-bottom:1px solid var(--hr-divider);";
+            
             card.innerHTML = `
                 <div style="padding:12px; display:flex; gap:10px; align-items:center;">
                     <img src="${post.userPic || 'images/default_profile.png'}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
                     <div><b>${post.userName}</b></div>
                 </div>
                 <div style="padding:0 12px 12px;">${post.text}</div>
-                ${post.content ? `<img src="${post.content}" style="width:100%">` : ''}
-                <div style="padding:10px; border-top:1px solid #333; display:flex; gap:15px; font-size:14px;">
-                    <span style="cursor:pointer">👍 Like</span>
-                    <span style="cursor:pointer" onclick="$('#c-${pid}').focus()">💬 Comment</span>
+                ${post.content ? `<img src="${post.content}" style="width:100%; max-height:400px; object-fit:cover;">` : ''}
+                
+                <div style="padding:10px 12px; font-size:13px; color:var(--hr-secondary); display:flex; justify-content:space-between;">
+                    <span>👍 ${post.likeCount || 0} Likes</span>
+                    <span>${(post.comments || []).length} Comments</span>
                 </div>
-                <div style="padding:10px; background:#1a1a1a;">
-                    <div id="comments-${pid}">${(post.comments || []).map(c => `<div style="font-size:12px; margin-bottom:4px;"><b style="color:#2e7d32">${c.userName}</b> ${c.text}</div>`).join('')}</div>
-                    <div style="display:flex; gap:5px; margin-top:8px;">
-                        <input id="c-${pid}" type="text" placeholder="Write a comment..." style="flex:1; background:#333; border:none; color:white; padding:8px; border-radius:15px; font-size:12px;">
-                        <button onclick="submitComment('${pid}')" class="btn-green" style="padding:5px 10px; font-size:10px;">Post</button>
+
+                <div style="padding:8px; border-top:1px solid #333; border-bottom:1px solid #333; display:flex; gap:5px;">
+                    <button onclick="likePost('${pid}')" style="flex:1; background:transparent; border:none; color:${hasLiked ? 'var(--hr-green)' : 'white'}; cursor:pointer; font-weight:bold; padding:8px;">
+                        ${hasLiked ? 'Liked' : '👍 Like'}
+                    </button>
+                    <button onclick="$('#c-${pid}').focus()" style="flex:1; background:transparent; border:none; color:white; cursor:pointer; font-weight:bold;">💬 Comment</button>
+                </div>
+
+                <div style="padding:10px; background:#161616;">
+                    <div id="comments-${pid}">
+                        ${(post.comments || []).map(c => `
+                            <div style="margin-bottom:8px; display:flex; gap:8px;">
+                                <div style="background:#333; padding:8px 12px; border-radius:15px; font-size:13px;">
+                                    <b style="color:var(--hr-green); font-size:11px;">${c.userName}</b><br>${c.text}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="display:flex; gap:5px; margin-top:10px;">
+                        <input id="c-${pid}" type="text" placeholder="Write a comment..." style="flex:1; background:#222; border:1px solid #444; color:white; padding:8px 15px; border-radius:20px; font-size:13px; outline:none;">
+                        <button onclick="submitComment('${pid}')" class="btn-green" style="padding:5px 15px; font-size:12px; width:auto; border-radius:15px;">Post</button>
                     </div>
                 </div>
             `;
