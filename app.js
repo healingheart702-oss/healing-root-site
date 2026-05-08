@@ -36,56 +36,25 @@ let currentProfile = null;
 let isSignUpMode = false;
 
 // --- 1. AUTHENTICATION LOGIC ---
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
         onSnapshot(doc(db, 'users', user.uid), (snap) => {
             if (snap.exists()) {
                 currentProfile = snap.data();
                 syncUI(currentProfile);
-                initProfileFeed(); // Load your posts on your profile
+                initProfileFeed();
             }
         });
         $('#auth-modal').style.display = 'none';
         $('#main-app').style.display = 'block';
         initFeed();
         loadDiscoveryUsers();
-        listenToNotifications();
     } else {
         $('#auth-modal').style.display = 'flex';
         $('#main-app').style.display = 'none';
     }
 });
-
-window.toggleAuthMode = () => {
-    isSignUpMode = !isSignUpMode;
-    $('#auth-name').style.display = isSignUpMode ? 'block' : 'none';
-    $('#auth-submit-btn').innerText = isSignUpMode ? 'Create Account' : 'Log In';
-    $('#auth-toggle').innerText = isSignUpMode ? 'Already have an account? Log In' : 'Create New Account';
-};
-
-$('#auth-form').onsubmit = async (e) => {
-    e.preventDefault();
-    const email = $('#auth-email').value;
-    const password = $('#auth-password').value;
-    const name = $('#auth-name').value;
-
-    try {
-        if (isSignUpMode) {
-            const cred = await createUserWithEmailAndPassword(auth, email, password);
-            await setDoc(doc(db, 'users', cred.user.uid), {
-                uid: cred.user.uid,
-                name: name,
-                email: email,
-                profilePic: 'images/default_profile.png',
-                coverPic: 'images/HEALING_ROOT_BANNER.jpg',
-                bio: "New to Healing Social"
-            });
-        } else {
-            await signInWithEmailAndPassword(auth, email, password);
-        }
-    } catch (err) { alert(err.message); }
-};
 
 window.loginWithGoogle = async () => {
     try {
@@ -99,84 +68,53 @@ window.loginWithGoogle = async () => {
                 email: user.email,
                 profilePic: user.photoURL || 'images/default_profile.png',
                 coverPic: 'images/HEALING_ROOT_BANNER.jpg',
-                bio: "Using Healing Social with Google"
+                bio: "Agro-enthusiast"
             });
         }
-    } catch (err) { alert("Google Sign-In failed."); }
+    } catch (err) { console.error(err); }
 };
 
-window.logout = () => {
-    if(confirm("Are you sure you want to log out?")) {
-        signOut(auth).then(() => location.reload());
-    }
-};
+window.logout = () => { if(confirm("Logout?")) signOut(auth).then(() => location.reload()); };
 
 // --- 2. UI SYNCING ---
 function syncUI(profile) {
-    const pic = profile.profilePic || 'images/default_profile.png';
-    const cover = profile.coverPic || 'images/HEALING_ROOT_BANNER.jpg';
-    
-    $$('.user-avatar-sync').forEach(img => img.src = pic);
-    if ($('#profile-pic-preview')) $('#profile-pic-preview').src = pic;
-    if ($('#cover-pic-preview')) $('#cover-pic-preview').src = cover;
     if ($('#profile-name')) $('#profile-name').innerText = profile.name;
     if ($('#menu-user-name')) $('#menu-user-name').innerText = profile.name;
     if ($('#profile-bio')) $('#profile-bio').innerText = profile.bio || "";
+    const pic = profile.profilePic || 'images/default_profile.png';
+    $$('.user-avatar-sync').forEach(img => img.src = pic);
+    if ($('#profile-pic-preview')) $('#profile-pic-preview').src = pic;
+    if ($('#cover-pic-preview')) $('#cover-pic-preview').src = profile.coverPic || '';
 }
 
-// --- 3. REELS (YOUTUBE AUTOMATED) ---
-window.loadReels = () => {
-    const container = $('#reels-container');
-    if (!container) return;
-    
-    // Add any YouTube video IDs here to automate the feed
-    const videoIDs = ['dQw4w9WgXcQ', '3752533', '4462615']; 
-
-    container.innerHTML = videoIDs.map(id => `
-        <div class="reel-video-container" style="background:#000; height:calc(100vh - 65px); overflow:hidden;">
-            <iframe 
-                width="100%" 
-                height="100%" 
-                src="https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${id}&modestbranding=1&rel=0" 
-                frameborder="0" 
-                allow="autoplay; encrypted-media" 
-                style="height:100%; width:100%; pointer-events: none;">
-            </iframe>
-            <div style="position:absolute; bottom:30px; left:15px; z-index:10; text-shadow: 2px 2px 4px #000;">
-                <b style="font-size:18px; color:white;">@HealingRootAgro</b>
-                <p style="color:white; margin-top:5px;">Professional Agro Insights 🌿</p>
-            </div>
-        </div>
-    `).join('');
+window.editProfile = async () => {
+    const n = prompt("New Name:", currentProfile.name);
+    const b = prompt("New Bio:", currentProfile.bio);
+    if(n) await updateDoc(doc(db, 'users', currentUser.uid), { name: n, bio: b });
 };
 
-// --- 4. FEED & PROFILE POSTS ---
+// --- 3. FEED & REACTIONS ---
 function initFeed() {
     const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
     onSnapshot(q, (snapshot) => {
         const container = $('#feed-items');
         if(!container) return;
         container.innerHTML = '';
-        snapshot.forEach(docSnap => {
-            const post = docSnap.data();
-            renderPostCard(container, post, docSnap.id);
-        });
+        snapshot.forEach(docSnap => renderPost(container, docSnap.data(), docSnap.id));
     });
 }
 
 function initProfileFeed() {
     const q = query(collection(db, 'posts'), where('uid', '==', currentUser.uid), orderBy('timestamp', 'desc'));
-    onSnapshot(q, (snap) => {
+    onSnapshot(q, snap => {
         const container = $('#user-own-posts');
-        if (!container) return;
-        container.innerHTML = '<h3 style="padding:15px; border-bottom:1px solid #333;">Your Posts</h3>';
-        snap.forEach(docSnap => {
-            renderPostCard(container, docSnap.data(), docSnap.id);
-        });
+        if(!container) return;
+        container.innerHTML = '<h3 style="padding:15px;">My Timeline</h3>';
+        snap.forEach(d => renderPost(container, d.data(), d.id));
     });
 }
 
-function renderPostCard(container, post, pid) {
+function renderPost(container, post, pid) {
     const isAdmin = currentUser.uid === ADMIN_UID;
     const isOwner = currentUser.uid === post.uid;
     const card = document.createElement('div');
@@ -184,77 +122,158 @@ function renderPostCard(container, post, pid) {
     card.innerHTML = `
         <div style="padding:12px; display:flex; justify-content:space-between; align-items:center;">
             <div style="display:flex; gap:10px; align-items:center;">
-                <img src="${post.userPic || 'images/default_profile.png'}" class="avatar-small">
+                <img src="${post.userPic}" class="avatar-small">
                 <b>${post.userName}</b>
             </div>
-            ${(isAdmin || isOwner) ? `<i class="fa-solid fa-trash" onclick="deletePost('${pid}')" style="color:var(--hr-secondary); cursor:pointer;"></i>` : ''}
+            ${(isAdmin || isOwner) ? `<i class="fa-solid fa-trash" onclick="deletePost('${pid}')" style="cursor:pointer; color:gray;"></i>` : ''}
         </div>
         <div style="padding:0 12px 12px;">${post.text}</div>
-        ${post.content ? `<img src="${post.content}" style="width:100%; max-height:400px; object-fit:cover;">` : ''}
+        ${post.content ? `<img src="${post.content}" style="width:100%;">` : ''}
+        
+        <div style="padding:10px 12px; border-top:1px solid var(--hr-divider); display:flex; gap:15px; position:relative;">
+            <div class="post-action-btn" style="position:relative; cursor:pointer;">
+                <span><i class="fa-regular fa-thumbs-up"></i> ${post.reactionType || 'Like'}</span>
+                <div class="reactions-box">
+                    <span onclick="react('${pid}', '👍')">👍</span>
+                    <span onclick="react('${pid}', '❤️')">❤️</span>
+                    <span onclick="react('${pid}', '😂')">😂</span>
+                    <span onclick="react('${pid}', '😮')">😮</span>
+                    <span onclick="react('${pid}', '😢')">😢</span>
+                    <span onclick="react('${pid}', '😡')">😡</span>
+                </div>
+            </div>
+            <span onclick="toggleComments('${pid}')" style="cursor:pointer;"><i class="fa-regular fa-comment"></i> Comment</span>
+        </div>
+        <div id="comments-${pid}" class="comment-section" style="display:none;">
+            <div id="list-${pid}"></div>
+            <div style="display:flex; gap:5px; margin-top:10px;">
+                <input id="input-${pid}" placeholder="Write a comment..." style="flex:1; background:var(--hr-hover); border:none; padding:8px; border-radius:15px; color:white;">
+                <button onclick="addComment('${pid}')" style="background:none; border:none; color:var(--fb-blue); font-weight:bold;">Post</button>
+            </div>
+        </div>
     `;
     container.appendChild(card);
+    loadComments(pid);
 }
 
-// --- 5. ACTIONS ---
-window.submitPost = async () => {
-    const text = $('#post-text').value;
-    const file = $('#post-file-input').files[0];
-    let fileUrl = file ? await uploadToCloudinary(file) : "";
-    if (!text.trim() && !fileUrl) return;
+// --- 4. REACTIONS & COMMENTS LOGIC ---
+window.react = async (pid, emoji) => {
+    await updateDoc(doc(db, 'posts', pid), { reactionType: emoji });
+};
 
-    await addDoc(collection(db, 'posts'), {
+window.toggleComments = (pid) => {
+    const el = $(`#comments-${pid}`);
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+};
+
+window.addComment = async (pid) => {
+    const text = $(`#input-${pid}`).value;
+    if(!text) return;
+    await addDoc(collection(db, 'posts', pid, 'comments'), {
         uid: currentUser.uid,
         userName: currentProfile.name,
         userPic: currentProfile.profilePic,
         text: text,
-        content: fileUrl,
         timestamp: serverTimestamp()
+    });
+    $(`#input-${pid}`).value = '';
+};
+
+function loadComments(pid) {
+    const q = query(collection(db, 'posts', pid, 'comments'), orderBy('timestamp', 'asc'));
+    onSnapshot(q, snap => {
+        const list = $(`#list-${pid}`);
+        if(!list) return;
+        list.innerHTML = '';
+        snap.forEach(d => {
+            const c = d.data();
+            list.innerHTML += `
+                <div style="margin-bottom:8px;">
+                    <div style="display:flex; gap:8px;">
+                        <img src="${c.userPic}" style="width:30px; height:30px; border-radius:50%;">
+                        <div style="background:var(--hr-hover); padding:8px; border-radius:12px; font-size:13px;">
+                            <b>${c.userName}</b><br>${c.text}
+                        </div>
+                    </div>
+                    <div style="margin-left:45px; font-size:11px; color:var(--hr-secondary); margin-top:2px;">
+                        <span onclick="replyTo('${pid}', '${d.id}', '${c.userName}')" style="cursor:pointer; font-weight:bold;">Reply</span>
+                    </div>
+                    <div id="replies-${d.id}" style="margin-left:40px; margin-top:5px;"></div>
+                </div>`;
+            loadReplies(pid, d.id);
+        });
+    });
+}
+
+window.replyTo = async (pid, cid, name) => {
+    const txt = prompt(`Reply to ${name}:`);
+    if(!txt) return;
+    await addDoc(collection(db, 'posts', pid, 'comments', cid, 'replies'), {
+        uid: currentUser.uid,
+        userName: currentProfile.name,
+        text: txt,
+        timestamp: serverTimestamp()
+    });
+};
+
+function loadReplies(pid, cid) {
+    const q = query(collection(db, 'posts', pid, 'comments', cid, 'replies'), orderBy('timestamp', 'asc'));
+    onSnapshot(q, snap => {
+        const box = $(`#replies-${cid}`);
+        if(!box) return;
+        box.innerHTML = '';
+        snap.forEach(d => {
+            const r = d.data();
+            box.innerHTML += `<div style="font-size:12px; margin-bottom:4px;"><b>${r.userName}</b> ${r.text}</div>`;
+        });
+    });
+}
+
+// --- 5. POSTING & HELPERS ---
+window.submitPost = async () => {
+    const t = $('#post-text').value;
+    const f = $('#post-file-input').files[0];
+    const url = f ? await uploadToCloudinary(f) : "";
+    if(!t && !url) return;
+    await addDoc(collection(db, 'posts'), {
+        uid: currentUser.uid,
+        userName: currentProfile.name,
+        userPic: currentProfile.profilePic,
+        text: t,
+        content: url,
+        timestamp: serverTimestamp(),
+        reactionType: 'Like'
     });
     $('#post-text').value = '';
     window.closePostModal();
 };
 
-window.deletePost = async (pid) => {
-    if (confirm("Delete this post?")) await deleteDoc(doc(db, 'posts', pid));
-};
+window.deletePost = async (pid) => { if(confirm("Delete?")) await deleteDoc(doc(db, 'posts', pid)); };
 
-// --- 6. HELPERS (Cloudinary, Discovery, Notifications) ---
 async function uploadToCloudinary(file) {
-    if (!file) return null;
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', CLOUDINARY_PRESET);
     const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
-    const data = await res.json();
-    return data.secure_url;
+    const d = await res.json();
+    return d.secure_url;
 }
 
 function loadDiscoveryUsers() {
-    const q = query(collection(db, 'users'), limit(10));
+    const q = query(collection(db, 'users'), limit(8));
     onSnapshot(q, snap => {
         const scroller = $('#discovery-scroller');
-        if (!scroller) return;
-        scroller.innerHTML = `<div style="display:flex; overflow-x:auto; gap:10px; padding:15px; scrollbar-width:none;"></div>`;
+        if(!scroller) return;
+        scroller.innerHTML = '<div style="display:flex; overflow-x:auto; gap:10px; padding:10px;"></div>';
         const inner = scroller.firstChild;
         snap.forEach(d => {
             const u = d.data();
-            if (u.uid === currentUser.uid) return;
+            if(u.uid === currentUser.uid) return;
             inner.innerHTML += `
-                <div style="background:var(--hr-card); border:1px solid var(--hr-divider); border-radius:10px; min-width:120px; text-align:center; padding:10px;">
-                    <img src="${u.profilePic}" style="width:60px; height:60px; border-radius:50%; object-fit:cover;">
-                    <p style="font-size:12px; margin:5px 0;">${u.name}</p>
+                <div style="min-width:100px; text-align:center; background:var(--hr-card); padding:10px; border-radius:10px; border:1px solid var(--hr-divider);">
+                    <img src="${u.profilePic}" style="width:50px; height:50px; border-radius:50%;">
+                    <div style="font-size:11px; margin-top:5px; font-weight:bold;">${u.name.split(' ')[0]}</div>
                 </div>`;
         });
-    });
-}
-
-function listenToNotifications() {
-    const q = query(collection(db, 'notifications'), where('recipientUID', '==', currentUser.uid));
-    onSnapshot(q, snap => {
-        const badge = $('#notif-badge');
-        if(badge) {
-            badge.style.display = snap.size > 0 ? 'block' : 'none';
-            badge.innerText = snap.size;
-        }
     });
 }
