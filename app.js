@@ -54,7 +54,6 @@ async function uploadToCloudinary(file) {
 onAuthStateChanged(auth, user => {
     if (user) {
         currentUser = user;
-        // Real-time listener for current user's profile
         onSnapshot(doc(db, 'users', user.uid), (snap) => {
             if (snap.exists()) {
                 currentProfile = snap.data();
@@ -75,46 +74,35 @@ function syncUI(profile) {
     const pic = profile.profilePic || 'images/default_profile.png';
     const cover = profile.coverPic || 'images/HEALING_ROOT_BANNER.jpg';
     
-    // Sync all avatars across the site
     $$('.user-avatar-sync').forEach(img => img.src = pic);
     if ($('#profile-pic-preview')) $('#profile-pic-preview').src = pic;
     if ($('#cover-pic-preview')) $('#cover-pic-preview').src = cover;
-    
-    // Sync names and bio
     if ($('#display-name-header')) $('#display-name-header').innerText = profile.name;
     if ($('#display-bio')) $('#display-bio').innerText = profile.bio || "No bio set.";
 }
 
-// --- 3. PROFILE EDITING (INSTANT UPDATES) ---
+// --- 3. PROFILE EDITING ---
 window.editProfileName = async () => {
     const newName = prompt("Enter your full name:", currentProfile.name);
-    if (newName) {
-        await updateDoc(doc(db, 'users', currentUser.uid), { name: newName });
-    }
+    if (newName) await updateDoc(doc(db, 'users', currentUser.uid), { name: newName });
 };
 
 window.editBio = async () => {
     const newBio = prompt("What's your bio?", currentProfile.bio);
-    if (newBio !== null) {
-        await updateDoc(doc(db, 'users', currentUser.uid), { bio: newBio });
-    }
+    if (newBio !== null) await updateDoc(doc(db, 'users', currentUser.uid), { bio: newBio });
 };
 
 window.uploadNewProfilePic = async (input) => {
     const url = await uploadToCloudinary(input.files[0]);
-    if (url) {
-        await updateDoc(doc(db, 'users', currentUser.uid), { profilePic: url });
-    }
+    if (url) await updateDoc(doc(db, 'users', currentUser.uid), { profilePic: url });
 };
 
 window.uploadCoverPic = async (input) => {
     const url = await uploadToCloudinary(input.files[0]);
-    if (url) {
-        await updateDoc(doc(db, 'users', currentUser.uid), { coverPic: url });
-    }
+    if (url) await updateDoc(doc(db, 'users', currentUser.uid), { coverPic: url });
 };
 
-// --- 4. DISCOVERY: SHOW ALL USERS ---
+// --- 4. DISCOVERY ---
 function loadDiscovery() {
     const q = query(collection(db, 'users'), limit(50));
     onSnapshot(q, (snap) => {
@@ -124,7 +112,6 @@ function loadDiscovery() {
         snap.forEach(userDoc => {
             const user = userDoc.data();
             if (user.uid === currentUser.uid) return; 
-
             const div = document.createElement('div');
             div.className = 'user-row';
             div.innerHTML = `
@@ -139,7 +126,7 @@ function loadDiscovery() {
     });
 }
 
-// --- 5. FEED, LIKES & REPLIES ---
+// --- 5. POSTS, LIKES, & NESTED COMMENTS ---
 window.submitPost = async () => {
     const text = $('#post-text').value;
     const file = $('#post-file-input').files[0];
@@ -170,16 +157,57 @@ window.likePost = async (pid) => {
     const postData = postSnap.data();
     
     if (postData.likes && postData.likes.includes(currentUser.uid)) {
-        await updateDoc(postRef, {
-            likes: arrayRemove(currentUser.uid),
-            likeCount: increment(-1)
-        });
+        await updateDoc(postRef, { likes: arrayRemove(currentUser.uid), likeCount: increment(-1) });
     } else {
-        await updateDoc(postRef, {
-            likes: arrayUnion(currentUser.uid),
-            likeCount: increment(1)
-        });
+        await updateDoc(postRef, { likes: arrayUnion(currentUser.uid), likeCount: increment(1) });
     }
+};
+
+window.submitComment = async (pid) => {
+    const input = $(`#c-${pid}`);
+    if (!input.value.trim()) return;
+
+    const commentId = "c_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+    await updateDoc(doc(db, 'posts', pid), {
+        comments: arrayUnion({
+            id: commentId,
+            uid: currentUser.uid,
+            userName: currentProfile.name,
+            text: input.value,
+            likes: [],
+            replies: [],
+            timestamp: Date.now()
+        })
+    });
+    input.value = '';
+};
+
+window.likeComment = async (pid, cid) => {
+    const postRef = doc(db, 'posts', pid);
+    const snap = await getDoc(postRef);
+    const comments = snap.data().comments.map(c => {
+        if (c.id === cid) {
+            if (!c.likes) c.likes = [];
+            c.likes.includes(currentUser.uid) ? c.likes = c.likes.filter(id => id !== currentUser.uid) : c.likes.push(currentUser.uid);
+        }
+        return c;
+    });
+    await updateDoc(postRef, { comments });
+};
+
+window.replyToComment = async (pid, cid) => {
+    const replyText = prompt("Write your reply:");
+    if (!replyText) return;
+    const postRef = doc(db, 'posts', pid);
+    const snap = await getDoc(postRef);
+    const comments = snap.data().comments.map(c => {
+        if (c.id === cid) {
+            if (!c.replies) c.replies = [];
+            c.replies.push({ userName: currentProfile.name, text: replyText, timestamp: Date.now() });
+        }
+        return c;
+    });
+    await updateDoc(postRef, { comments });
 };
 
 function initFeed() {
@@ -219,10 +247,21 @@ function initFeed() {
                 <div style="padding:10px; background:#161616;">
                     <div id="comments-${pid}">
                         ${(post.comments || []).map(c => `
-                            <div style="margin-bottom:8px; display:flex; gap:8px;">
-                                <div style="background:#333; padding:8px 12px; border-radius:15px; font-size:13px;">
-                                    <b style="color:var(--hr-green); font-size:11px;">${c.userName}</b><br>${c.text}
+                            <div style="margin-bottom:12px;">
+                                <div style="display:flex; gap:8px;">
+                                    <div style="background:#333; padding:8px 12px; border-radius:18px; font-size:13px;">
+                                        <b style="color:var(--hr-green); font-size:11px;">${c.userName}</b><br>${c.text}
+                                    </div>
                                 </div>
+                                <div style="margin-left:12px; font-size:11px; margin-top:4px; color:#aaa; display:flex; gap:15px;">
+                                    <span style="cursor:pointer" onclick="likeComment('${pid}', '${c.id}')">Like (${c.likes ? c.likes.length : 0})</span>
+                                    <span style="cursor:pointer" onclick="replyToComment('${pid}', '${c.id}')">Reply</span>
+                                </div>
+                                ${(c.replies || []).map(r => `
+                                    <div style="margin-left:40px; margin-top:6px; background:#222; padding:6px 10px; border-radius:15px; font-size:12px; border-left: 2px solid var(--hr-green);">
+                                        <b style="color:#888;">${r.userName}</b> ${r.text}
+                                    </div>
+                                `).join('')}
                             </div>
                         `).join('')}
                     </div>
@@ -237,20 +276,7 @@ function initFeed() {
     });
 }
 
-window.submitComment = async (pid) => {
-    const input = $(`#c-${pid}`);
-    if (!input.value.trim()) return;
-    await updateDoc(doc(db, 'posts', pid), {
-        comments: arrayUnion({
-            userName: currentProfile.name,
-            text: input.value,
-            timestamp: Date.now()
-        })
-    });
-    input.value = '';
-};
-
-// --- AUTH UI TOGGLE ---
+// --- AUTH LOGIC ---
 window.toggleAuthMode = () => {
     isSignUpMode = !isSignUpMode;
     $('#auth-name').style.display = isSignUpMode ? 'block' : 'none';
@@ -260,42 +286,31 @@ window.toggleAuthMode = () => {
 
 $('#auth-form').onsubmit = async (e) => {
     e.preventDefault();
-    const email = $('#auth-email').value;
-    const password = $('#auth-password').value;
-    const fullName = $('#auth-name').value;
+    const email = $('#auth-email').value, password = $('#auth-password').value, fullName = $('#auth-name').value;
     try {
         if (isSignUpMode) {
             const cred = await createUserWithEmailAndPassword(auth, email, password);
             await setDoc(doc(db, 'users', cred.user.uid), {
-                uid: cred.user.uid,
-                name: fullName,
-                email: email,
+                uid: cred.user.uid, name: fullName, email,
                 profilePic: 'images/default_profile.png',
                 coverPic: 'images/HEALING_ROOT_BANNER.jpg',
-                bio: "Welcome to my profile!",
-                friends: []
+                bio: "Welcome to my profile!", friends: []
             });
-        } else {
-            await signInWithEmailAndPassword(auth, email, password);
-        }
+        } else { await signInWithEmailAndPassword(auth, email, password); }
     } catch (err) { alert(err.message); }
 };
 
 window.loginWithGoogle = async () => {
     try {
         const result = await signInWithPopup(auth, googleProvider);
-        const user = result.user;
-        const userRef = doc(db, 'users', user.uid);
+        const userRef = doc(db, 'users', result.user.uid);
         const snap = await getDoc(userRef);
         if (!snap.exists()) {
             await setDoc(userRef, {
-                uid: user.uid,
-                name: user.displayName,
-                email: user.email,
-                profilePic: user.photoURL || 'images/default_profile.png',
+                uid: result.user.uid, name: result.user.displayName, email: result.user.email,
+                profilePic: result.user.photoURL || 'images/default_profile.png',
                 coverPic: 'images/HEALING_ROOT_BANNER.jpg',
-                bio: "Joined via Google!",
-                friends: []
+                bio: "Joined via Google!", friends: []
             });
         }
     } catch (err) { alert(err.message); }
