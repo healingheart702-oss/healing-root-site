@@ -19,14 +19,8 @@
         }
         body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; margin: 0; background: var(--hr-bg); color: var(--hr-text); padding-bottom: 70px; overflow-x: hidden; }
         
-        /* Navigation & Views */
         .view { display: none; min-height: 100vh; }
         .view.active { display: block; }
-
-        /* Auth Screen Styling */
-        #auth-modal { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #000; padding: 20px; text-align: center; }
-        .auth-container { width: 100%; max-width: 400px; background: var(--hr-card); padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .auth-input { width: 100%; padding: 15px; margin-bottom: 12px; background: var(--hr-hover); border: 1px solid var(--hr-divider); border-radius: 8px; color: white; box-sizing: border-word; }
 
         /* Header & Nav */
         .header { background: var(--hr-card); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--hr-divider); }
@@ -34,40 +28,43 @@
         .header-icons { display: flex; gap: 10px; }
         .circle-icon { background: var(--hr-hover); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 18px; position: relative; }
 
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--hr-card); display: flex; border-top: 1px solid var(--hr-divider); z-index: 1001; height: 65px; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-item { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: var(--hr-secondary); transition: 0.2s; font-size: 22px; position: relative; }
-        .nav-item.active { color: var(--fb-blue); }
-        .badge { position: absolute; top: 8px; right: 20%; background: #e41e3f; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; border: 2px solid var(--hr-card); }
+        /* FB Style Reactions */
+        .reactions-box {
+            position: absolute; bottom: 45px; left: 0; background: white; border-radius: 30px;
+            padding: 5px 10px; display: none; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 100; transition: all 0.2s ease;
+        }
+        .reactions-box span { font-size: 24px; cursor: pointer; transition: transform 0.2s; }
+        .reactions-box span:hover { transform: scale(1.3); }
+        .post-action-btn:hover .reactions-box { display: flex; }
 
-        /* Posts */
-        .post-card { background: var(--hr-card); margin-bottom: 10px; border-bottom: 8px solid #000; }
-        .composer { background: var(--hr-card); padding: 12px 15px; margin-bottom: 10px; }
-        .composer-top { display: flex; align-items: center; gap: 10px; }
-        .avatar-small { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--hr-divider); }
-        .composer-input { background: var(--hr-hover); border-radius: 20px; padding: 10px 15px; flex: 1; color: var(--hr-secondary); cursor: pointer; font-size: 15px; }
+        /* Menu Grid */
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
+        .menu-card { background: var(--hr-card); padding: 15px; border-radius: 10px; border: 1px solid var(--hr-divider); }
+        .menu-card i { font-size: 22px; margin-bottom: 8px; }
 
-        /* Reels */
-        #reels-view { background: #000; height: 100vh; overflow-y: scroll; snap-type: y mandatory; }
-        .reel-video-container { height: calc(100vh - 65px); width: 100%; snap-align: start; position: relative; }
-
-        /* Profile */
-        .profile-header { position: relative; background: var(--hr-card); padding-bottom: 15px; }
-        .cover-photo-box { height: 200px; background: #333; position: relative; }
-        .profile-avatar-box { margin-top: -80px; padding: 0 15px; position: relative; }
-        .profile-img-large { width: 160px; height: 160px; border-radius: 50%; border: 4px solid var(--hr-bg); object-fit: cover; }
-        
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--hr-bg); z-index: 2000; display: none; flex-direction: column; }
+        /* Auth & Buttons */
+        #auth-modal { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #000; padding: 20px; }
+        .auth-container { width: 100%; max-width: 400px; background: var(--hr-card); padding: 25px; border-radius: 15px; }
+        .auth-input { width: 100%; padding: 12px; margin-bottom: 12px; background: var(--hr-hover); border: 1px solid var(--hr-divider); border-radius: 8px; color: white; box-sizing: border-box; }
         .btn-full { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
         .bg-blue { background: var(--fb-blue); color: white; }
         .bg-gray { background: var(--hr-hover); color: white; }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--hr-card); display: flex; border-top: 1px solid var(--hr-divider); z-index: 1001; height: 65px; }
+        .nav-item { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--hr-secondary); font-size: 22px; position: relative; }
+        .nav-item.active { color: var(--fb-blue); }
+        .badge { position: absolute; top: 8px; right: 20%; background: #e41e3f; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; border: 2px solid var(--hr-card); }
+        
+        /* Comments Style */
+        .comment-section { padding: 10px 12px; border-top: 1px solid var(--hr-divider); }
+        .reply-box { margin-left: 40px; border-left: 2px solid var(--hr-divider); padding-left: 10px; margin-top: 5px; }
     </style>
 </head>
 <body>
 
     <div id="auth-modal">
         <h1 style="color:white; font-size:42px; margin-bottom:5px; font-weight:800;">HEALING</h1>
-        <p style="color:var(--hr-secondary); margin-bottom:25px;">Rooted in Agriculture.</p>
-        
         <div class="auth-container">
             <form id="auth-form">
                 <input type="text" id="auth-name" class="auth-input" placeholder="Full Name" style="display:none;">
@@ -75,149 +72,111 @@
                 <input type="password" id="auth-password" class="auth-input" placeholder="Password" required>
                 <button type="submit" id="auth-submit-btn" class="btn-full bg-blue">Log In</button>
             </form>
-            
             <div style="margin: 20px 0; display: flex; align-items: center; color: var(--hr-divider);">
                 <div style="flex:1; height:1px; background:var(--hr-divider);"></div>
                 <span style="padding:0 10px; font-size:12px;">OR</span>
                 <div style="flex:1; height:1px; background:var(--hr-divider);"></div>
             </div>
-
             <button onclick="loginWithGoogle()" class="btn-full bg-gray" style="display:flex; align-items:center; justify-content:center; gap:10px;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="18">
-                Continue with Google
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="18"> Continue with Google
             </button>
-
-            <p id="auth-toggle" onclick="toggleAuthMode()" style="color:var(--fb-blue); text-align:center; cursor:pointer; margin-top:20px; font-weight:bold;">Create New Account</p>
+            <p id="auth-toggle" onclick="toggleAuthMode()" style="color:var(--fb-blue); text-align:center; cursor:pointer; margin-top:20px;">Create New Account</p>
         </div>
     </div>
 
     <div id="main-app" style="display:none;">
-        <div id="app-header" class="header">
-            <h1>HEALING</h1>
+        <div class="header">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <h1>HEALING</h1>
+                <div class="circle-icon" onclick="location.reload()"><i class="fa-solid fa-rotate-right"></i></div>
+            </div>
             <div class="header-icons">
                 <div class="circle-icon" onclick="openPostModal()"><i class="fa-solid fa-plus"></i></div>
-                <div class="circle-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
-                <div class="circle-icon" onclick="showView('chats')">
-                    <i class="fa-solid fa-comment"></i>
-                    <span class="badge" id="chat-badge" style="display:none">0</span>
-                </div>
+                <div class="circle-icon" onclick="showView('chats')"><i class="fa-solid fa-comment"></i></div>
             </div>
         </div>
 
         <div id="home-view" class="view active">
-            <div class="composer">
-                <div class="composer-top">
-                    <img class="user-avatar-sync avatar-small" src="images/default_profile.png">
-                    <div class="composer-input" onclick="openPostModal()">What's on your mind?</div>
-                </div>
+            <div style="padding:15px; background:var(--hr-card); margin-bottom:10px; display:flex; gap:10px; align-items:center;">
+                <img class="user-avatar-sync avatar-small" src="images/default_profile.png" style="width:40px; border-radius:50%">
+                <div onclick="openPostModal()" style="background:var(--hr-hover); padding:10px; border-radius:20px; flex:1; color:var(--hr-secondary);">What's on your mind?</div>
             </div>
-            <div id="discovery-scroller"></div>
             <div id="feed-items"></div>
         </div>
 
-        <div id="reels-view" class="view">
-            <div id="reels-container"></div>
-        </div>
-
-        <div id="chats-view" class="view">
-            <div style="padding: 15px; display: flex; justify-content: space-between; align-items: center;">
-                <h2 style="margin:0">Chats</h2>
-                <div class="circle-icon"><i class="fa-solid fa-pen-to-square"></i></div>
-            </div>
-            <div id="chat-list"></div>
-        </div>
+        <div id="reels-view" class="view"><div id="reels-container"></div></div>
 
         <div id="profile-view" class="view">
-            <div class="profile-header">
-                <div class="cover-photo-box">
-                    <img id="cover-pic-preview" src="images/HEALING_ROOT_BANNER.jpg" style="width:100%; height:100%; object-fit:cover;">
-                    <button class="circle-icon" style="position:absolute; bottom:10px; right:10px;" onclick="document.getElementById('cover-upload').click()"><i class="fa-solid fa-camera"></i></button>
+            <div style="background:var(--hr-card);">
+                <div style="height:200px; background:#333; position:relative;">
+                    <img id="cover-pic-preview" style="width:100%; height:100%; object-fit:cover;">
+                    <button class="circle-icon" style="position:absolute; bottom:10px; right:10px;" onclick="$('#cover-upload').click()"><i class="fa-solid fa-camera"></i></button>
                 </div>
-                <div class="profile-avatar-box">
-                    <div style="position:relative; display:inline-block;">
-                        <img id="profile-pic-preview" src="images/default_profile.png" class="profile-img-large">
-                        <button class="circle-icon" style="position:absolute; bottom:10px; right:5px; border:3px solid var(--hr-bg);" onclick="document.getElementById('pic-upload').click()"><i class="fa-solid fa-camera"></i></button>
+                <div style="margin-top:-60px; padding:0 15px;">
+                    <img id="profile-pic-preview" style="width:120px; height:120px; border-radius:50%; border:4px solid black;">
+                    <h2 id="profile-name">Loading...</h2>
+                    <p id="profile-bio" style="color:var(--hr-secondary);"></p>
+                    <div style="display:flex; gap:10px; margin-bottom:15px;">
+                        <button class="btn-full bg-blue" onclick="alert('Story logic integrated!')">Add to story</button>
+                        <button class="btn-full bg-gray" onclick="editProfile()">Edit profile</button>
                     </div>
-                    <h2 id="profile-name" style="margin: 10px 0 2px 0;">Loading...</h2>
-                    <p id="profile-bio" style="margin:0; color: var(--hr-secondary);">Student / Agro-Developer</p>
-                </div>
-                <div style="padding: 0 15px; display: flex; gap: 10px;">
-                    <button class="btn-full bg-blue"><i class="fa-solid fa-plus"></i> Add to story</button>
-                    <button class="btn-full bg-gray" onclick="editProfile()">Edit profile</button>
                 </div>
             </div>
             <div id="user-own-posts"></div>
         </div>
 
-        <div id="notifications-view" class="view">
-            <div style="padding:15px;"><h2>Notifications</h2></div>
-            <div id="notifications-list"></div>
-        </div>
-
         <div id="menu-view" class="view">
-            <div style="padding: 15px; display: flex; justify-content: space-between; align-items: center;">
-                <h2 style="margin:0">Menu</h2>
-                <div class="circle-icon" onclick="logout()"><i class="fa-solid fa-gear"></i></div>
-            </div>
-            <div style="padding: 0 15px;">
-                <div class="menu-item" style="display:flex; align-items:center; gap:12px; margin-bottom:20px;" onclick="showView('profile')">
-                    <img class="user-avatar-sync avatar-small" src="images/default_profile.png">
-                    <div>
-                        <b id="menu-user-name">Your Name</b>
-                        <div style="font-size:12px; color:var(--hr-secondary);">See your profile</div>
-                    </div>
+            <div style="padding:15px;"><h2>Menu</h2></div>
+            <div style="padding: 0 15px; margin-bottom: 20px;" onclick="showView('profile')">
+                <div style="display:flex; align-items:center; gap:12px; background:var(--hr-card); padding:10px; border-radius:10px;">
+                    <img class="user-avatar-sync" style="width:40px; height:40px; border-radius:50%;">
+                    <div><b id="menu-user-name">Your Name</b><br><small style="color:var(--hr-secondary)">See your profile</small></div>
                 </div>
             </div>
             <div class="menu-grid">
-                <div class="menu-item" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i><br><b>Log Out</b></div>
+                <div class="menu-card"><i class="fa-solid fa-user-group" style="color:#2aa4f4;"></i><br><b>Friends</b></div>
+                <div class="menu-card"><i class="fa-solid fa-users" style="color:#2aa4f4;"></i><br><b>Groups</b></div>
+                <div class="menu-card"><i class="fa-solid fa-video" style="color:#f3425f;"></i><br><b>Videos</b></div>
+                <div class="menu-card"><i class="fa-solid fa-bookmark" style="color:#c065cc;"></i><br><b>Saved</b></div>
+                <div class="menu-card" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i><br><b>Log Out</b></div>
             </div>
         </div>
 
         <div class="bottom-nav">
             <div class="nav-item active" onclick="showView('home')"><i class="fa-solid fa-house"></i></div>
             <div class="nav-item" onclick="showView('reels')"><i class="fa-solid fa-clapperboard"></i></div>
-            <div class="nav-item" onclick="showView('chats')"><i class="fa-solid fa-comment-dots"></i></div>
             <div class="nav-item" onclick="showView('profile')"><i class="fa-solid fa-circle-user"></i></div>
-            <div class="nav-item" onclick="showView('notifications')"><i class="fa-solid fa-bell"></i><span class="badge" id="notif-badge" style="display:none">0</span></div>
             <div class="nav-item" onclick="showView('menu')"><i class="fa-solid fa-bars"></i></div>
         </div>
     </div>
 
-    <div id="post-modal" class="modal">
-        <div style="padding: 15px; display: flex; justify-content: space-between; align-items:center; border-bottom: 1px solid var(--hr-divider);">
-            <span onclick="closePostModal()" style="font-size:24px; cursor:pointer;">✕</span>
-            <b style="font-size:18px;">Create Post</b>
-            <button class="bg-blue" onclick="submitPost()" style="color:white; border:none; padding:8px 15px; border-radius:5px; font-weight:bold;">Post</button>
+    <div id="post-modal" class="modal" style="display:none; padding:15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <span onclick="closePostModal()" style="font-size:24px;">✕</span>
+            <b>Create Post</b>
+            <button class="bg-blue" onclick="submitPost()" style="padding:5px 15px; border-radius:5px;">Post</button>
         </div>
-        <textarea id="post-text" placeholder="What's on your mind?" style="width:100%; height:200px; background:transparent; color:white; border:none; padding:15px; font-size:18px; outline:none;"></textarea>
-        <div style="padding:15px; border-top:1px solid var(--hr-divider);">
-            <input type="file" id="post-file-input" accept="image/*">
-        </div>
+        <textarea id="post-text" placeholder="What's on your mind?" style="width:100%; height:150px; background:transparent; color:white; border:none; outline:none; font-size:18px;"></textarea>
+        <input type="file" id="post-file-input" accept="image/*">
     </div>
 
-    <input type="file" id="pic-upload" style="display:none;" accept="image/*" onchange="uploadNewProfilePic(this)">
-    <input type="file" id="cover-upload" style="display:none;" accept="image/*" onchange="uploadCoverPic(this)">
+    <input type="file" id="pic-upload" style="display:none;" onchange="uploadNewProfilePic(this)">
+    <input type="file" id="cover-upload" style="display:none;" onchange="uploadCoverPic(this)">
 
     <script type="module" src="app.js"></script>
     <script>
         const $ = s => document.querySelector(s);
-        
         window.showView = (v) => {
-            $('#app-header').style.display = (v === 'home') ? 'flex' : 'none';
             document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             $(`#${v}-view`).classList.add('active');
-            
             const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(item => {
-                const clickAttr = item.getAttribute('onclick');
-                if(clickAttr && clickAttr.includes(v)) item.classList.add('active');
-            });
-            
-            if(v === 'reels' && typeof window.loadReels === 'function') window.loadReels();
+            if (v === 'home') navItems[0].classList.add('active');
+            if (v === 'reels') navItems[1].classList.add('active');
+            if (v === 'profile') navItems[2].classList.add('active');
+            if (v === 'menu') navItems[3].classList.add('active');
         };
-
-        window.openPostModal = () => $('#post-modal').style.display = 'flex';
+        window.openPostModal = () => $('#post-modal').style.display = 'block';
         window.closePostModal = () => $('#post-modal').style.display = 'none';
     </script>
 </body>
