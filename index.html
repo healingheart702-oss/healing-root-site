@@ -19,9 +19,16 @@
         }
         body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; margin: 0; background: var(--hr-bg); color: var(--hr-text); padding-bottom: 70px; overflow-x: hidden; }
         
+        /* Navigation & Views */
         .view { display: none; min-height: 100vh; }
         .view.active { display: block; }
 
+        /* Auth Screen Styling */
+        #auth-modal { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #000; padding: 20px; text-align: center; }
+        .auth-container { width: 100%; max-width: 400px; background: var(--hr-card); padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .auth-input { width: 100%; padding: 15px; margin-bottom: 12px; background: var(--hr-hover); border: 1px solid var(--hr-divider); border-radius: 8px; color: white; box-sizing: border-word; }
+
+        /* Header & Nav */
         .header { background: var(--hr-card); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--hr-divider); }
         .header h1 { color: white; font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -1px; }
         .header-icons { display: flex; gap: 10px; }
@@ -32,36 +39,59 @@
         .nav-item.active { color: var(--fb-blue); }
         .badge { position: absolute; top: 8px; right: 20%; background: #e41e3f; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; border: 2px solid var(--hr-card); }
 
+        /* Posts */
+        .post-card { background: var(--hr-card); margin-bottom: 10px; border-bottom: 8px solid #000; }
         .composer { background: var(--hr-card); padding: 12px 15px; margin-bottom: 10px; }
         .composer-top { display: flex; align-items: center; gap: 10px; }
         .avatar-small { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--hr-divider); }
         .composer-input { background: var(--hr-hover); border-radius: 20px; padding: 10px 15px; flex: 1; color: var(--hr-secondary); cursor: pointer; font-size: 15px; }
 
+        /* Reels */
         #reels-view { background: #000; height: 100vh; overflow-y: scroll; snap-type: y mandatory; }
-        .reel-video-container { height: calc(100vh - 65px); width: 100%; snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; }
-        .reel-actions { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
+        .reel-video-container { height: calc(100vh - 65px); width: 100%; snap-align: start; position: relative; }
 
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
-        .menu-item { background: var(--hr-card); border-radius: 10px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; }
-        .menu-item i { font-size: 24px; margin-bottom: 10px; }
-
+        /* Profile */
         .profile-header { position: relative; background: var(--hr-card); padding-bottom: 15px; }
         .cover-photo-box { height: 200px; background: #333; position: relative; }
         .profile-avatar-box { margin-top: -80px; padding: 0 15px; position: relative; }
         .profile-img-large { width: 160px; height: 160px; border-radius: 50%; border: 4px solid var(--hr-bg); object-fit: cover; }
         
-        .chat-row { display: flex; align-items: center; gap: 12px; padding: 10px 15px; cursor: pointer; }
-
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--hr-bg); z-index: 2000; display: none; flex-direction: column; }
-        
-        .btn-full { width: 100%; padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-full { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
         .bg-blue { background: var(--fb-blue); color: white; }
         .bg-gray { background: var(--hr-hover); color: white; }
     </style>
 </head>
 <body>
 
-    <div id="main-app">
+    <div id="auth-modal">
+        <h1 style="color:white; font-size:42px; margin-bottom:5px; font-weight:800;">HEALING</h1>
+        <p style="color:var(--hr-secondary); margin-bottom:25px;">Rooted in Agriculture.</p>
+        
+        <div class="auth-container">
+            <form id="auth-form">
+                <input type="text" id="auth-name" class="auth-input" placeholder="Full Name" style="display:none;">
+                <input type="email" id="auth-email" class="auth-input" placeholder="Email address" required>
+                <input type="password" id="auth-password" class="auth-input" placeholder="Password" required>
+                <button type="submit" id="auth-submit-btn" class="btn-full bg-blue">Log In</button>
+            </form>
+            
+            <div style="margin: 20px 0; display: flex; align-items: center; color: var(--hr-divider);">
+                <div style="flex:1; height:1px; background:var(--hr-divider);"></div>
+                <span style="padding:0 10px; font-size:12px;">OR</span>
+                <div style="flex:1; height:1px; background:var(--hr-divider);"></div>
+            </div>
+
+            <button onclick="loginWithGoogle()" class="btn-full bg-gray" style="display:flex; align-items:center; justify-content:center; gap:10px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="18">
+                Continue with Google
+            </button>
+
+            <p id="auth-toggle" onclick="toggleAuthMode()" style="color:var(--fb-blue); text-align:center; cursor:pointer; margin-top:20px; font-weight:bold;">Create New Account</p>
+        </div>
+    </div>
+
+    <div id="main-app" style="display:none;">
         <div id="app-header" class="header">
             <h1>HEALING</h1>
             <div class="header-icons">
@@ -120,6 +150,7 @@
         </div>
 
         <div id="notifications-view" class="view">
+            <div style="padding:15px;"><h2>Notifications</h2></div>
             <div id="notifications-list"></div>
         </div>
 
@@ -128,7 +159,6 @@
                 <h2 style="margin:0">Menu</h2>
                 <div class="circle-icon" onclick="logout()"><i class="fa-solid fa-gear"></i></div>
             </div>
-            
             <div style="padding: 0 15px;">
                 <div class="menu-item" style="display:flex; align-items:center; gap:12px; margin-bottom:20px;" onclick="showView('profile')">
                     <img class="user-avatar-sync avatar-small" src="images/default_profile.png">
@@ -138,13 +168,7 @@
                     </div>
                 </div>
             </div>
-
             <div class="menu-grid">
-                <div class="menu-item"><i class="fa-solid fa-user-group" style="color: #2aa4f4;"></i><br><b>Friends</b></div>
-                <div class="menu-item"><i class="fa-solid fa-bookmark" style="color: #c065cc;"></i><br><b>Saved</b></div>
-                <div class="menu-item"><i class="fa-solid fa-clock-rotate-left" style="color: #2aa4f4;"></i><br><b>Memories</b></div>
-                <div class="menu-item"><i class="fa-solid fa-users" style="color: #2aa4f4;"></i><br><b>Groups</b></div>
-                <div class="menu-item" onclick="showView('reels')"><i class="fa-solid fa-video" style="color: #f3425f;"></i><br><b>Video</b></div>
                 <div class="menu-item" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i><br><b>Log Out</b></div>
             </div>
         </div>
@@ -186,9 +210,10 @@
             
             const navItems = document.querySelectorAll('.nav-item');
             navItems.forEach(item => {
-                if(item.getAttribute('onclick').includes(v)) item.classList.add('active');
+                const clickAttr = item.getAttribute('onclick');
+                if(clickAttr && clickAttr.includes(v)) item.classList.add('active');
             });
-            // Trigger Reels load if view is reels
+            
             if(v === 'reels' && typeof window.loadReels === 'function') window.loadReels();
         };
 
