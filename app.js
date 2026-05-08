@@ -21,7 +21,7 @@ const firebaseConfig = {
 // --- SETTINGS & ADMIN ---
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dd7dre9hd/upload";
 const CLOUDINARY_PRESET = "unsigned_upload"; 
-const ADMIN_UID = "gKwgPDNJgsdcApIJch6NM9bKmf02"; // Your Master Admin ID
+const ADMIN_UID = "gKwgPDNJgsdcApIJch6NM9bKmf02"; 
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -58,31 +58,37 @@ onAuthStateChanged(auth, user => {
                 syncUI(currentProfile);
             }
         });
-        $('#auth-modal').style.display = 'none';
-        $('#main-app').style.display = 'block';
+        if($('#auth-modal')) $('#auth-modal').style.display = 'none';
+        if($('#main-app')) $('#main-app').style.display = 'block';
         initFeed();
-        loadDiscoveryUsers(); // Home horizontal scroller
+        loadDiscoveryUsers(); 
         listenToNotifications();
         listenToChats();
     } else {
-        $('#auth-modal').style.display = 'flex';
-        $('#main-app').style.display = 'none';
+        if($('#auth-modal')) $('#auth-modal').style.display = 'flex';
+        if($('#main-app')) $('#main-app').style.display = 'none';
     }
 });
 
+// FIXED: This now matches the IDs in your screenshots to stop the "Loading" bug
 function syncUI(profile) {
     const pic = profile.profilePic || 'images/default_profile.png';
     const cover = profile.coverPic || 'images/HEALING_ROOT_BANNER.jpg';
-    
+    const name = profile.name || "User";
+
     $$('.user-avatar-sync').forEach(img => img.src = pic);
+    
+    // Sync Name & Bio across Menu and Profile tabs
+    if ($('#profile-name')) $('#profile-name').innerText = name;
+    if ($('#menu-user-name')) $('#menu-user-name').innerText = name;
+    if ($('#profile-bio')) $('#profile-bio').innerText = profile.bio || "No bio set.";
+    
+    // Sync Images
     if ($('#profile-pic-preview')) $('#profile-pic-preview').src = pic;
     if ($('#cover-pic-preview')) $('#cover-pic-preview').src = cover;
-    if ($('#profile-name')) $('#profile-name').innerText = profile.name;
-    if ($('#menu-user-name')) $('#menu-user-name').innerText = profile.name;
-    if ($('#profile-bio')) $('#profile-bio').innerText = profile.bio || "No bio set.";
 }
 
-// --- 3. DISCOVERY: PEOPLE YOU MAY KNOW (Horizontal Scroller) ---
+// --- 3. DISCOVERY: PEOPLE YOU MAY KNOW ---
 function loadDiscoveryUsers() {
     const q = query(collection(db, 'users'), limit(20));
     onSnapshot(q, (snap) => {
@@ -91,7 +97,6 @@ function loadDiscoveryUsers() {
         scroller.innerHTML = `
             <div style="padding:10px 15px; display:flex; justify-content:space-between; align-items:center;">
                 <h3 style="margin:0; font-size:14px; color:var(--hr-secondary);">People you may know</h3>
-                <span style="color:var(--fb-blue); font-size:12px;">See all</span>
             </div>
             <div id="scroller-inner" style="display:flex; overflow-x:auto; gap:12px; padding:0 15px 15px 15px; scrollbar-width: none;"></div>`;
         const inner = $('#scroller-inner');
@@ -100,156 +105,112 @@ function loadDiscoveryUsers() {
             if (user.uid === currentUser.uid) return; 
             inner.innerHTML += `
                 <div style="background:var(--hr-card); border:1px solid var(--hr-divider); border-radius:10px; min-width:150px; text-align:center; padding:15px;">
-                    <img src="${user.profilePic || 'images/default_profile.png'}" style="width:85px; height:85px; border-radius:50%; object-fit:cover; margin-bottom:10px;">
-                    <p style="margin:0; font-size:14px; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${user.name}</p>
-                    <button onclick="sendFriendRequest('${user.uid}')" class="btn-full bg-blue" style="font-size:12px; padding:6px; margin-top:10px;">Add Friend</button>
+                    <img src="${user.profilePic || 'images/default_profile.png'}" style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
+                    <p style="margin:10px 0; font-size:14px; font-weight:bold; overflow:hidden; text-overflow:ellipsis;">${user.name}</p>
+                    <button onclick="sendFriendRequest('${user.uid}')" class="btn-full bg-blue" style="font-size:12px; padding:6px;">Add Friend</button>
                 </div>`;
         });
     });
 }
 
-// --- 4. REELS (AUTOMATED VIDEO HUB) ---
+// --- 4. REELS (FIXED: Direct MP4 Links for lively playback) ---
 window.loadReels = () => {
     const container = $('#reels-container');
+    if (!container) return;
+
     const autoVideos = [
-        { url: "https://www.w3schools.com/html/mov_bbb.mp4", author: "AgroBot", info: "Perfect planting season! 🌱" },
-        { url: "https://www.w3schools.com/html/movie.mp4", author: "ComedyHub", info: "Morning laughs 😂" }
+        { url: "https://v1.pexels.com/video-files/3752533/3752533-uhd_1440_2560_25fps.mp4", author: "AgroTrends" },
+        { url: "https://v1.pexels.com/video-files/2853795/2853795-uhd_1440_2732_30fps.mp4", author: "HealingRoot" },
+        { url: "https://v1.pexels.com/video-files/4462615/4462615-uhd_1440_2560_25fps.mp4", author: "FarmLife" }
     ];
+
     container.innerHTML = autoVideos.map(vid => `
-        <div class="reel-video-container">
-            <video src="${vid.url}" loop muted autoplay style="width:100%; height:100%; object-fit:cover;"></video>
+        <div class="reel-video-container" style="height:100vh; position:relative; background:#000;">
+            <video src="${vid.url}" loop muted autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
             <div class="reel-actions">
-                <div class="circle-icon" style="background:rgba(0,0,0,0.5)"><i class="fa-solid fa-heart"></i></div>
-                <div class="circle-icon" style="background:rgba(0,0,0,0.5)"><i class="fa-solid fa-comment"></i></div>
-                <div class="circle-icon" style="background:rgba(0,0,0,0.5)"><i class="fa-solid fa-share"></i></div>
+                <div class="circle-icon"><i class="fa-solid fa-heart"></i></div>
+                <div class="circle-icon"><i class="fa-solid fa-comment"></i></div>
             </div>
-            <div style="position:absolute; bottom:25px; left:15px; text-shadow: 2px 2px 4px #000;">
+            <div style="position:absolute; bottom:100px; left:20px; color:white; z-index:5;">
                 <b style="font-size:18px;">@${vid.author}</b>
-                <p style="margin:5px 0 0 0; font-size:15px; color:white;">${vid.info}</p>
+                <p>Developing Agriculture in Nigeria 🇳🇬</p>
             </div>
         </div>
     `).join('');
 };
 
-// --- 5. ADMIN & USER POST ACTIONS ---
-window.deletePost = async (pid, ownerUid) => {
-    const isAdmin = currentUser.uid === ADMIN_UID;
-    const isOwner = currentUser.uid === ownerUid;
-    if (isAdmin || isOwner) {
-        if (confirm(isAdmin ? "ADMIN: Delete this content?" : "Delete your post?")) {
-            await deleteDoc(doc(db, 'posts', pid));
-        }
+// --- 5. PROFILE EDITING (BIO, NAME, PHOTOS) ---
+window.editProfileField = async (field) => {
+    const currentVal = field === 'name' ? currentProfile.name : currentProfile.bio;
+    const newVal = prompt(`Enter new ${field}:`, currentVal);
+    if (newVal !== null) {
+        await updateDoc(doc(db, 'users', currentUser.uid), { [field]: newVal });
     }
 };
 
-// --- 6. MESSAGING & NOTIFICATIONS ---
-window.sendFriendRequest = async (targetUid) => {
-    await addDoc(collection(db, 'notifications'), {
-        recipientUID: targetUid,
-        senderUID: currentUser.uid,
-        senderName: currentProfile.name,
-        type: "friend_request",
-        timestamp: serverTimestamp()
-    });
-    alert("Request Sent!");
+window.uploadPhoto = async (type) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        const url = await uploadToCloudinary(file);
+        if (url) {
+            const updateKey = type === 'profile' ? 'profilePic' : 'coverPic';
+            await updateDoc(doc(db, 'users', currentUser.uid), { [updateKey]: url });
+            alert(`${type} picture updated!`);
+        }
+    };
+    input.click();
 };
 
-function listenToNotifications() {
-    const q = query(collection(db, 'notifications'), where('recipientUID', '==', currentUser.uid));
-    onSnapshot(q, snap => {
-        const badge = $('#notif-badge');
-        badge.style.display = snap.size > 0 ? 'block' : 'none';
-        badge.innerText = snap.size;
-        const list = $('#notifications-list');
-        list.innerHTML = "";
-        snap.forEach(d => {
-            const n = d.data();
-            list.innerHTML += `
-                <div class="chat-row" style="border-bottom:1px solid #222;">
-                    <img src="images/default_profile.png" class="avatar-small">
-                    <div><b>${n.senderName}</b> sent you a friend request.</div>
-                </div>`;
-        });
-    });
-}
+// --- 6. ADMIN & FEED ---
+window.deletePost = async (pid, ownerUid) => {
+    if (currentUser.uid === ADMIN_UID || currentUser.uid === ownerUid) {
+        if (confirm("Delete this content?")) await deleteDoc(doc(db, 'posts', pid));
+    }
+};
 
-function listenToChats() {
-    const q = query(collection(db, 'chats'), where('participants', 'array-contains', currentUser.uid));
-    onSnapshot(q, snap => {
-        const list = $('#chat-list');
-        list.innerHTML = "";
-        snap.forEach(d => {
-            list.innerHTML += `
-                <div class="chat-row">
-                    <img src="images/default_profile.png" class="avatar-small">
-                    <div><b>Active Connection</b><br><small style="color:var(--hr-green);">Online</small></div>
-                </div>`;
-        });
-    });
-}
-
-// --- 7. THE FEED ENGINE (WITH LIKES/COMMENTS) ---
 function initFeed() {
     const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
     onSnapshot(q, (snapshot) => {
         const container = $('#feed-items');
+        if (!container) return;
         container.innerHTML = '';
         snapshot.forEach(docSnap => {
             const post = docSnap.data();
             const pid = docSnap.id;
-            const hasLiked = post.likes && post.likes.includes(currentUser.uid);
-            const isAdmin = currentUser.uid === ADMIN_UID;
-            const isOwner = currentUser.uid === post.uid;
-            
-            const card = document.createElement('div');
-            card.className = 'post-card';
-            card.innerHTML = `
-                <div style="padding:12px; display:flex; justify-content:space-between; align-items:center;">
-                    <div style="display:flex; gap:10px; align-items:center;">
-                        <img src="${post.userPic || 'images/default_profile.png'}" class="avatar-small">
-                        <b>${post.userName}</b>
+            container.innerHTML += `
+                <div class="post-card">
+                    <div style="padding:12px; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <img src="${post.userPic}" class="avatar-small">
+                            <b>${post.userName}</b>
+                        </div>
+                        ${(currentUser.uid === ADMIN_UID || currentUser.uid === post.uid) ? `<i class="fa-solid fa-ellipsis" onclick="deletePost('${pid}', '${post.uid}')"></i>` : ''}
                     </div>
-                    ${(isAdmin || isOwner) ? `<i class="fa-solid fa-ellipsis" onclick="deletePost('${pid}', '${post.uid}')" style="cursor:pointer; color:var(--hr-secondary);"></i>` : ''}
-                </div>
-                <div style="padding:0 12px 12px;">${post.text}</div>
-                ${post.content ? `<img src="${post.content}" style="width:100%; max-height:450px; object-fit:cover;">` : ''}
-                
-                <div style="padding:10px 12px; font-size:13px; color:var(--hr-secondary); display:flex; justify-content:space-between;">
-                    <span>👍 ${post.likeCount || 0}</span>
-                    <span>${(post.comments || []).length} Comments</span>
-                </div>
-
-                <div style="padding:5px; border-top:1px solid #333; display:flex;">
-                    <button onclick="likePost('${pid}')" style="flex:1; background:transparent; border:none; color:${hasLiked ? 'var(--fb-blue)' : 'white'}; cursor:pointer; font-weight:bold; padding:10px;">
-                        <i class="fa-regular fa-thumbs-up"></i> Like
-                    </button>
-                    <button onclick="$('#c-${pid}').focus()" style="flex:1; background:transparent; border:none; color:white; cursor:pointer; font-weight:bold;">
-                        <i class="fa-regular fa-comment"></i> Comment
-                    </button>
-                </div>
-
-                <div style="padding:10px; background:rgba(255,255,255,0.03);">
-                    <div id="comments-${pid}">
-                        ${(post.comments || []).map(c => `
-                            <div style="margin-bottom:10px;">
-                                <div style="display:inline-block; background:var(--hr-hover); padding:8px 12px; border-radius:15px; font-size:13px;">
-                                    <b>${c.userName}</b><br>${c.text}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div style="display:flex; gap:8px; margin-top:5px;">
-                        <input id="c-${pid}" type="text" placeholder="Write a comment..." style="flex:1; background:var(--hr-hover); border:none; color:white; padding:8px 15px; border-radius:20px; outline:none;">
-                        <button onclick="submitComment('${pid}')" class="bg-blue" style="border:none; color:white; padding:5px 12px; border-radius:15px; cursor:pointer;">Send</button>
-                    </div>
-                </div>
-            `;
-            container.appendChild(card);
+                    <div style="padding:0 12px 12px;">${post.text}</div>
+                    ${post.content ? `<img src="${post.content}" style="width:100%;">` : ''}
+                </div>`;
         });
     });
 }
 
-// --- 8. SUBMISSION HELPERS ---
+// --- 7. NAVIGATION & LOGOUT ---
+window.showView = (v) => {
+    $$('.view-section').forEach(s => s.style.display = 'none');
+    const target = $(`#view-${v}`);
+    if (target) target.style.display = 'block';
+    if (v === 'reels') loadReels();
+};
+
+window.logout = () => {
+    if(confirm("Are you sure you want to log out?")) {
+        signOut(auth).then(() => location.reload());
+    }
+};
+
+// --- RE-USE YOUR EXISTING SUBMISSION LOGIC ---
 window.submitPost = async () => {
     const text = $('#post-text').value;
     const file = $('#post-file-input').files[0];
@@ -262,46 +223,19 @@ window.submitPost = async () => {
         userPic: currentProfile.profilePic,
         text: text,
         content: fileUrl,
-        likes: [],
-        likeCount: 0,
         timestamp: serverTimestamp(),
+        likeCount: 0,
         comments: []
     });
     $('#post-text').value = '';
     window.closePostModal();
 };
 
-window.likePost = async (pid) => {
-    const postRef = doc(db, 'posts', pid);
-    const snap = await getDoc(postRef);
-    const data = snap.data();
-    if (data.likes && data.likes.includes(currentUser.uid)) {
-        await updateDoc(postRef, { likes: arrayRemove(currentUser.uid), likeCount: increment(-1) });
-    } else {
-        await updateDoc(postRef, { likes: arrayUnion(currentUser.uid), likeCount: increment(1) });
-    }
-};
-
-window.submitComment = async (pid) => {
-    const input = $(`#c-${pid}`);
-    if (!input.value.trim()) return;
-    await updateDoc(doc(db, 'posts', pid), {
-        comments: arrayUnion({
-            uid: currentUser.uid,
-            userName: currentProfile.name,
-            text: input.value,
-            timestamp: Date.now()
-        })
-    });
-    input.value = '';
-};
-
-// --- AUTH UI HANDLERS ---
+// AUTH UI HANDLERS
 window.toggleAuthMode = () => {
     isSignUpMode = !isSignUpMode;
     $('#auth-name').style.display = isSignUpMode ? 'block' : 'none';
     $('#auth-submit-btn').innerText = isSignUpMode ? 'Create Account' : 'Log In';
-    $('#auth-toggle').innerText = isSignUpMode ? 'Switch to ' + (isSignUpMode ? 'Log In' : 'Sign Up');
 };
 
 $('#auth-form').onsubmit = async (e) => {
@@ -314,17 +248,8 @@ $('#auth-form').onsubmit = async (e) => {
                 uid: cred.user.uid, name: name, email,
                 profilePic: 'images/default_profile.png',
                 coverPic: 'images/HEALING_ROOT_BANNER.jpg',
-                bio: "Hello, I am new here!"
+                bio: "Welcome to my profile!"
             });
         } else { await signInWithEmailAndPassword(auth, email, password); }
     } catch (err) { alert(err.message); }
-};
-
-window.logout = () => signOut(auth).then(() => location.reload());
-
-// --- NAV OVERRIDE ---
-const originalShowView = window.showView;
-window.showView = (v) => {
-    originalShowView(v);
-    if(v === 'reels') loadReels();
 };
