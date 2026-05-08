@@ -19,52 +19,41 @@
         }
         body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; margin: 0; background: var(--hr-bg); color: var(--hr-text); padding-bottom: 70px; overflow-x: hidden; }
         
-        /* Layout Controls */
         .view { display: none; min-height: 100vh; }
         .view.active { display: block; }
 
-        /* Header */
         .header { background: var(--hr-card); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--hr-divider); }
         .header h1 { color: white; font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -1px; }
         .header-icons { display: flex; gap: 10px; }
         .circle-icon { background: var(--hr-hover); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 18px; position: relative; }
 
-        /* Bottom Navigation */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--hr-card); display: flex; border-top: 1px solid var(--hr-divider); z-index: 1001; height: 65px; padding-bottom: env(safe-area-inset-bottom); }
         .nav-item { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: var(--hr-secondary); transition: 0.2s; font-size: 22px; position: relative; }
         .nav-item.active { color: var(--fb-blue); }
         .badge { position: absolute; top: 8px; right: 20%; background: #e41e3f; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; border: 2px solid var(--hr-card); }
 
-        /* Home Feed UI */
         .composer { background: var(--hr-card); padding: 12px 15px; margin-bottom: 10px; }
         .composer-top { display: flex; align-items: center; gap: 10px; }
         .avatar-small { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--hr-divider); }
         .composer-input { background: var(--hr-hover); border-radius: 20px; padding: 10px 15px; flex: 1; color: var(--hr-secondary); cursor: pointer; font-size: 15px; }
 
-        /* Reels Styling (Vertical Video) */
         #reels-view { background: #000; height: 100vh; overflow-y: scroll; snap-type: y mandatory; }
         .reel-video-container { height: calc(100vh - 65px); width: 100%; snap-align: start; position: relative; display: flex; align-items: center; justify-content: center; }
         .reel-actions { position: absolute; right: 15px; bottom: 100px; display: flex; flex-direction: column; gap: 20px; align-items: center; }
 
-        /* Menu Grid */
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
-        .menu-item { background: var(--hr-card); border-radius: 10px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .menu-item { background: var(--hr-card); border-radius: 10px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer; }
         .menu-item i { font-size: 24px; margin-bottom: 10px; }
 
-        /* Profile Styles */
         .profile-header { position: relative; background: var(--hr-card); padding-bottom: 15px; }
         .cover-photo-box { height: 200px; background: #333; position: relative; }
         .profile-avatar-box { margin-top: -80px; padding: 0 15px; position: relative; }
         .profile-img-large { width: 160px; height: 160px; border-radius: 50%; border: 4px solid var(--hr-bg); object-fit: cover; }
         
-        /* Chat Styles */
         .chat-row { display: flex; align-items: center; gap: 12px; padding: 10px 15px; cursor: pointer; }
-        .online-dot { width: 12px; height: 12px; background: #31a24c; border-radius: 50%; border: 2px solid var(--hr-bg); position: absolute; bottom: 2px; right: 2px; }
 
-        /* Modals */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--hr-bg); z-index: 2000; display: none; flex-direction: column; }
         
-        /* Utils */
         .btn-full { width: 100%; padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .bg-blue { background: var(--fb-blue); color: white; }
         .bg-gray { background: var(--hr-hover); color: white; }
@@ -105,8 +94,6 @@
                 <h2 style="margin:0">Chats</h2>
                 <div class="circle-icon"><i class="fa-solid fa-pen-to-square"></i></div>
             </div>
-            <div id="active-notes" style="display: flex; gap: 15px; padding: 10px 15px; overflow-x: auto;">
-                </div>
             <div id="chat-list"></div>
         </div>
 
@@ -114,12 +101,12 @@
             <div class="profile-header">
                 <div class="cover-photo-box">
                     <img id="cover-pic-preview" src="images/HEALING_ROOT_BANNER.jpg" style="width:100%; height:100%; object-fit:cover;">
-                    <button class="circle-icon" style="position:absolute; bottom:10px; right:10px;" onclick="$('#cover-upload').click()"><i class="fa-solid fa-camera"></i></button>
+                    <button class="circle-icon" style="position:absolute; bottom:10px; right:10px;" onclick="document.getElementById('cover-upload').click()"><i class="fa-solid fa-camera"></i></button>
                 </div>
                 <div class="profile-avatar-box">
                     <div style="position:relative; display:inline-block;">
                         <img id="profile-pic-preview" src="images/default_profile.png" class="profile-img-large">
-                        <button class="circle-icon" style="position:absolute; bottom:10px; right:5px; border:3px solid var(--hr-bg);" onclick="$('#pic-upload').click()"><i class="fa-solid fa-camera"></i></button>
+                        <button class="circle-icon" style="position:absolute; bottom:10px; right:5px; border:3px solid var(--hr-bg);" onclick="document.getElementById('pic-upload').click()"><i class="fa-solid fa-camera"></i></button>
                     </div>
                     <h2 id="profile-name" style="margin: 10px 0 2px 0;">Loading...</h2>
                     <p id="profile-bio" style="margin:0; color: var(--hr-secondary);">Student / Agro-Developer</p>
@@ -133,10 +120,6 @@
         </div>
 
         <div id="notifications-view" class="view">
-            <div style="padding: 15px; display:flex; justify-content: space-between;">
-                <h2 style="margin:0">Notifications</h2>
-                <i class="fa-solid fa-magnifying-glass" style="font-size: 20px;"></i>
-            </div>
             <div id="notifications-list"></div>
         </div>
 
@@ -147,7 +130,7 @@
             </div>
             
             <div style="padding: 0 15px;">
-                <div class="menu-item" style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+                <div class="menu-item" style="display:flex; align-items:center; gap:12px; margin-bottom:20px;" onclick="showView('profile')">
                     <img class="user-avatar-sync avatar-small" src="images/default_profile.png">
                     <div>
                         <b id="menu-user-name">Your Name</b>
@@ -161,7 +144,7 @@
                 <div class="menu-item"><i class="fa-solid fa-bookmark" style="color: #c065cc;"></i><br><b>Saved</b></div>
                 <div class="menu-item"><i class="fa-solid fa-clock-rotate-left" style="color: #2aa4f4;"></i><br><b>Memories</b></div>
                 <div class="menu-item"><i class="fa-solid fa-users" style="color: #2aa4f4;"></i><br><b>Groups</b></div>
-                <div class="menu-item"><i class="fa-solid fa-video" style="color: #f3425f;"></i><br><b>Video</b></div>
+                <div class="menu-item" onclick="showView('reels')"><i class="fa-solid fa-video" style="color: #f3425f;"></i><br><b>Video</b></div>
                 <div class="menu-item" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i><br><b>Log Out</b></div>
             </div>
         </div>
@@ -180,7 +163,7 @@
         <div style="padding: 15px; display: flex; justify-content: space-between; align-items:center; border-bottom: 1px solid var(--hr-divider);">
             <span onclick="closePostModal()" style="font-size:24px; cursor:pointer;">✕</span>
             <b style="font-size:18px;">Create Post</b>
-            <button class="btn-green" onclick="submitPost()" style="background:var(--fb-blue); color:white; border:none; padding:8px 15px; border-radius:5px;">Post</button>
+            <button class="bg-blue" onclick="submitPost()" style="color:white; border:none; padding:8px 15px; border-radius:5px; font-weight:bold;">Post</button>
         </div>
         <textarea id="post-text" placeholder="What's on your mind?" style="width:100%; height:200px; background:transparent; color:white; border:none; padding:15px; font-size:18px; outline:none;"></textarea>
         <div style="padding:15px; border-top:1px solid var(--hr-divider);">
@@ -196,19 +179,17 @@
         const $ = s => document.querySelector(s);
         
         window.showView = (v) => {
-            // Header is only visible on Home, Chats, Notifications, and Menu
             $('#app-header').style.display = (v === 'home') ? 'flex' : 'none';
-            
             document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            
             $(`#${v}-view`).classList.add('active');
             
-            // Find nav item by icon or onclick and activate it
             const navItems = document.querySelectorAll('.nav-item');
             navItems.forEach(item => {
                 if(item.getAttribute('onclick').includes(v)) item.classList.add('active');
             });
+            // Trigger Reels load if view is reels
+            if(v === 'reels' && typeof window.loadReels === 'function') window.loadReels();
         };
 
         window.openPostModal = () => $('#post-modal').style.display = 'flex';
