@@ -5,7 +5,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 import { 
   getFirestore, collection, addDoc, setDoc, doc, updateDoc, getDoc, query, orderBy, 
-  serverTimestamp, onSnapshot, arrayUnion, arrayRemove, where, limit 
+  serverTimestamp, onSnapshot, arrayUnion, where, limit 
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
 
 // --- CONFIGURATION ---
@@ -36,6 +36,7 @@ let isSignUpMode = false;
 
 // --- 1. CLOUDINARY UPLOAD HELPER ---
 async function uploadToCloudinary(file) {
+    if (!file) return null;
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', CLOUDINARY_PRESET);
@@ -49,33 +50,181 @@ async function uploadToCloudinary(file) {
     }
 }
 
-// --- 2. AUTH TOGGLE LOGIC ---
-window.toggleAuthMode = () => {
-    isSignUpMode = !isSignUpMode;
-    const nameInput = $('#auth-name');
-    const submitBtn = $('#auth-submit-btn');
-    const toggleLink = $('#auth-toggle');
-
-    if (isSignUpMode) {
-        nameInput.style.display = 'block';
-        nameInput.required = true;
-        submitBtn.innerText = 'Create Account';
-        toggleLink.innerText = 'Already have an account? Log In';
+// --- 2. AUTH & ACCOUNT SETUP ---
+onAuthStateChanged(auth, user => {
+    if (user) {
+        currentUser = user;
+        // Real-time listener for current user's profile
+        onSnapshot(doc(db, 'users', user.uid), (snap) => {
+            if (snap.exists()) {
+                currentProfile = snap.data();
+                syncUI(currentProfile);
+            }
+        });
+        $('#auth-modal').style.display = 'none';
+        $('#main-app').style.display = 'block';
+        initFeed();
+        loadDiscovery();
     } else {
-        nameInput.style.display = 'none';
-        nameInput.required = false;
-        submitBtn.innerText = 'Log In';
-        toggleLink.innerText = "Don't have an account? Join Healing Social";
+        $('#auth-modal').style.display = 'flex';
+        $('#main-app').style.display = 'none';
+    }
+});
+
+function syncUI(profile) {
+    const pic = profile.profilePic || 'images/default_profile.png';
+    const cover = profile.coverPic || 'images/HEALING_ROOT_BANNER.jpg';
+    
+    // Sync all avatars across the site
+    $$('.user-avatar-sync').forEach(img => img.src = pic);
+    if ($('#profile-pic-preview')) $('#profile-pic-preview').src = pic;
+    if ($('#cover-pic-preview')) $('#cover-pic-preview').src = cover;
+    
+    // Sync names and bio
+    if ($('#display-name-header')) $('#display-name-header').innerText = profile.name;
+    if ($('#display-bio')) $('#display-bio').innerText = profile.bio || "No bio set.";
+    if ($('#my-profile-name')) $('#my-profile-name').innerText = profile.name;
+}
+
+// --- 3. PROFILE EDITING (INSTANT UPDATES) ---
+window.editProfileName = async () => {
+    const newName = prompt("Enter your full name:", currentProfile.name);
+    if (newName) {
+        await updateDoc(doc(db, 'users', currentUser.uid), { name: newName });
+        // After updating name, we must also update posts to show the new name
+        alert("Name updated successfully!");
     }
 };
 
-// --- 3. LOGIN & SIGNUP HANDLING ---
+window.editBio = async () => {
+    const newBio = prompt("What's your bio?", currentProfile.bio);
+    if (newBio !== null) {
+        await updateDoc(doc(db, 'users', currentUser.uid), { bio: newBio });
+    }
+};
+
+window.uploadNewProfilePic = async (input) => {
+    const url = await uploadToCloudinary(input.files[0]);
+    if (url) {
+        await updateDoc(doc(db, 'users', currentUser.uid), { profilePic: url });
+    }
+};
+
+window.uploadCoverPic = async (input) => {
+    const url = await uploadToCloudinary(input.files[0]);
+    if (url) {
+        await updateDoc(doc(db, 'users', currentUser.uid), { coverPic: url });
+    }
+};
+
+// --- 4. DISCOVERY: SHOW ALL USERS ---
+function loadDiscovery() {
+    const q = query(collection(db, 'users'), limit(50));
+    onSnapshot(q, (snap) => {
+        const list = $('#people-list');
+        if (!list) return;
+        list.innerHTML = '';
+        snap.forEach(userDoc => {
+            const user = userDoc.data();
+            if (user.uid === currentUser.uid) return; // Hide self
+
+            const div = document.createElement('div');
+            div.className = 'user-row';
+            div.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="${user.profilePic || 'images/default_profile.png'}" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
+                    <b>${user.name}</b>
+                </div>
+                <button class="btn-green" style="padding:5px 12px; font-size:12px;">Add Friend</button>
+            `;
+            list.appendChild(div);
+        });
+    });
+}
+
+// --- 5. FEED & REAL-TIME COMMENTS ---
+window.submitPost = async () => {
+    const text = $('#post-text').value;
+    const file = $('#post-file-input').files[0];
+    let fileUrl = file ? await uploadToCloudinary(file) : "";
+
+    if (!text.trim() && !fileUrl) return;
+
+    await addDoc(collection(db, 'posts'), {
+        uid: currentUser.uid,
+        userName: currentProfile.name,
+        userPic: currentProfile.profilePic,
+        text: text,
+        content: fileUrl,
+        timestamp: serverTimestamp(),
+        comments: []
+    });
+    
+    $('#post-text').value = '';
+    $('#post-file-input').value = '';
+    window.closePostModal();
+};
+
+function initFeed() {
+    const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
+    onSnapshot(q, (snapshot) => {
+        const container = $('#feed-items');
+        container.innerHTML = '';
+        snapshot.forEach(docSnap => {
+            const post = docSnap.data();
+            const pid = docSnap.id;
+            const card = document.createElement('div');
+            card.className = 'post-card';
+            card.innerHTML = `
+                <div style="padding:12px; display:flex; gap:10px; align-items:center;">
+                    <img src="${post.userPic || 'images/default_profile.png'}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+                    <div><b>${post.userName}</b></div>
+                </div>
+                <div style="padding:0 12px 12px;">${post.text}</div>
+                ${post.content ? `<img src="${post.content}" style="width:100%">` : ''}
+                <div style="padding:10px; border-top:1px solid #333; display:flex; gap:15px; font-size:14px;">
+                    <span style="cursor:pointer">👍 Like</span>
+                    <span style="cursor:pointer" onclick="$('#c-${pid}').focus()">💬 Comment</span>
+                </div>
+                <div style="padding:10px; background:#1a1a1a;">
+                    <div id="comments-${pid}">${(post.comments || []).map(c => `<div style="font-size:12px; margin-bottom:4px;"><b style="color:#2e7d32">${c.userName}</b> ${c.text}</div>`).join('')}</div>
+                    <div style="display:flex; gap:5px; margin-top:8px;">
+                        <input id="c-${pid}" type="text" placeholder="Write a comment..." style="flex:1; background:#333; border:none; color:white; padding:8px; border-radius:15px; font-size:12px;">
+                        <button onclick="submitComment('${pid}')" class="btn-green" style="padding:5px 10px; font-size:10px;">Post</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    });
+}
+
+window.submitComment = async (pid) => {
+    const input = $(`#c-${pid}`);
+    if (!input.value.trim()) return;
+    await updateDoc(doc(db, 'posts', pid), {
+        comments: arrayUnion({
+            userName: currentProfile.name,
+            text: input.value,
+            timestamp: Date.now()
+        })
+    });
+    input.value = '';
+};
+
+// --- AUTH UI TOGGLE ---
+window.toggleAuthMode = () => {
+    isSignUpMode = !isSignUpMode;
+    $('#auth-name').style.display = isSignUpMode ? 'block' : 'none';
+    $('#auth-submit-btn').innerText = isSignUpMode ? 'Create Account' : 'Log In';
+    $('#auth-toggle').innerText = isSignUpMode ? 'Already have an account? Log In' : 'Create New Account';
+};
+
 $('#auth-form').onsubmit = async (e) => {
     e.preventDefault();
     const email = $('#auth-email').value;
     const password = $('#auth-password').value;
     const fullName = $('#auth-name').value;
-
     try {
         if (isSignUpMode) {
             const cred = await createUserWithEmailAndPassword(auth, email, password);
@@ -85,7 +234,7 @@ $('#auth-form').onsubmit = async (e) => {
                 email: email,
                 profilePic: 'images/default_profile.png',
                 coverPic: 'images/HEALING_ROOT_BANNER.jpg',
-                bio: "New to Healing Social!",
+                bio: "Welcome to my profile!",
                 friends: []
             });
         } else {
@@ -107,138 +256,11 @@ window.loginWithGoogle = async () => {
                 email: user.email,
                 profilePic: user.photoURL || 'images/default_profile.png',
                 coverPic: 'images/HEALING_ROOT_BANNER.jpg',
-                bio: "Just joined Healing Social!",
+                bio: "Joined via Google!",
                 friends: []
             });
         }
-    } catch (err) { alert("Google Auth Failed: " + err.message); }
-};
-
-// --- 4. AUTH OBSERVER ---
-onAuthStateChanged(auth, user => {
-    if (user) {
-        currentUser = user;
-        onSnapshot(doc(db, 'users', user.uid), (snap) => {
-            if (snap.exists()) {
-                currentProfile = snap.data();
-                syncUI(currentProfile);
-            }
-        });
-        $('#auth-modal').style.display = 'none';
-        $('#main-app').style.display = 'block';
-        initFeed();
-        loadDiscovery();
-    } else {
-        $('#auth-modal').style.display = 'flex';
-        $('#main-app').style.display = 'none';
-    }
-});
-
-// --- 5. UI SYNC ---
-function syncUI(profile) {
-    $$('.user-avatar-sync').forEach(img => img.src = profile.profilePic);
-    $('#story-my-pic').src = profile.profilePic;
-    $('#my-menu-pic').src = profile.profilePic;
-    $('#my-profile-name').innerText = profile.name;
-    $('#display-name-header').innerText = profile.name;
-    $('#display-name-top').innerText = profile.name;
-    $('#display-bio').innerText = profile.bio;
-    $('#profile-pic-preview').src = profile.profilePic;
-    $('#cover-pic-preview').src = profile.coverPic;
-}
-
-// --- 6. DISCOVERY (No Self-Friending) ---
-function loadDiscovery() {
-    const q = query(collection(db, 'users'), limit(50));
-    onSnapshot(q, (snap) => {
-        const list = $('#people-list');
-        list.innerHTML = '';
-        snap.forEach(userDoc => {
-            const user = userDoc.data();
-            if (user.uid === currentUser.uid) return; // Hide self
-
-            const div = document.createElement('div');
-            div.className = 'user-row';
-            div.innerHTML = `
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <img src="${user.profilePic}" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
-                    <b>${user.name}</b>
-                </div>
-                <button class="btn-green" style="padding:5px 12px; font-size:12px;" onclick="sendFriendRequest('${user.uid}', '${user.name}')">Add Friend</button>
-            `;
-            list.appendChild(div);
-        });
-    });
-}
-
-// --- 7. PROFILE EDITS (Cloudinary) ---
-window.uploadNewProfilePic = async (input) => {
-    const file = input.files[0];
-    if (!file) return;
-    const url = await uploadToCloudinary(file);
-    if(url) await updateDoc(doc(db, 'users', currentUser.uid), { profilePic: url });
-};
-
-window.uploadCoverPic = async (input) => {
-    const file = input.files[0];
-    if (!file) return;
-    const url = await uploadToCloudinary(file);
-    if(url) await updateDoc(doc(db, 'users', currentUser.uid), { coverPic: url });
-};
-
-window.editBio = async () => {
-    const newBio = prompt("Enter your bio:", currentProfile.bio);
-    if (newBio !== null) await updateDoc(doc(db, 'users', currentUser.uid), { bio: newBio });
-};
-
-// --- 8. FEED & POSTING ---
-window.submitPost = async () => {
-    const text = $('#post-text').value;
-    const file = $('#post-file-input').files[0];
-    let fileUrl = "";
-
-    if (!text.trim() && !file) return;
-
-    if (file) fileUrl = await uploadToCloudinary(file);
-
-    await addDoc(collection(db, 'posts'), {
-        uid: currentUser.uid,
-        userName: currentProfile.name,
-        userPic: currentProfile.profilePic,
-        text: text,
-        content: fileUrl,
-        timestamp: serverTimestamp()
-    });
-    $('#post-text').value = '';
-    $('#post-file-input').value = '';
-    window.closePostModal();
-};
-
-function initFeed() {
-    const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
-    onSnapshot(q, (snapshot) => {
-        const container = $('#feed-items');
-        container.innerHTML = '';
-        snapshot.docs.forEach(docSnap => {
-            const post = docSnap.data();
-            const card = document.createElement('div');
-            card.className = 'post-card';
-            card.innerHTML = `
-                <div style="padding:12px; display:flex; gap:10px; align-items:center;">
-                    <img src="${post.userPic}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-                    <div><b>${post.userName}</b></div>
-                </div>
-                <div style="padding:0 12px 12px;">${post.text}</div>
-                ${post.content ? `<img src="${post.content}" style="width:100%">` : ''}`;
-            container.appendChild(card);
-        });
-    });
-}
-
-window.showView = (viewName) => {
-    $$('.view').forEach(v => v.style.display = 'none');
-    $$('.nav-item').forEach(i => i.classList.remove('active'));
-    if($(`#${viewName}-view`)) $(`#${viewName}-view`).style.display = 'block';
+    } catch (err) { alert(err.message); }
 };
 
 window.logout = () => signOut(auth).then(() => location.reload());
