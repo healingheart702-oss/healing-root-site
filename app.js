@@ -7,11 +7,8 @@ import {
   getFirestore, collection, addDoc, setDoc, doc, updateDoc, getDoc, query, orderBy, 
   serverTimestamp, onSnapshot, arrayUnion, arrayRemove, where, limit 
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
-import { 
-  getStorage, ref, uploadBytes, getDownloadURL 
-} from "https://www.gstatic.com/firebasejs/10.6.0/firebase-storage.js";
 
-// --- INITIALIZATION ---
+// --- CONFIGURATION ---
 const firebaseConfig = {
   apiKey: "AIzaSyAgjMFw0dbM7CBH4S_zrmPhE69pp84Tpdo",
   authDomain: "healing-root-farm.firebaseapp.com",
@@ -21,10 +18,13 @@ const firebaseConfig = {
   appId: "1:1042258816994:web:0b6dd6b7f1c370ee7093bb"
 };
 
+// --- CLOUDINARY CONFIG ---
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dd7dre9hd/upload";
+const CLOUDINARY_PRESET = "unsigned_upload"; 
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app);
 const googleProvider = new GoogleAuthProvider();
 
 const $ = s => document.querySelector(s);
@@ -34,19 +34,48 @@ let currentUser = null;
 let currentProfile = null;
 let isSignUpMode = false;
 
-// --- 1. AUTH & ACCOUNT CREATION ---
+// --- 1. CLOUDINARY UPLOAD HELPER ---
+async function uploadToCloudinary(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_PRESET);
+    try {
+        const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
+        const data = await res.json();
+        return data.secure_url;
+    } catch (err) {
+        console.error("Cloudinary Error:", err);
+        return null;
+    }
+}
+
+// --- 2. AUTH TOGGLE LOGIC ---
 window.toggleAuthMode = () => {
     isSignUpMode = !isSignUpMode;
-    $('#auth-name').style.display = isSignUpMode ? 'block' : 'none';
-    $('#auth-submit-btn').innerText = isSignUpMode ? 'Create Account' : 'Log In';
-    $('#auth-toggle').innerText = isSignUpMode ? 'Already have an account? Log In' : "Don't have an account? Join Healing Social";
+    const nameInput = $('#auth-name');
+    const submitBtn = $('#auth-submit-btn');
+    const toggleLink = $('#auth-toggle');
+
+    if (isSignUpMode) {
+        nameInput.style.display = 'block';
+        nameInput.required = true;
+        submitBtn.innerText = 'Create Account';
+        toggleLink.innerText = 'Already have an account? Log In';
+    } else {
+        nameInput.style.display = 'none';
+        nameInput.required = false;
+        submitBtn.innerText = 'Log In';
+        toggleLink.innerText = "Don't have an account? Join Healing Social";
+    }
 };
 
+// --- 3. LOGIN & SIGNUP HANDLING ---
 $('#auth-form').onsubmit = async (e) => {
     e.preventDefault();
     const email = $('#auth-email').value;
     const password = $('#auth-password').value;
     const fullName = $('#auth-name').value;
+
     try {
         if (isSignUpMode) {
             const cred = await createUserWithEmailAndPassword(auth, email, password);
@@ -57,8 +86,7 @@ $('#auth-form').onsubmit = async (e) => {
                 profilePic: 'images/default_profile.png',
                 coverPic: 'images/HEALING_ROOT_BANNER.jpg',
                 bio: "New to Healing Social!",
-                friends: [],
-                status: 'online'
+                friends: []
             });
         } else {
             await signInWithEmailAndPassword(auth, email, password);
@@ -80,14 +108,13 @@ window.loginWithGoogle = async () => {
                 profilePic: user.photoURL || 'images/default_profile.png',
                 coverPic: 'images/HEALING_ROOT_BANNER.jpg',
                 bio: "Just joined Healing Social!",
-                friends: [],
-                status: 'online'
+                friends: []
             });
         }
     } catch (err) { alert("Google Auth Failed: " + err.message); }
 };
 
-// --- 2. AUTH OBSERVER ---
+// --- 4. AUTH OBSERVER ---
 onAuthStateChanged(auth, user => {
     if (user) {
         currentUser = user;
@@ -101,157 +128,78 @@ onAuthStateChanged(auth, user => {
         $('#main-app').style.display = 'block';
         initFeed();
         loadDiscovery();
-        initNotifications();
     } else {
         $('#auth-modal').style.display = 'flex';
         $('#main-app').style.display = 'none';
     }
 });
 
-// --- 3. PROFILE & IMAGE UPLOADS ---
-window.uploadNewProfilePic = async (input) => {
-    const file = input.files[0];
-    if (!file) return;
-    try {
-        const storageRef = ref(storage, `profiles/${currentUser.uid}`);
-        await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(storageRef);
-        await updateDoc(doc(db, 'users', currentUser.uid), { profilePic: url });
-        alert("Profile picture updated!");
-    } catch (err) { alert("Upload failed: " + err.message); }
-};
+// --- 5. UI SYNC ---
+function syncUI(profile) {
+    $$('.user-avatar-sync').forEach(img => img.src = profile.profilePic);
+    $('#story-my-pic').src = profile.profilePic;
+    $('#my-menu-pic').src = profile.profilePic;
+    $('#my-profile-name').innerText = profile.name;
+    $('#display-name-header').innerText = profile.name;
+    $('#display-name-top').innerText = profile.name;
+    $('#display-bio').innerText = profile.bio;
+    $('#profile-pic-preview').src = profile.profilePic;
+    $('#cover-pic-preview').src = profile.coverPic;
+}
 
-window.uploadCoverPic = async (input) => {
-    const file = input.files[0];
-    if (!file) return;
-    try {
-        const storageRef = ref(storage, `covers/${currentUser.uid}`);
-        await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(storageRef);
-        await updateDoc(doc(db, 'users', currentUser.uid), { coverPic: url });
-        alert("Cover updated!");
-    } catch (err) { alert("Upload failed: " + err.message); }
-};
-
-window.editBio = async () => {
-    const newBio = prompt("Enter your new bio:", currentProfile.bio);
-    if (newBio !== null) {
-        await updateDoc(doc(db, 'users', currentUser.uid), { bio: newBio });
-    }
-};
-
-// --- 4. SOCIAL DISCOVERY & FRIENDS ---
+// --- 6. DISCOVERY (No Self-Friending) ---
 function loadDiscovery() {
-    const q = query(collection(db, 'users'), limit(20));
+    const q = query(collection(db, 'users'), limit(50));
     onSnapshot(q, (snap) => {
         const list = $('#people-list');
         list.innerHTML = '';
         snap.forEach(userDoc => {
             const user = userDoc.data();
-            if (user.uid === currentUser.uid) return;
-            const isFriend = currentProfile.friends?.includes(user.uid);
-            
+            if (user.uid === currentUser.uid) return; // Hide self
+
             const div = document.createElement('div');
             div.className = 'user-row';
             div.innerHTML = `
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <img src="${user.profilePic}" style="width:45px; height:45px; border-radius:50%;">
+                    <img src="${user.profilePic}" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
                     <b>${user.name}</b>
                 </div>
-                <button class="btn-green" onclick="sendFriendRequest('${user.uid}', '${user.name}')" ${isFriend ? 'disabled' : ''}>
-                    ${isFriend ? 'Friends' : 'Add Friend'}
-                </button>
+                <button class="btn-green" style="padding:5px 12px; font-size:12px;" onclick="sendFriendRequest('${user.uid}', '${user.name}')">Add Friend</button>
             `;
             list.appendChild(div);
         });
     });
 }
 
-window.sendFriendRequest = async (targetUid, targetName) => {
-    await addDoc(collection(db, 'notifications'), {
-        to: targetUid,
-        from: currentUser.uid,
-        fromName: currentProfile.name,
-        fromPic: currentProfile.profilePic,
-        type: 'friend_request',
-        status: 'pending',
-        timestamp: serverTimestamp()
-    });
-    alert(`Request sent to ${targetName}`);
+// --- 7. PROFILE EDITS (Cloudinary) ---
+window.uploadNewProfilePic = async (input) => {
+    const file = input.files[0];
+    if (!file) return;
+    const url = await uploadToCloudinary(file);
+    if(url) await updateDoc(doc(db, 'users', currentUser.uid), { profilePic: url });
 };
 
-function initNotifications() {
-    const q = query(collection(db, 'notifications'), where('to', '==', currentUser.uid), orderBy('timestamp', 'desc'));
-    onSnapshot(q, (snap) => {
-        $('#notif-count').innerText = snap.size;
-        $('#notif-count').style.display = snap.size > 0 ? 'block' : 'none';
-        
-        const list = $('#notifications-list');
-        list.innerHTML = '';
-        snap.forEach(docSnap => {
-            const n = docSnap.data();
-            const nid = docSnap.id;
-            const div = document.createElement('div');
-            div.className = 'notif-card';
-            div.innerHTML = `
-                <img src="${n.fromPic}" style="width:40px; height:40px; border-radius:50%;">
-                <div style="flex:1; font-size:14px;"><b>${n.fromName}</b> sent a friend request.</div>
-                <button class="btn-green" style="padding:5px 10px;" onclick="acceptFriend('${nid}', '${n.from}')">Accept</button>
-            `;
-            list.appendChild(div);
-        });
-    });
-}
-
-window.acceptFriend = async (notifId, peerUid) => {
-    await updateDoc(doc(db, 'users', currentUser.uid), { friends: arrayUnion(peerUid) });
-    await updateDoc(doc(db, 'users', peerUid), { friends: arrayUnion(currentUser.uid) });
-    await setDoc(doc(db, 'notifications', notifId), { status: 'accepted' }, { merge: true });
-    alert("Friend Request Accepted!");
+window.uploadCoverPic = async (input) => {
+    const file = input.files[0];
+    if (!file) return;
+    const url = await uploadToCloudinary(file);
+    if(url) await updateDoc(doc(db, 'users', currentUser.uid), { coverPic: url });
 };
 
-// --- 5. UI & FEED ---
-function syncUI(profile) {
-    $$('.user-avatar-sync').forEach(img => img.src = profile.profilePic);
-    $('#profile-pic-preview').src = profile.profilePic;
-    $('#cover-pic-preview').src = profile.coverPic;
-    $('#display-name-header').innerText = profile.name;
-    $('#display-bio').innerText = profile.bio;
-}
+window.editBio = async () => {
+    const newBio = prompt("Enter your bio:", currentProfile.bio);
+    if (newBio !== null) await updateDoc(doc(db, 'users', currentUser.uid), { bio: newBio });
+};
 
-function initFeed() {
-    const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
-    onSnapshot(q, (snap) => {
-        const container = $('#feed-items');
-        container.innerHTML = '';
-        snap.forEach(docSnap => {
-            const post = docSnap.data();
-            const pid = docSnap.id;
-            const div = document.createElement('div');
-            div.className = 'post-card';
-            div.innerHTML = `
-                <div style="padding:12px; display:flex; gap:10px; align-items:center;">
-                    <img src="${post.userPic}" style="width:40px; height:40px; border-radius:50%;">
-                    <div><b>${post.userName}</b></div>
-                </div>
-                <div style="padding:0 12px 12px;">${post.text}</div>
-                ${post.content ? `<img src="${post.content}" style="width:100%">` : ''}
-            `;
-            container.appendChild(div);
-        });
-    });
-}
-
+// --- 8. FEED & POSTING ---
 window.submitPost = async () => {
     const text = $('#post-text').value;
     const file = $('#post-file-input').files[0];
     let fileUrl = "";
 
-    if (file) {
-        const refLink = ref(storage, `posts/${Date.now()}`);
-        await uploadBytes(refLink, file);
-        fileUrl = await getDownloadURL(refLink);
-    }
+    if (!text.trim() && !file) return;
+
+    if (file) fileUrl = await uploadToCloudinary(file);
 
     await addDoc(collection(db, 'posts'), {
         uid: currentUser.uid,
@@ -262,7 +210,35 @@ window.submitPost = async () => {
         timestamp: serverTimestamp()
     });
     $('#post-text').value = '';
+    $('#post-file-input').value = '';
     window.closePostModal();
+};
+
+function initFeed() {
+    const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
+    onSnapshot(q, (snapshot) => {
+        const container = $('#feed-items');
+        container.innerHTML = '';
+        snapshot.docs.forEach(docSnap => {
+            const post = docSnap.data();
+            const card = document.createElement('div');
+            card.className = 'post-card';
+            card.innerHTML = `
+                <div style="padding:12px; display:flex; gap:10px; align-items:center;">
+                    <img src="${post.userPic}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
+                    <div><b>${post.userName}</b></div>
+                </div>
+                <div style="padding:0 12px 12px;">${post.text}</div>
+                ${post.content ? `<img src="${post.content}" style="width:100%">` : ''}`;
+            container.appendChild(card);
+        });
+    });
+}
+
+window.showView = (viewName) => {
+    $$('.view').forEach(v => v.style.display = 'none');
+    $$('.nav-item').forEach(i => i.classList.remove('active'));
+    if($(`#${viewName}-view`)) $(`#${viewName}-view`).style.display = 'block';
 };
 
 window.logout = () => signOut(auth).then(() => location.reload());
