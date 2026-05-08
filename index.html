@@ -26,23 +26,24 @@
 
         /* FB Style Profile Section */
         .profile-container { background: var(--hr-card); margin-bottom: 10px; }
-        .cover-area { position: relative; height: 220px; background: #222; }
+        .cover-area { position: relative; height: 220px; background: #222; overflow: hidden; }
         .cover-photo { width: 100%; height: 100%; object-fit: cover; }
         .profile-avatar-area { position: relative; margin-top: -60px; padding-left: 20px; display: flex; align-items: flex-end; gap: 15px; }
         .profile-pic-overlap { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--hr-bg); background: #1a1a1a; object-fit: cover; }
-        .cam-btn { position: absolute; background: #3a3b3c; border: none; color: white; padding: 8px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; border: 2px solid var(--hr-bg); }
+        .cam-btn { position: absolute; background: #3a3b3c; border: none; color: white; padding: 8px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; border: 2px solid var(--hr-bg); transition: 0.3s; }
+        .cam-btn:active { transform: scale(0.9); }
         
         /* Feed & Posts */
-        .composer { background: var(--hr-card); padding: 15px; margin-bottom: 10px; }
+        .composer { background: var(--hr-card); padding: 15px; margin-bottom: 10px; border-bottom: 1px solid var(--hr-divider); }
         .composer-top { display: flex; align-items: center; gap: 10px; }
         .composer-top img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
         .composer-input { background: #3a3b3c; border-radius: 20px; padding: 10px 15px; flex: 1; color: var(--hr-secondary); cursor: pointer; font-size: 15px; }
-        .post-card { background: var(--hr-card); margin-bottom: 10px; border-bottom: 1px solid var(--hr-divider); }
+        .post-card { background: var(--hr-card); margin-bottom: 10px; border-bottom: 1px solid var(--hr-divider); width: 100%; }
         
         /* UI Elements */
         .btn-green { background: var(--hr-green); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
         .btn-gray { background: #3a3b3c; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
-        .user-row { background: #242526; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .user-row { background: #242526; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; border: 1px solid #333; }
         
         /* Modals */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--hr-bg); z-index: 2000; display: none; flex-direction: column; }
@@ -60,7 +61,7 @@
             <h1 style="color: var(--hr-green); font-size: 32px; margin-bottom: 5px;">Healing Social</h1>
             <p style="color: var(--hr-secondary); margin-bottom: 30px;">Grow together, connect forever.</p>
             
-            <button onclick="loginWithGoogle()" class="btn-green" style="width:100%; background:white; color:black; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:20px; border-radius:8px; padding:12px;">
+            <button onclick="loginWithGoogle()" class="btn-green" style="width:100%; background:white; color:black; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:20px; border-radius:8px; padding:12px; font-weight: bold;">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/button/google/web/1x/btn_google_light_normal_ios.svg" width="18">
                 Continue with Google
             </button>
@@ -99,15 +100,15 @@
         </div>
 
         <div id="people-view" class="view">
-            <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
-                <h2 style="margin:0;">People You May Know</h2>
+            <div style="padding:15px; border-bottom:1px solid #333;">
+                <h2 style="margin:0; font-size: 20px;">People You May Know</h2>
             </div>
-            <div id="people-list" style="padding: 0 15px;"></div>
+            <div id="people-list" style="padding: 15px;"></div>
         </div>
 
         <div id="notifications-view" class="view">
             <h2 style="padding:15px;">Notifications</h2>
-            <div id="notifications-list"></div>
+            <div id="notifications-list" style="padding: 0 15px;"></div>
         </div>
 
         <div id="edit-profile-view" class="view">
@@ -128,12 +129,12 @@
                 </div>
                 
                 <div style="padding: 15px;">
-                    <p id="display-bio" style="margin: 10px 0; color: #ccc;">No bio set yet...</p>
+                    <p id="display-bio" style="margin: 10px 0; color: #ccc; line-height: 1.4;">No bio set yet...</p>
                     <div style="display: flex; gap: 10px; margin-top: 15px;">
                         <button class="btn-green" style="flex:1" onclick="editProfileName()">Edit Name</button>
                         <button class="btn-gray" style="flex:1" onclick="editBio()">Edit Bio</button>
                     </div>
-                    <button class="btn-gray" style="width:100%; margin-top:10px; background:#4e4f50" onclick="logout()">Log Out</button>
+                    <button class="btn-gray" style="width:100%; margin-top:10px; background:#4e4f50; color: #ff4d4d; border: 1px solid #ff4d4d;" onclick="logout()">Log Out</button>
                 </div>
             </div>
             <input type="file" id="pic-upload" style="display:none;" accept="image/*" onchange="uploadNewProfilePic(this)">
@@ -142,14 +143,14 @@
 
         <div id="post-modal" class="modal">
             <div style="padding: 15px; display: flex; justify-content: space-between; align-items:center; border-bottom: 1px solid var(--hr-divider);">
-                <span onclick="closePostModal()" style="font-size:24px; cursor:pointer;">✕</span>
+                <span onclick="closePostModal()" style="font-size:24px; cursor:pointer; padding: 5px;">✕</span>
                 <b style="font-size:18px;">Create Post</b>
                 <button class="btn-green" onclick="submitPost()">Post</button>
             </div>
             <textarea id="post-text" placeholder="What's on your mind?"></textarea>
             <div style="padding: 15px; border-top:1px solid #333;">
                 <p style="margin-bottom:10px; font-size:14px; color:var(--hr-secondary);">Add to your post</p>
-                <input type="file" id="post-file-input" accept="image/*" style="color:white;">
+                <input type="file" id="post-file-input" accept="image/*" style="color:white; font-size: 12px;">
             </div>
         </div>
 
@@ -164,16 +165,26 @@
     <script type="module" src="app.js"></script>
     <script>
         const $ = s => document.querySelector(s);
+        
         window.openPostModal = () => $('#post-modal').style.display = 'flex';
         window.closePostModal = () => $('#post-modal').style.display = 'none';
+        
         window.showView = (v) => {
+            // Hide all views
             document.querySelectorAll('.view').forEach(view => view.style.display = 'none');
+            
+            // Remove active class from all nav items
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
-                // Simple logic to set active state based on icon click
-                if(item.getAttribute('onclick').includes(v)) item.classList.add('active');
+                // Re-add active class if the onclick matches the view name
+                if(item.getAttribute('onclick').includes(v)) {
+                    item.classList.add('active');
+                }
             });
-            $(`#${v}-view`).style.display = 'block';
+            
+            // Special case for profile view naming
+            const targetView = (v === 'edit-profile') ? 'edit-profile-view' : `${v}-view`;
+            if($(`#${targetView}`)) $(`#${targetView}`).style.display = 'block';
         };
     </script>
 </body>
