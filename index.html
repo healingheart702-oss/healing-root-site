@@ -13,64 +13,66 @@
             --hr-text: #ffffff;
             --hr-secondary: #a0a0a0;
             --hr-divider: #333;
+            --fb-blue: #1877f2;
         }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--hr-bg); color: var(--hr-text); padding-bottom: 70px; overflow-x: hidden; }
+        body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; margin: 0; background: var(--hr-bg); color: var(--hr-text); padding-bottom: 70px; overflow-x: hidden; }
         
-        /* Layout Components */
-        .header { background: var(--hr-card); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--hr-divider); }
-        .header h1 { color: var(--hr-green); font-size: 18px; margin: 0; text-transform: uppercase; letter-spacing: 2px; font-weight: 900; }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--hr-card); display: flex; border-top: 1px solid var(--hr-divider); z-index: 1000; }
-        .nav-item { flex: 1; text-align: center; padding: 15px 0; font-size: 22px; cursor: pointer; color: var(--hr-secondary); }
-        .nav-item.active { color: var(--hr-green); border-bottom: 3px solid var(--hr-green); }
+        /* Header & Navigation */
+        .header { background: var(--hr-card); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--hr-divider); }
+        .header h1 { color: var(--hr-green); font-size: 22px; margin: 0; font-weight: 800; letter-spacing: -1px; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--hr-card); display: flex; border-top: 1px solid var(--hr-divider); z-index: 1000; height: 60px; }
+        .nav-item { flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; color: var(--hr-secondary); transition: 0.2s; }
+        .nav-item.active { color: var(--hr-green); border-top: 3px solid var(--hr-green); margin-top: -3px; }
 
-        /* FB Style Feed */
-        .view { display: none; }
-        .composer { background: var(--hr-card); padding: 15px; border-bottom: 8px solid #000; }
-        .composer-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-        .composer img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .composer-input { background: #333; border-radius: 20px; padding: 10px 15px; flex: 1; color: var(--hr-secondary); cursor: pointer; font-size: 14px; }
+        /* FB Style Profile Section */
+        .profile-container { background: var(--hr-card); margin-bottom: 10px; }
+        .cover-area { position: relative; height: 220px; background: #222; }
+        .cover-photo { width: 100%; height: 100%; object-fit: cover; }
+        .profile-avatar-area { position: relative; margin-top: -60px; padding-left: 20px; display: flex; align-items: flex-end; gap: 15px; }
+        .profile-pic-overlap { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--hr-bg); background: #1a1a1a; object-fit: cover; }
+        .cam-btn { position: absolute; background: #3a3b3c; border: none; color: white; padding: 8px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; border: 2px solid var(--hr-bg); }
+        
+        /* Feed & Posts */
+        .composer { background: var(--hr-card); padding: 15px; margin-bottom: 10px; }
+        .composer-top { display: flex; align-items: center; gap: 10px; }
+        .composer-top img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .composer-input { background: #3a3b3c; border-radius: 20px; padding: 10px 15px; flex: 1; color: var(--hr-secondary); cursor: pointer; font-size: 15px; }
         .post-card { background: var(--hr-card); margin-bottom: 10px; border-bottom: 1px solid var(--hr-divider); }
-
-        /* Profile & Cover UI */
-        .profile-header-area { position: relative; background: var(--hr-bg); padding-bottom: 15px; border-bottom: 1px solid var(--hr-divider); }
-        .cover-photo { width: 100%; height: 200px; object-fit: cover; background: #222; }
-        .profile-pic-overlap { width: 140px; height: 140px; border-radius: 50%; border: 4px solid var(--hr-bg); background: #222; object-fit: cover; margin-top: -70px; margin-left: 15px; position: relative; }
-        .cam-icon-circle { position: absolute; bottom: 10px; left: 115px; background: #3a3b3c; padding: 8px; border-radius: 50%; font-size: 14px; z-index: 5; border: 2px solid var(--hr-bg); cursor: pointer; }
         
-        /* Discovery & Notifications */
-        .user-row { background: var(--hr-card); padding: 12px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-        .notif-card { background: var(--hr-card); padding: 15px; border-bottom: 1px solid var(--hr-divider); display: flex; align-items: center; gap: 12px; }
-        #notif-count { background: #ff3b30; color: white; border-radius: 50%; font-size: 10px; padding: 2px 6px; position: absolute; margin-left: 12px; margin-top: -10px; }
-
-        /* Buttons & Auth */
-        .btn-green { background: var(--hr-green); color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        .auth-input { width: 100%; padding: 15px; background: #1c1e21; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
-        .google-btn { width: 100%; background: white; color: #111; border: none; padding: 12px; border-radius: 25px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; margin-bottom: 20px; }
+        /* UI Elements */
+        .btn-green { background: var(--hr-green); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
+        .btn-gray { background: #3a3b3c; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
+        .user-row { background: #242526; padding: 12px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
         
+        /* Modals */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--hr-bg); z-index: 2000; display: none; flex-direction: column; }
+        textarea { width: 100%; background: transparent; color: white; border: none; padding: 15px; font-size: 18px; resize: none; outline: none; }
+        
+        /* Auth Screen */
+        .auth-container { width: 100%; max-width: 400px; padding: 20px; text-align: center; }
+        .auth-input { width: 100%; padding: 14px; background: #242526; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; font-size: 16px; }
     </style>
 </head>
 <body>
 
-    <div id="auth-modal" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; text-align: center; background: #000;">
-        <div style="width: 85%; max-width: 400px; padding: 20px;">
-            <h1 style="color: var(--hr-green); margin-bottom: 5px;">HEALING SOCIAL</h1>
-            <p style="color: var(--hr-secondary); margin-bottom: 30px;">Connect with the World</p>
-            <button onclick="loginWithGoogle()" class="google-btn">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/button/google/web/1x/btn_google_light_normal_ios.svg" width="20">
+    <div id="auth-modal" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #000;">
+        <div class="auth-container">
+            <h1 style="color: var(--hr-green); font-size: 32px; margin-bottom: 5px;">Healing Social</h1>
+            <p style="color: var(--hr-secondary); margin-bottom: 30px;">Grow together, connect forever.</p>
+            
+            <button onclick="loginWithGoogle()" class="btn-green" style="width:100%; background:white; color:black; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:20px; border-radius:8px; padding:12px;">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/button/google/web/1x/btn_google_light_normal_ios.svg" width="18">
                 Continue with Google
             </button>
-            <div style="margin: 20px 0; color: #555; font-size: 12px; display: flex; align-items: center; gap: 10px;">
-                <hr style="flex:1; border-color:#333;"> OR <hr style="flex:1; border-color:#333;">
-            </div>
+
             <form id="auth-form">
                 <input type="text" id="auth-name" placeholder="Full Name" class="auth-input" style="display: none;">
                 <input type="email" id="auth-email" placeholder="Email Address" class="auth-input" required>
                 <input type="password" id="auth-password" placeholder="Password" class="auth-input" required>
-                <button type="submit" id="auth-submit-btn" class="btn-green" style="width: 100%; padding: 15px; border-radius: 25px;">Log In</button>
+                <button type="submit" id="auth-submit-btn" class="btn-green" style="width: 100%; font-size:18px;">Log In</button>
             </form>
-            <p id="auth-toggle" onclick="toggleAuthMode()" style="margin-top: 25px; color: var(--hr-green); cursor: pointer; font-size: 14px; font-weight: bold;">
-                Don't have an account? Join Healing Social
+            <p id="auth-toggle" onclick="toggleAuthMode()" style="margin-top: 20px; color: var(--hr-green); cursor: pointer; font-weight: 600;">
+                Create New Account
             </p>
         </div>
     </div>
@@ -78,12 +80,11 @@
     <div id="main-app" style="display: none;">
         <div class="header">
             <h1>HEALING</h1>
-            <div style="display: flex; gap: 20px; font-size: 20px;">
-                <div onclick="openPostModal()" style="cursor:pointer;">➕</div>
-                <div onclick="showView('notifications')" style="cursor:pointer; position:relative;">
-                    🔔<span id="notif-count" style="display:none;">0</span>
+            <div style="display: flex; gap: 15px;">
+                <div onclick="openPostModal()" style="cursor:pointer; background:#3a3b3c; width:35px; height:35px; display:flex; align-items:center; justify-content:center; border-radius:50%;">➕</div>
+                <div onclick="showView('notifications')" style="cursor:pointer; background:#3a3b3c; width:35px; height:35px; display:flex; align-items:center; justify-content:center; border-radius:50%; position:relative;">
+                    🔔<span id="notif-count" style="display:none; position:absolute; top:-5px; right:-5px; background:red; font-size:10px; padding:2px 5px; border-radius:50%;">0</span>
                 </div>
-                <div onclick="showView('chat')" style="cursor:pointer;">💬</div>
             </div>
         </div>
 
@@ -98,37 +99,41 @@
         </div>
 
         <div id="people-view" class="view">
-            <h3 style="padding: 15px; margin: 0; color: var(--hr-green);">Discover People</h3>
-            <div id="people-list" style="padding: 15px;"></div>
+            <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="margin:0;">People You May Know</h2>
+            </div>
+            <div id="people-list" style="padding: 0 15px;"></div>
         </div>
 
         <div id="notifications-view" class="view">
-            <h3 style="padding: 15px; margin: 0; color: var(--hr-green);">Notifications</h3>
+            <h2 style="padding:15px;">Notifications</h2>
             <div id="notifications-list"></div>
         </div>
 
-        <div id="chat-view" class="view">
-            <h3 style="padding: 15px; margin: 0; color: var(--hr-green);">Messages</h3>
-            <div id="chat-user-list" style="padding: 15px;"></div>
-        </div>
-
         <div id="edit-profile-view" class="view">
-            <div class="profile-header-area">
-                <img id="cover-pic-preview" src="images/HEALING_ROOT_BANNER.jpg" class="cover-photo">
-                <div onclick="$('#cover-upload').click()" style="position:absolute; top:160px; right:15px; background:rgba(0,0,0,0.6); padding:8px 12px; border-radius:5px; font-size:12px; cursor:pointer;">📷 Edit Cover</div>
-                
-                <div style="position: relative;">
-                    <img id="profile-pic-preview" src="images/default_profile.png" class="profile-pic-overlap">
-                    <div class="cam-icon-circle" onclick="$('#pic-upload').click()">📷</div>
+            <div class="profile-container">
+                <div class="cover-area">
+                    <img id="cover-pic-preview" src="images/HEALING_ROOT_BANNER.jpg" class="cover-photo">
+                    <button class="cam-btn" style="bottom:10px; right:10px;" onclick="$('#cover-upload').click()">📷</button>
                 </div>
-
-                <div style="padding: 0 15px; margin-top: 10px;">
-                    <h2 id="display-name-header" style="margin:0;">Loading...</h2>
-                    <p id="display-bio" style="margin: 5px 0; color: var(--hr-secondary);">Welcome to my profile!</p>
-                    <div style="display: flex; gap: 15px; margin-top: 10px;">
-                        <button class="btn-green" style="flex:1" onclick="editBio()">Edit Bio</button>
-                        <button class="btn-green" style="flex:1; background:#333" onclick="logout()">Logout</button>
+                <div class="profile-avatar-area">
+                    <div style="position:relative;">
+                        <img id="profile-pic-preview" src="images/default_profile.png" class="profile-pic-overlap">
+                        <button class="cam-btn" style="bottom:5px; right:5px;" onclick="$('#pic-upload').click()">📷</button>
                     </div>
+                    <div style="margin-bottom:10px;">
+                        <h2 id="display-name-header" style="margin:0; font-size:24px;">Loading...</h2>
+                        <p id="follower-count" style="margin:0; color:var(--hr-secondary); font-size:14px;">0 friends</p>
+                    </div>
+                </div>
+                
+                <div style="padding: 15px;">
+                    <p id="display-bio" style="margin: 10px 0; color: #ccc;">No bio set yet...</p>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn-green" style="flex:1" onclick="editProfileName()">Edit Name</button>
+                        <button class="btn-gray" style="flex:1" onclick="editBio()">Edit Bio</button>
+                    </div>
+                    <button class="btn-gray" style="width:100%; margin-top:10px; background:#4e4f50" onclick="logout()">Log Out</button>
                 </div>
             </div>
             <input type="file" id="pic-upload" style="display:none;" accept="image/*" onchange="uploadNewProfilePic(this)">
@@ -136,14 +141,15 @@
         </div>
 
         <div id="post-modal" class="modal">
-            <div style="padding: 15px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--hr-divider);">
-                <span onclick="closePostModal()" style="cursor:pointer;">✕</span>
-                <b>Create Post</b>
+            <div style="padding: 15px; display: flex; justify-content: space-between; align-items:center; border-bottom: 1px solid var(--hr-divider);">
+                <span onclick="closePostModal()" style="font-size:24px; cursor:pointer;">✕</span>
+                <b style="font-size:18px;">Create Post</b>
                 <button class="btn-green" onclick="submitPost()">Post</button>
             </div>
-            <textarea id="post-text" placeholder="What's happening?" style="width: 100%; height: 200px; background: transparent; color: white; border: none; padding: 15px; font-size: 18px; outline: none;"></textarea>
-            <div style="padding: 15px;">
-                <input type="file" id="post-file-input" accept="image/*,video/*">
+            <textarea id="post-text" placeholder="What's on your mind?"></textarea>
+            <div style="padding: 15px; border-top:1px solid #333;">
+                <p style="margin-bottom:10px; font-size:14px; color:var(--hr-secondary);">Add to your post</p>
+                <input type="file" id="post-file-input" accept="image/*" style="color:white;">
             </div>
         </div>
 
@@ -162,7 +168,11 @@
         window.closePostModal = () => $('#post-modal').style.display = 'none';
         window.showView = (v) => {
             document.querySelectorAll('.view').forEach(view => view.style.display = 'none');
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                // Simple logic to set active state based on icon click
+                if(item.getAttribute('onclick').includes(v)) item.classList.add('active');
+            });
             $(`#${v}-view`).style.display = 'block';
         };
     </script>
