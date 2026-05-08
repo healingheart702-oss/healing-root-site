@@ -26,7 +26,6 @@ const ADMIN_UID = "gKwgPDNJgsdcApIJch6NM9bKmf02";
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const googleProvider = new GoogleAuthProvider();
 
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
@@ -61,156 +60,139 @@ onAuthStateChanged(auth, user => {
         if($('#auth-modal')) $('#auth-modal').style.display = 'none';
         if($('#main-app')) $('#main-app').style.display = 'block';
         initFeed();
-        loadDiscoveryUsers(); 
+        loadDiscoveryUsers();
         listenToNotifications();
-        listenToChats();
     } else {
         if($('#auth-modal')) $('#auth-modal').style.display = 'flex';
         if($('#main-app')) $('#main-app').style.display = 'none';
     }
 });
 
-// FIXED: This now matches the IDs in your screenshots to stop the "Loading" bug
 function syncUI(profile) {
     const pic = profile.profilePic || 'images/default_profile.png';
     const cover = profile.coverPic || 'images/HEALING_ROOT_BANNER.jpg';
-    const name = profile.name || "User";
-
+    
     $$('.user-avatar-sync').forEach(img => img.src = pic);
-    
-    // Sync Name & Bio across Menu and Profile tabs
-    if ($('#profile-name')) $('#profile-name').innerText = name;
-    if ($('#menu-user-name')) $('#menu-user-name').innerText = name;
-    if ($('#profile-bio')) $('#profile-bio').innerText = profile.bio || "No bio set.";
-    
-    // Sync Images
     if ($('#profile-pic-preview')) $('#profile-pic-preview').src = pic;
     if ($('#cover-pic-preview')) $('#cover-pic-preview').src = cover;
+    if ($('#profile-name')) $('#profile-name').innerText = profile.name;
+    if ($('#menu-user-name')) $('#menu-user-name').innerText = profile.name;
+    if ($('#profile-bio')) $('#profile-bio').innerText = profile.bio || "No bio set.";
 }
 
-// --- 3. DISCOVERY: PEOPLE YOU MAY KNOW ---
-function loadDiscoveryUsers() {
-    const q = query(collection(db, 'users'), limit(20));
-    onSnapshot(q, (snap) => {
-        const scroller = $('#discovery-scroller');
-        if (!scroller) return;
-        scroller.innerHTML = `
-            <div style="padding:10px 15px; display:flex; justify-content:space-between; align-items:center;">
-                <h3 style="margin:0; font-size:14px; color:var(--hr-secondary);">People you may know</h3>
-            </div>
-            <div id="scroller-inner" style="display:flex; overflow-x:auto; gap:12px; padding:0 15px 15px 15px; scrollbar-width: none;"></div>`;
-        const inner = $('#scroller-inner');
-        snap.forEach(userDoc => {
-            const user = userDoc.data();
-            if (user.uid === currentUser.uid) return; 
-            inner.innerHTML += `
-                <div style="background:var(--hr-card); border:1px solid var(--hr-divider); border-radius:10px; min-width:150px; text-align:center; padding:15px;">
-                    <img src="${user.profilePic || 'images/default_profile.png'}" style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
-                    <p style="margin:10px 0; font-size:14px; font-weight:bold; overflow:hidden; text-overflow:ellipsis;">${user.name}</p>
-                    <button onclick="sendFriendRequest('${user.uid}')" class="btn-full bg-blue" style="font-size:12px; padding:6px;">Add Friend</button>
-                </div>`;
+// --- 3. PROFILE EDITING LOGIC ---
+window.editProfile = async () => {
+    const newName = prompt("Change Display Name:", currentProfile.name);
+    const newBio = prompt("Change Bio:", currentProfile.bio || "");
+    
+    if (newName || newBio) {
+        await updateDoc(doc(db, 'users', currentUser.uid), {
+            name: newName || currentProfile.name,
+            bio: newBio || currentProfile.bio
         });
-    });
-}
+    }
+};
 
-// --- 4. REELS (FIXED: Direct MP4 Links for lively playback) ---
+window.uploadNewProfilePic = async (input) => {
+    const file = input.files[0];
+    const url = await uploadToCloudinary(file);
+    if (url) {
+        await updateDoc(doc(db, 'users', currentUser.uid), { profilePic: url });
+        alert("Profile picture updated!");
+    }
+};
+
+window.uploadCoverPic = async (input) => {
+    const file = input.files[0];
+    const url = await uploadToCloudinary(file);
+    if (url) {
+        await updateDoc(doc(db, 'users', currentUser.uid), { coverPic: url });
+        alert("Cover photo updated!");
+    }
+};
+
+// --- 4. REELS (HIGH-QUALITY AGRO CONTENT) ---
 window.loadReels = () => {
     const container = $('#reels-container');
     if (!container) return;
-
-    const autoVideos = [
-        { url: "https://v1.pexels.com/video-files/3752533/3752533-uhd_1440_2560_25fps.mp4", author: "AgroTrends" },
-        { url: "https://v1.pexels.com/video-files/2853795/2853795-uhd_1440_2732_30fps.mp4", author: "HealingRoot" },
-        { url: "https://v1.pexels.com/video-files/4462615/4462615-uhd_1440_2560_25fps.mp4", author: "FarmLife" }
+    
+    const agroVideos = [
+        { url: "https://v1.pexels.com/video-files/3752533/3752533-uhd_1440_2560_25fps.mp4", author: "AgroTrends", info: "Innovative Cassava Planting 🌿" },
+        { url: "https://v1.pexels.com/video-files/2853795/2853795-uhd_1440_2732_30fps.mp4", author: "HealingRoot", info: "Nurturing the soil." },
+        { url: "https://v1.pexels.com/video-files/4462615/4462615-uhd_1440_2560_25fps.mp4", author: "FarmLife", info: "Harvest Season is here!" }
     ];
 
-    container.innerHTML = autoVideos.map(vid => `
-        <div class="reel-video-container" style="height:100vh; position:relative; background:#000;">
+    container.innerHTML = agroVideos.map(vid => `
+        <div class="reel-video-container">
             <video src="${vid.url}" loop muted autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
             <div class="reel-actions">
-                <div class="circle-icon"><i class="fa-solid fa-heart"></i></div>
-                <div class="circle-icon"><i class="fa-solid fa-comment"></i></div>
+                <div class="circle-icon" style="background:rgba(0,0,0,0.5)"><i class="fa-solid fa-heart"></i></div>
+                <div class="circle-icon" style="background:rgba(0,0,0,0.5)"><i class="fa-solid fa-comment"></i></div>
             </div>
-            <div style="position:absolute; bottom:100px; left:20px; color:white; z-index:5;">
+            <div style="position:absolute; bottom:25px; left:15px; text-shadow: 2px 2px 4px #000; z-index:10;">
                 <b style="font-size:18px;">@${vid.author}</b>
-                <p>Developing Agriculture in Nigeria 🇳🇬</p>
+                <p style="margin:5px 0 0 0; font-size:15px; color:white;">${vid.info}</p>
             </div>
         </div>
     `).join('');
 };
 
-// --- 5. PROFILE EDITING (BIO, NAME, PHOTOS) ---
-window.editProfileField = async (field) => {
-    const currentVal = field === 'name' ? currentProfile.name : currentProfile.bio;
-    const newVal = prompt(`Enter new ${field}:`, currentVal);
-    if (newVal !== null) {
-        await updateDoc(doc(db, 'users', currentUser.uid), { [field]: newVal });
-    }
-};
-
-window.uploadPhoto = async (type) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = async (e) => {
-        const file = e.target.files[0];
-        const url = await uploadToCloudinary(file);
-        if (url) {
-            const updateKey = type === 'profile' ? 'profilePic' : 'coverPic';
-            await updateDoc(doc(db, 'users', currentUser.uid), { [updateKey]: url });
-            alert(`${type} picture updated!`);
-        }
-    };
-    input.click();
-};
-
-// --- 6. ADMIN & FEED ---
-window.deletePost = async (pid, ownerUid) => {
-    if (currentUser.uid === ADMIN_UID || currentUser.uid === ownerUid) {
-        if (confirm("Delete this content?")) await deleteDoc(doc(db, 'posts', pid));
-    }
-};
-
-function initFeed() {
-    const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
-    onSnapshot(q, (snapshot) => {
-        const container = $('#feed-items');
-        if (!container) return;
-        container.innerHTML = '';
-        snapshot.forEach(docSnap => {
-            const post = docSnap.data();
-            const pid = docSnap.id;
-            container.innerHTML += `
-                <div class="post-card">
-                    <div style="padding:12px; display:flex; justify-content:space-between; align-items:center;">
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <img src="${post.userPic}" class="avatar-small">
-                            <b>${post.userName}</b>
-                        </div>
-                        ${(currentUser.uid === ADMIN_UID || currentUser.uid === post.uid) ? `<i class="fa-solid fa-ellipsis" onclick="deletePost('${pid}', '${post.uid}')"></i>` : ''}
-                    </div>
-                    <div style="padding:0 12px 12px;">${post.text}</div>
-                    ${post.content ? `<img src="${post.content}" style="width:100%;">` : ''}
+// --- 5. DISCOVERY & FEED ---
+function loadDiscoveryUsers() {
+    const q = query(collection(db, 'users'), limit(15));
+    onSnapshot(q, (snap) => {
+        const scroller = $('#discovery-scroller');
+        if (!scroller) return;
+        scroller.innerHTML = `<div id="scroller-inner" style="display:flex; overflow-x:auto; gap:12px; padding:15px; scrollbar-width: none;"></div>`;
+        const inner = $('#scroller-inner');
+        snap.forEach(userDoc => {
+            const user = userDoc.data();
+            if (user.uid === currentUser.uid) return; 
+            inner.innerHTML += `
+                <div style="background:var(--hr-card); border:1px solid var(--hr-divider); border-radius:10px; min-width:140px; text-align:center; padding:15px;">
+                    <img src="${user.profilePic || 'images/default_profile.png'}" style="width:70px; height:70px; border-radius:50%; object-fit:cover;">
+                    <p style="margin:10px 0; font-size:13px; font-weight:bold;">${user.name}</p>
+                    <button onclick="sendFriendRequest('${user.uid}')" class="btn-full bg-blue" style="font-size:11px; padding:5px;">Add Friend</button>
                 </div>`;
         });
     });
 }
 
-// --- 7. NAVIGATION & LOGOUT ---
-window.showView = (v) => {
-    $$('.view-section').forEach(s => s.style.display = 'none');
-    const target = $(`#view-${v}`);
-    if (target) target.style.display = 'block';
-    if (v === 'reels') loadReels();
-};
+function initFeed() {
+    const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
+    onSnapshot(q, (snapshot) => {
+        const container = $('#feed-items');
+        if(!container) return;
+        container.innerHTML = '';
+        snapshot.forEach(docSnap => {
+            const post = docSnap.data();
+            const pid = docSnap.id;
+            const isOwnerOrAdmin = currentUser.uid === post.uid || currentUser.uid === ADMIN_UID;
+            
+            const card = document.createElement('div');
+            card.className = 'post-card';
+            card.style.background = 'var(--hr-card)';
+            card.style.marginBottom = '10px';
+            card.innerHTML = `
+                <div style="padding:12px; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <img src="${post.userPic || 'images/default_profile.png'}" class="avatar-small">
+                        <b>${post.userName}</b>
+                    </div>
+                    ${isOwnerOrAdmin ? `<i class="fa-solid fa-trash" onclick="deletePost('${pid}', '${post.uid}')" style="cursor:pointer; color:var(--hr-secondary); font-size:14px;"></i>` : ''}
+                </div>
+                <div style="padding:0 12px 12px;">${post.text}</div>
+                ${post.content ? `<img src="${post.content}" style="width:100%; max-height:400px; object-fit:cover;">` : ''}
+                <div style="padding:10px 12px; border-top:1px solid var(--hr-divider); display:flex; gap:20px;">
+                    <span onclick="likePost('${pid}')" style="cursor:pointer;"><i class="fa-regular fa-thumbs-up"></i> ${post.likeCount || 0}</span>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    });
+}
 
-window.logout = () => {
-    if(confirm("Are you sure you want to log out?")) {
-        signOut(auth).then(() => location.reload());
-    }
-};
-
-// --- RE-USE YOUR EXISTING SUBMISSION LOGIC ---
+// --- 6. ACTIONS ---
 window.submitPost = async () => {
     const text = $('#post-text').value;
     const file = $('#post-file-input').files[0];
@@ -223,33 +205,32 @@ window.submitPost = async () => {
         userPic: currentProfile.profilePic,
         text: text,
         content: fileUrl,
-        timestamp: serverTimestamp(),
         likeCount: 0,
-        comments: []
+        timestamp: serverTimestamp()
     });
     $('#post-text').value = '';
     window.closePostModal();
 };
 
-// AUTH UI HANDLERS
-window.toggleAuthMode = () => {
-    isSignUpMode = !isSignUpMode;
-    $('#auth-name').style.display = isSignUpMode ? 'block' : 'none';
-    $('#auth-submit-btn').innerText = isSignUpMode ? 'Create Account' : 'Log In';
+window.deletePost = async (pid, ownerUid) => {
+    if (confirm("Delete this post?")) {
+        await deleteDoc(doc(db, 'posts', pid));
+    }
 };
 
-$('#auth-form').onsubmit = async (e) => {
-    e.preventDefault();
-    const email = $('#auth-email').value, password = $('#auth-password').value, name = $('#auth-name').value;
-    try {
-        if (isSignUpMode) {
-            const cred = await createUserWithEmailAndPassword(auth, email, password);
-            await setDoc(doc(db, 'users', cred.user.uid), {
-                uid: cred.user.uid, name: name, email,
-                profilePic: 'images/default_profile.png',
-                coverPic: 'images/HEALING_ROOT_BANNER.jpg',
-                bio: "Welcome to my profile!"
-            });
-        } else { await signInWithEmailAndPassword(auth, email, password); }
-    } catch (err) { alert(err.message); }
+window.logout = () => {
+    if(confirm("Logout?")) {
+        signOut(auth).then(() => location.reload());
+    }
 };
+
+function listenToNotifications() {
+    const q = query(collection(db, 'notifications'), where('recipientUID', '==', currentUser.uid));
+    onSnapshot(q, snap => {
+        const badge = $('#notif-badge');
+        if(badge) {
+            badge.style.display = snap.size > 0 ? 'block' : 'none';
+            badge.innerText = snap.size;
+        }
+    });
+}
