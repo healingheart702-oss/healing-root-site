@@ -104,6 +104,12 @@
         </div>
 
         <div id="home-view" class="view active">
+            <div id="discovery-section" style="padding:15px; background:var(--hr-card); margin-bottom:10px; border-bottom:1px solid var(--hr-divider);">
+                <p style="margin:0 0 10px 0; font-weight:bold; font-size:14px; color:var(--hr-secondary);">Suggested People</p>
+                <div id="discovery-users" style="display:flex; overflow-x:auto; gap:12px; padding-bottom:5px;">
+                    </div>
+            </div>
+
             <div style="padding:15px; background:var(--hr-card); margin-bottom:10px; display:flex; gap:10px; align-items:center;">
                 <img class="user-avatar-sync avatar-small" src="images/default_profile.png">
                 <div onclick="openPostModal()" style="background:var(--hr-hover); padding:10px; border-radius:20px; flex:1; color:var(--hr-secondary);">What's on your mind?</div>
@@ -113,6 +119,16 @@
 
         <div id="reels-view" class="view"><div id="reels-container"></div></div>
 
+        <div id="notifications-view" class="view">
+            <div style="padding:15px;"><h2>Notifications</h2></div>
+            <div id="notifications-list"></div>
+        </div>
+
+        <div id="chats-view" class="view">
+            <div style="padding:15px;"><h2>Chats</h2></div>
+            <div id="friend-chats-list"></div>
+        </div>
+
         <div id="profile-view" class="view">
             <div style="background:var(--hr-card);">
                 <div style="height:180px; background:#333; position:relative;">
@@ -120,7 +136,10 @@
                     <button class="circle-icon" style="position:absolute; bottom:10px; right:10px;" onclick="$('#cover-upload').click()"><i class="fa-solid fa-camera"></i></button>
                 </div>
                 <div style="margin-top:-50px; padding:0 15px;">
-                    <img id="profile-pic-preview" style="width:110px; height:110px; border-radius:50%; border:4px solid black; object-fit: cover;">
+                    <div style="position:relative; width:110px;">
+                        <img id="profile-pic-preview" style="width:110px; height:110px; border-radius:50%; border:4px solid black; object-fit: cover;">
+                        <button class="circle-icon" style="position:absolute; bottom:0; right:0; width:30px; height:30px;" onclick="$('#pic-upload').click()"><i class="fa-solid fa-camera" style="font-size:12px;"></i></button>
+                    </div>
                     <h2 id="profile-name" style="margin:10px 0 5px 0;">Loading...</h2>
                     <p id="profile-bio" style="color:var(--hr-secondary); margin:0;"></p>
                 </div>
@@ -140,7 +159,7 @@
         </div>
 
         <div id="user-profile-view" class="view">
-            <div style="padding:15px;"><i class="fa-solid fa-arrow-left" onclick="showView('home')"></i></div>
+            <div style="padding:15px;"><i class="fa-solid fa-arrow-left" onclick="showView('home')" style="cursor:pointer; font-size:20px;"></i></div>
             <div id="external-profile-content"></div>
         </div>
 
@@ -148,9 +167,9 @@
             <div style="padding:15px;"><h2>Menu</h2></div>
             <div class="menu-grid">
                 <div class="menu-card" onclick="showView('profile')"><i class="fa-solid fa-circle-user" style="color:var(--fb-blue);"></i><br><b>Profile</b></div>
-                <div class="menu-card"><i class="fa-solid fa-user-group" style="color:#2aa4f4;"></i><br><b>Friends</b></div>
+                <div class="menu-card" onclick="showView('friends')"><i class="fa-solid fa-user-group" style="color:#2aa4f4;"></i><br><b>Friends</b></div>
                 <div class="menu-card" onclick="showView('reels')"><i class="fa-solid fa-video" style="color:#f3425f;"></i><br><b>Reels</b></div>
-                <div class="menu-card"><i class="fa-solid fa-users" style="color:#2aa4f4;"></i><br><b>Groups</b></div>
+                <div class="menu-card" onclick="contactAdmin()"><i class="fa-solid fa-user-shield" style="color:#2e7d32;"></i><br><b>ADMIN</b></div>
                 <div id="admin-delete-btn" class="menu-card bg-red" style="display:none;" onclick="adminManageUsers()"><b><i class="fa-solid fa-user-slash"></i><br>Delete User</b></div>
                 <div class="menu-card" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i><br><b>Log Out</b></div>
             </div>
@@ -159,7 +178,7 @@
         <div class="bottom-nav">
             <div class="nav-item active" onclick="showView('home')"><i class="fa-solid fa-house"></i></div>
             <div class="nav-item" onclick="showView('reels')"><i class="fa-solid fa-clapperboard"></i></div>
-            <div class="nav-item" onclick="showView('profile')"><i class="fa-solid fa-circle-user"></i></div>
+            <div class="nav-item" onclick="showView('notifications')"><i class="fa-solid fa-bell"></i></div>
             <div class="nav-item" onclick="showView('menu')"><i class="fa-solid fa-bars"></i></div>
         </div>
     </div>
@@ -205,7 +224,7 @@
             const items = document.querySelectorAll('.nav-item');
             if(v==='home') items[0].classList.add('active');
             if(v==='reels') items[1].classList.add('active');
-            if(v==='profile') items[2].classList.add('active');
+            if(v==='notifications') items[2].classList.add('active');
             if(v==='menu') items[3].classList.add('active');
         };
         window.openPostModal = () => $('#post-modal').style.display = 'flex';
