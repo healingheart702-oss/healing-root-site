@@ -27,92 +27,57 @@
         .header-icons { display: flex; gap: 10px; }
         .circle-icon { background: var(--hr-hover); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 18px; position: relative; }
 
+        /* Grid for Menu */
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
+        .menu-card { background: var(--hr-card); padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .menu-card:active { transform: scale(0.95); background: var(--hr-hover); }
+        .menu-card i { font-size: 24px; margin-bottom: 8px; }
+
         /* Post & Media */
         .post-card { background: var(--hr-card); border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
         .post-media { width: 100%; max-height: 500px; object-fit: cover; }
         .avatar-small { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
 
-        /* FB Style Reactions */
-        .reactions-box {
-            position: absolute; bottom: 45px; left: 10px; background: white; border-radius: 30px;
-            padding: 5px 12px; display: none; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-            z-index: 100; border: 1px solid #ddd;
-        }
-        .reactions-box span { font-size: 28px; cursor: pointer; transition: transform 0.2s; }
-        .reactions-box span:hover { transform: scale(1.5); }
-        .post-action-btn { position: relative; flex: 1; text-align: center; padding: 12px; cursor: pointer; color: var(--hr-secondary); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .post-action-btn:hover .reactions-box { display: flex; }
+        /* Profile Info */
+        .profile-info-grid { padding: 15px 20px; display: flex; flex-direction: column; gap: 10px; }
+        .info-item { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--hr-text); }
 
-        /* Discovery bar */
-        #discovery-users::-webkit-scrollbar { display: none; }
-
-        /* Auth & Forms */
-        #auth-modal { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #000; padding: 20px; }
-        .auth-container { width: 100%; max-width: 400px; background: var(--hr-card); padding: 25px; border-radius: 15px; }
-        .auth-input, .edit-input { width: 100%; padding: 12px; margin-bottom: 12px; background: var(--hr-hover); border: 1px solid var(--hr-divider); border-radius: 8px; color: white; box-sizing: border-box; }
-        
-        .btn-full { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.2s; }
-        .btn-full:active { transform: scale(0.98); }
-        .bg-blue { background: var(--fb-blue); color: white; }
-        .bg-gray { background: var(--hr-hover); color: white; }
-        .bg-red { background: #e41e3f; color: white; }
-
+        /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--hr-card); display: flex; border-top: 1px solid var(--hr-divider); z-index: 1001; height: 65px; }
         .nav-item { flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; color: var(--hr-secondary); font-size: 22px; cursor: pointer; }
         .nav-item.active { color: var(--fb-blue); }
 
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--hr-bg); z-index: 2000; display: none; flex-direction: column; overflow-y: auto; }
         
-        .comment-section { background: #1c1d1e; padding: 10px; }
-        .reel-video-container iframe { width: 100%; height: 100%; border: none; }
+        .btn-full { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
+        .bg-blue { background: var(--fb-blue); color: white; }
+        .bg-gray { background: var(--hr-hover); color: white; }
+        .edit-input { width: 100%; padding: 12px; margin-bottom: 12px; background: var(--hr-hover); border: 1px solid var(--hr-divider); border-radius: 8px; color: white; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <div id="auth-modal">
-        <h1 style="color:white; font-size:42px; margin-bottom:10px; font-weight:800; letter-spacing: -2px;">HEALING</h1>
-        <div class="auth-container">
-            <form id="auth-form">
-                <input type="text" id="auth-name" class="auth-input" placeholder="Full Name" style="display:none;">
-                <input type="email" id="auth-email" class="auth-input" placeholder="Email" required>
-                <input type="password" id="auth-password" class="auth-input" placeholder="Password" required>
-                <button type="submit" id="auth-submit-btn" class="btn-full bg-blue">Log In</button>
-            </form>
-            <div style="margin: 20px 0; display: flex; align-items: center; color: var(--hr-divider);">
-                <div style="flex:1; height:1px; background:var(--hr-divider);"></div>
-                <span style="padding:0 10px; font-size:12px;">OR</span>
-                <div style="flex:1; height:1px; background:var(--hr-divider);"></div>
-            </div>
-            <button onclick="loginWithGoogle()" class="btn-full bg-gray" style="display:flex; align-items:center; justify-content:center; gap:10px;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="18"> Continue with Google
-            </button>
-            <p id="auth-toggle" onclick="toggleAuthMode()" style="color:var(--fb-blue); text-align:center; cursor:pointer; margin-top:20px; font-weight:600;">Create New Account</p>
-        </div>
+    <div id="auth-modal" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:#000;">
+        <h1 style="color:white; font-size:42px; margin-bottom:20px; font-weight:800;">HEALING</h1>
+        <button onclick="loginWithGoogle()" class="btn-full bg-blue" style="width:280px; display:flex; align-items:center; justify-content:center; gap:10px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="18"> Continue with Google
+        </button>
     </div>
 
     <div id="main-app" style="display:none;">
         <div class="header">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <h1 style="font-weight: 900; letter-spacing: -1.5px;">HEALING</h1>
-                <div class="circle-icon" id="site-refresh-btn"><i class="fa-solid fa-rotate-right"></i></div>
-            </div>
+            <h1 style="font-weight: 900;">HEALING</h1>
             <div class="header-icons">
                 <div class="circle-icon" onclick="openPostModal()"><i class="fa-solid fa-plus"></i></div>
-                <div class="circle-icon" onclick="showView('chats')"><i class="fa-solid fa-message"></i></div>
+                <div class="circle-icon" id="site-refresh-btn"><i class="fa-solid fa-rotate-right"></i></div>
             </div>
         </div>
 
         <div id="home-view" class="view active">
-            <div id="discovery-section" style="padding:15px; background:var(--hr-card); margin-bottom:10px; border-bottom:1px solid var(--hr-divider);">
-                <p style="margin:0 0 12px 0; font-weight:bold; font-size:14px; color:var(--hr-secondary);">Suggested People</p>
-                <div id="discovery-users" style="display:flex; overflow-x:auto; gap:15px; padding-bottom:5px;"></div>
+            <div id="discovery-section" style="padding:15px; background:var(--hr-card); border-bottom:1px solid var(--hr-divider);">
+                <div id="discovery-users" style="display:flex; overflow-x:auto; gap:15px;"></div>
             </div>
-
-            <div style="padding:12px; background:var(--hr-card); margin-bottom:10px; display:flex; gap:10px; align-items:center;">
-                <img class="user-avatar-sync avatar-small" src="images/default_profile.png" onclick="showView('profile')">
-                <div onclick="openPostModal()" style="background:var(--hr-hover); padding:10px 15px; border-radius:25px; flex:1; color:var(--hr-secondary);">What's on your mind?</div>
-            </div>
-            <div id="feed-items"></div>
+            <div id="feed-items" style="padding:10px;"></div>
         </div>
 
         <div id="reels-view" class="view">
@@ -120,58 +85,53 @@
         </div>
 
         <div id="notifications-view" class="view">
-            <div style="padding:15px; border-bottom: 1px solid var(--hr-divider);"><h2 style="margin:0;">Notifications</h2></div>
+            <div style="padding:15px;"><h2 style="margin:0;">Notifications</h2></div>
             <div id="notifications-list" style="padding: 10px;"></div>
-        </div>
-
-        <div id="chats-view" class="view">
-            <div style="padding:15px; border-bottom: 1px solid var(--hr-divider);"><h2 style="margin:0;">Messages</h2></div>
-            <div id="friend-chats-list" style="padding:15px; text-align:center; color:var(--hr-secondary);">
-                No active conversations yet. Add friends to start chatting!
-            </div>
         </div>
 
         <div id="profile-view" class="view">
             <div style="background:var(--hr-card);">
-                <div style="height:200px; background:#222; position:relative;">
+                <div style="height:180px; background:#222; position:relative;">
                     <img id="cover-pic-preview" style="width:100%; height:100%; object-fit:cover;">
                     <button class="circle-icon" style="position:absolute; bottom:10px; right:10px;" onclick="$('#cover-upload').click()"><i class="fa-solid fa-camera"></i></button>
                 </div>
-                <div style="margin-top:-60px; padding:0 20px; position:relative;">
-                    <div style="position:relative; width:120px;">
-                        <img id="profile-pic-preview" style="width:120px; height:120px; border-radius:50%; border:4px solid black; object-fit: cover;">
-                        <button class="circle-icon" style="position:absolute; bottom:5px; right:5px; width:34px; height:34px;" onclick="$('#pic-upload').click()"><i class="fa-solid fa-camera"></i></button>
+                <div style="margin-top:-50px; padding:0 20px;">
+                    <div style="position:relative; width:110px;">
+                        <img id="profile-pic-preview" style="width:110px; height:110px; border-radius:50%; border:4px solid black; object-fit: cover;">
+                        <button class="circle-icon" style="position:absolute; bottom:0; right:0;" onclick="$('#pic-upload').click()"><i class="fa-solid fa-camera"></i></button>
                     </div>
-                    <h2 id="profile-name" style="margin:15px 0 5px 0; font-size:26px;">Loading...</h2>
-                    <p id="profile-bio" style="color:var(--hr-secondary); margin:0; font-size:15px;"></p>
+                    <h2 id="profile-name" style="margin:10px 0 5px 0;">Loading...</h2>
+                    <p id="profile-bio" style="color:var(--hr-secondary); margin:0;"></p>
                 </div>
                 
                 <div class="profile-info-grid">
-                    <div class="info-item"><i class="fa-solid fa-location-dot"></i> <span id="p-location">Earth</span></div>
-                    <div class="info-item"><i class="fa-solid fa-phone"></i> <a id="p-phone-link" href="#" style="color:var(--fb-blue); text-decoration:none;">Add Phone</a></div>
-                    <div class="info-item"><i class="fa-brands fa-whatsapp"></i> <a id="p-wa-link" href="#" target="_blank" style="color:#25d366; text-decoration:none;">WhatsApp</a></div>
+                    <div class="info-item"><i class="fa-solid fa-location-dot" style="color:var(--hr-secondary);"></i> <span id="p-location">Earth</span></div>
+                    <div class="info-item"><i class="fa-solid fa-phone" style="color:var(--hr-secondary);"></i> <span id="p-phone">Add Phone</span></div>
                 </div>
 
                 <div style="padding: 15px 20px; display:flex; gap:10px;">
-                    <button class="btn-full bg-blue" onclick="openPostModal()"><i class="fa-solid fa-plus"></i> Add to story</button>
-                    <button class="btn-full bg-gray" onclick="openEditModal()"><i class="fa-solid fa-pen"></i> Edit profile</button>
+                    <button class="btn-full bg-blue" onclick="openPostModal()">Add Story</button>
+                    <button class="btn-full bg-gray" onclick="openEditModal()">Edit Profile</button>
                 </div>
             </div>
-            <div id="user-own-posts"></div>
         </div>
 
         <div id="user-profile-view" class="view">
-            <div style="padding:15px; position:sticky; top:0; background:var(--hr-bg); z-index:10;"><i class="fa-solid fa-arrow-left" onclick="showView('home')" style="cursor:pointer; font-size:22px;"></i></div>
+            <div style="padding:15px;"><i class="fa-solid fa-arrow-left" onclick="showView('home')"></i></div>
             <div id="external-profile-content"></div>
         </div>
 
         <div id="menu-view" class="view">
-            <div style="padding:15px;"><h2 style="margin:0;">Menu</h2></div>
+            <div style="padding:15px; display:flex; align-items:center; gap:15px;" onclick="showView('profile')">
+                <img class="user-avatar-sync" style="width:50px; height:50px; border-radius:50%;">
+                <div><b id="menu-user-name">User Name</b><br><small>View Profile</small></div>
+            </div>
+            
             <div class="menu-grid">
-                <div class="menu-card" onclick="showView('profile')"><i class="fa-solid fa-circle-user" style="color:var(--fb-blue);"></i><br><b>Profile</b></div>
-                <div class="menu-card" onclick="contactAdmin()"><i class="fa-solid fa-user-shield" style="color:#2e7d32;"></i><br><b>ADMIN DM</b></div>
-                <div class="menu-card" onclick="showView('reels')"><i class="fa-solid fa-video" style="color:#f3425f;"></i><br><b>Reels</b></div>
-                <div class="menu-card" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i><br><b>Log Out</b></div>
+                <div class="menu-card" onclick="showView('profile')"><i class="fa-solid fa-user" style="color:#1877f2;"></i><br><b>Profile</b></div>
+                <div class="menu-card" onclick="contactAdmin()"><i class="fa-solid fa-user-shield" style="color:#2d6a4f;"></i><br><b>ADMIN DM</b></div>
+                <div class="menu-card" onclick="showView('reels')"><i class="fa-solid fa-clapperboard" style="color:#f3425f;"></i><br><b>Reels</b></div>
+                <div class="menu-card" onclick="logout()"><i class="fa-solid fa-right-from-bracket" style="color:var(--hr-secondary);"></i><br><b>Log Out</b></div>
             </div>
         </div>
 
@@ -185,26 +145,30 @@
 
     <div id="edit-modal" class="modal">
         <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--hr-divider);">
-            <b style="font-size:18px;">Edit Profile</b>
-            <span onclick="closeEditModal()" style="font-size:24px; cursor:pointer;">✕</span>
+            <b>Edit Profile</b>
+            <span onclick="closeEditModal()" style="font-size:24px;">✕</span>
         </div>
         <div style="padding:20px;">
-            <label style="font-size:13px; color:var(--hr-secondary);">NAME</label><input id="edit-name" class="edit-input">
-            <label style="font-size:13px; color:var(--hr-secondary);">BIO</label><input id="edit-bio" class="edit-input">
-            <label style="font-size:13px; color:var(--hr-secondary);">WHATSAPP URL</label><input id="edit-wa" class="edit-input" placeholder="https://wa.me/...">
-            <button class="btn-full bg-blue" onclick="saveProfileEdits()">Save Changes</button>
+            <label>Name</label><input id="edit-name" class="edit-input">
+            <label>Bio</label><input id="edit-bio" class="edit-input">
+            <label>Phone Number</label><input id="edit-phone" class="edit-input" placeholder="+234...">
+            <label>WhatsApp Link</label><input id="edit-wa" class="edit-input" placeholder="https://wa.me/...">
+            <label>State</label><input id="edit-state" class="edit-input">
+            <label>Country</label><input id="edit-country" class="edit-input">
+            <button class="btn-full bg-blue" onclick="saveProfileEdits()">Save</button>
         </div>
     </div>
 
     <div id="post-modal" class="modal">
-        <div style="padding: 15px; display: flex; justify-content: space-between; align-items:center; border-bottom: 1px solid var(--hr-divider);">
-            <span onclick="closePostModal()" style="font-size:26px;">✕</span>
-            <b style="font-size:18px;">Create Post</b>
-            <button class="bg-blue" onclick="submitPost()" style="color:white; border:none; padding:8px 18px; border-radius:6px; font-weight:bold;">POST</button>
+        <div style="padding: 15px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--hr-divider);">
+            <span onclick="closePostModal()">✕</span>
+            <b>Create Post</b>
+            <button class="bg-blue" onclick="submitPost()" style="border:none; padding:5px 15px; border-radius:5px; color:white;">POST</button>
         </div>
-        <textarea id="post-text" placeholder="What's on your mind?" style="width:100%; height:200px; background:transparent; color:white; border:none; padding:20px; font-size:18px; outline:none; resize:none;"></textarea>
+        <textarea id="post-text" placeholder="What's on your mind?" style="width:100%; height:200px; background:transparent; color:white; border:none; padding:20px; font-size:18px; outline:none;"></textarea>
         <div style="padding:20px; border-top:1px solid var(--hr-divider);">
-            <input type="file" id="post-file-input" accept="image/*">
+            <label>Photo or Video:</label>
+            <input type="file" id="post-file-input" accept="image/*,video/*">
         </div>
     </div>
 
