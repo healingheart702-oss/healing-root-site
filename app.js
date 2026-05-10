@@ -1,10 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
 import { 
-  getAuth, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, setPersistence, browserLocalPersistence 
+  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, 
+  onAuthStateChanged, GoogleAuthProvider, signInWithPopup 
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 import { 
   getFirestore, collection, addDoc, setDoc, doc, updateDoc, getDoc, query, orderBy, 
-  serverTimestamp, onSnapshot, arrayUnion, where, limit, deleteDoc
+  serverTimestamp, onSnapshot, arrayUnion, arrayRemove, where, limit, increment, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
 
 // --- CONFIGURATION ---
@@ -17,6 +18,7 @@ const firebaseConfig = {
   appId: "1:1042258816994:web:0b6dd6b7f1c370ee7093bb"
 };
 
+// --- INITIALIZATION ---
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -27,12 +29,13 @@ const $$ = s => document.querySelectorAll(s);
 
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dd7dre9hd/upload";
 const CLOUDINARY_PRESET = "unsigned_upload"; 
-const ADMIN_UID = "gKwgPDNJgsdcApIJch6NM9bKmf02"; 
+const ADMIN_EMAIL = "healingheart702@gmail.com"; // Your Master Admin Email
 
 let currentUser = null;
 let currentProfile = null;
+let isSignUpMode = false;
 
-// --- 1. AUTH ---
+// --- 1. AUTHENTICATION LOGIC ---
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -40,8 +43,8 @@ onAuthStateChanged(auth, async (user) => {
             if (snap.exists()) {
                 currentProfile = snap.data();
                 syncUI(currentProfile);
-                loadDiscovery();
-                loadNotifications();
+                initProfileFeed();
+                checkAdminStatus();
             }
         });
         $('#auth-modal').style.display = 'none';
@@ -54,195 +57,342 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-window.logout = () => {
-    if(confirm("Log out of HEALING?")) {
-        signOut(auth).then(() => { window.location.reload(); });
+function checkAdminStatus() {
+    if (currentUser.email === ADMIN_EMAIL) {
+        if ($('#admin-delete-btn')) $('#admin-delete-btn').style.display = 'block';
     }
+}
+
+window.toggleAuthMode = () => {
+    isSignUpMode = !isSignUpMode;
+    $('#auth-name').style.display = isSignUpMode ? 'block' : 'none';
+    $('#auth-submit-btn').innerText = isSignUpMode ? 'Create Account' : 'Log In';
+    $('#auth-toggle').innerText = isSignUpMode ? 'Already have an account? Log In' : 'Create New Account';
+};
+
+$('#auth-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const email = $('#auth-email').value;
+    const password = $('#auth-password').value;
+    const name = $('#auth-name').value;
+
+    try {
+        if (isSignUpMode) {
+            const cred = await createUserWithEmailAndPassword(auth, email, password);
+            await setDoc(doc(db, 'users', cred.user.uid), {
+                uid: cred.user.uid,
+                name: name,
+                email: email,
+                profilePic: 'images/default_profile.png',
+                coverPic: 'images/HEALING_ROOT_BANNER.jpg',
+                bio: "New to Healing Social",
+                phone: "",
+                whatsapp: "",
+                location: "Earth"
+            });
+        } else {
+            await signInWithEmailAndPassword(auth, email, password);
+        }
+    } catch (err) { alert(err.message); }
 };
 
 window.loginWithGoogle = async () => {
     try {
-        await setPersistence(auth, browserLocalPersistence);
         const result = await signInWithPopup(auth, googleProvider);
         const user = result.user;
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (!userDoc.exists()) {
             await setDoc(doc(db, 'users', user.uid), {
-                uid: user.uid, name: user.displayName, email: user.email,
+                uid: user.uid,
+                name: user.displayName,
+                email: user.email,
                 profilePic: user.photoURL || 'images/default_profile.png',
                 coverPic: 'images/HEALING_ROOT_BANNER.jpg',
-                friends: [], bio: "Healing Social Member", phone: "",
-                waLink: "", state: "", country: ""
+                bio: "Using Healing Social with Google",
+                location: "Earth"
             });
         }
-    } catch (err) { alert("Login Error: " + err.message); }
+    } catch (err) { console.error(err); }
 };
 
-// --- 2. NAVIGATION & DISCOVERY ---
-function loadDiscovery() {
-    onSnapshot(query(collection(db, 'users'), limit(20)), snap => {
-        const container = $('#discovery-users');
-        if(!container) return; container.innerHTML = '';
-        snap.forEach(d => {
-            const u = d.data();
-            if(u.uid === currentUser.uid) return;
-            const div = document.createElement('div');
-            div.style = "min-width:90px; text-align:center; cursor:pointer; padding:5px;";
-            div.innerHTML = `<img src="${u.profilePic}" style="width:65px; height:65px; border-radius:50%; object-fit:cover; border:2px solid var(--fb-blue);"><div style="font-size:12px; color:white; margin-top:5px; font-weight:600;">${u.name.split(' ')[0]}</div>`;
-            div.onclick = () => smartNavigate(u.uid);
-            container.appendChild(div);
-        });
+window.logout = () => { if(confirm("Logout?")) signOut(auth).then(() => location.reload()); };
+
+// --- 2. UI SYNCING & PROFILE EDITS ---
+function syncUI(profile) {
+    if ($('#profile-name')) $('#profile-name').innerText = profile.name;
+    if ($('#menu-user-name')) $('#menu-user-name').innerText = profile.name;
+    if ($('#profile-bio')) $('#profile-bio').innerText = profile.bio || "";
+    
+    // Pro fields
+    if ($('#p-location')) $('#p-location').innerText = `${profile.state || ''}, ${profile.country || 'Earth'}`;
+    if ($('#p-phone-link')) {
+        $('#p-phone-link').innerText = profile.phone || "Add Phone";
+        $('#p-phone-link').href = `tel:${profile.phone}`;
+    }
+    if ($('#p-wa-link')) {
+        $('#p-wa-link').href = profile.whatsapp || "#";
+    }
+
+    const pic = profile.profilePic || 'images/default_profile.png';
+    $$('.user-avatar-sync').forEach(img => img.src = pic);
+    if ($('#profile-pic-preview')) $('#profile-pic-preview').src = pic;
+    if ($('#cover-pic-preview')) $('#cover-pic-preview').src = profile.coverPic || 'images/HEALING_ROOT_BANNER.jpg';
+}
+
+window.saveProfileEdits = async () => {
+    const data = {
+        name: $('#edit-name').value,
+        bio: $('#edit-bio').value,
+        phone: $('#edit-phone').value,
+        whatsapp: $('#edit-wa').value,
+        state: $('#edit-state').value,
+        country: $('#edit-country').value
+    };
+    await updateDoc(doc(db, 'users', currentUser.uid), data);
+    window.closeEditModal();
+};
+
+window.openEditModal = () => {
+    $('#edit-modal').style.display = 'flex';
+    $('#edit-name').value = currentProfile.name;
+    $('#edit-bio').value = currentProfile.bio || "";
+    $('#edit-phone').value = currentProfile.phone || "";
+    $('#edit-wa').value = currentProfile.whatsapp || "";
+    $('#edit-state').value = currentProfile.state || "";
+    $('#edit-country').value = currentProfile.country || "";
+};
+
+// --- 3. REELS (FUNNY COMEDY FOCUS) ---
+window.loadReels = () => {
+    const container = $('#reels-container');
+    if (!container) return;
+    
+    // Extracted Funny/Comedy Shorts
+    const funnyShorts = ['m_Wv2P66vXk', '3_X33N_6Y8I', 'xZ39_pS0G28', 'D4X9_qL0G33']; 
+
+    container.innerHTML = funnyShorts.map(id => `
+        <div class="reel-video-container" style="background:#000; height:calc(100vh - 65px); position:relative;">
+            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/${id}?autoplay=0&controls=0&loop=1&playlist=${id}" frameborder="0" allowfullscreen style="height:100%;"></iframe>
+            <div style="position:absolute; bottom:80px; left:15px; text-shadow: 2px 2px 4px #000;">
+                <b style="font-size:18px;">@FunnyHealing</b>
+                <p>Healing Comedy Feed 😂</p>
+            </div>
+        </div>
+    `).join('');
+};
+
+// --- 4. FEED, REACTIONS & CLICKABLE PROFILES ---
+function initFeed() {
+    const q = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
+    onSnapshot(q, (snapshot) => {
+        const container = $('#feed-items');
+        if(!container) return;
+        container.innerHTML = '';
+        snapshot.forEach(docSnap => renderPost(container, docSnap.data(), docSnap.id));
     });
 }
 
-window.smartNavigate = (targetUid) => {
-    if(targetUid === currentUser.uid) showView('profile');
-    else viewUserProfile(targetUid);
-};
-
-window.contactAdmin = () => smartNavigate(ADMIN_UID);
-
-window.viewUserProfile = async (uid) => {
-    const d = await getDoc(doc(db, 'users', uid));
-    if(!d.exists()) return;
-    const u = d.data();
-    showView('user-profile');
-    $('#external-profile-content').innerHTML = `
-        <div style="text-align:center; padding:30px 15px; background:var(--hr-card);">
-            <img src="${u.profilePic}" style="width:110px; height:110px; border-radius:50%; border:3px solid var(--fb-blue);">
-            <h2 style="margin:10px 0;">${u.name}</h2>
-            <p style="color:var(--hr-secondary);">${u.bio || ''}</p>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button class="btn-full bg-blue" onclick="sendFriendRequest('${uid}')">Add Friend</button>
-            </div>
-        </div>`;
-};
-
-// --- 3. FEED & REACTIONS ---
-function initFeed() {
-    onSnapshot(query(collection(db, 'posts'), orderBy('timestamp', 'desc')), snap => {
-        const container = $('#feed-items');
-        if(!container) return; container.innerHTML = '';
+function initProfileFeed() {
+    const q = query(collection(db, 'posts'), where('uid', '==', currentUser.uid), orderBy('timestamp', 'desc'));
+    onSnapshot(q, snap => {
+        const container = $('#user-own-posts');
+        if(!container) return;
+        container.innerHTML = '<h3 style="padding:15px; border-top:1px solid var(--hr-divider);">Your Posts</h3>';
         snap.forEach(d => renderPost(container, d.data(), d.id));
     });
 }
 
 function renderPost(container, post, pid) {
+    const isAdmin = currentUser.email === ADMIN_EMAIL;
     const isOwner = currentUser.uid === post.uid;
     const card = document.createElement('div');
     card.className = 'post-card';
-    const userReact = post.reactions && post.reactions[currentUser.uid] ? post.reactions[currentUser.uid] : "👍 Like";
-
+    card.style.background = 'var(--hr-card)';
+    card.style.marginBottom = '10px';
+    
     card.innerHTML = `
         <div style="padding:12px; display:flex; justify-content:space-between; align-items:center;">
-            <div style="display:flex; gap:10px; align-items:center; cursor:pointer;" onclick="smartNavigate('${post.uid}')">
+            <div style="display:flex; gap:10px; align-items:center; cursor:pointer;" onclick="viewUserProfile('${post.uid}')">
                 <img src="${post.userPic}" class="avatar-small">
-                <div><b>${post.userName}</b><br><small style="color:var(--hr-secondary);">Just now</small></div>
+                <div>
+                    <b>${post.userName}</b><br>
+                    <small style="color:var(--hr-secondary);">Just now</small>
+                </div>
             </div>
-            ${isOwner ? `<i class="fa-solid fa-ellipsis" onclick="postOptionsMenu('${pid}', '${post.text}')" style="cursor:pointer;"></i>` : ''}
+            ${(isAdmin || isOwner) ? `<i class="fa-solid fa-ellipsis" onclick="showPostMenu('${pid}', ${isOwner})" style="cursor:pointer; color:gray;"></i>` : ''}
         </div>
-        <div style="padding:0 12px 12px; white-space: pre-wrap;">${post.text}</div>
-        ${post.content ? (post.content.includes('video') ? `<video src="${post.content}" controls style="width:100%; max-height:400px;"></video>` : `<img src="${post.content}" class="post-media">`) : ''}
-        <div style="padding:8px 12px; display:flex; border-top:1px solid var(--hr-divider); position:relative;">
-            <div class="post-action-btn"><span>${userReact}</span><div class="reactions-box"><span onclick="handleReaction('${pid}', '👍')">👍</span><span onclick="handleReaction('${pid}', '❤️')">❤️</span><span onclick="handleReaction('${pid}', '😂')">😂</span></div></div>
+        <div style="padding:0 12px 12px;">${post.text}</div>
+        ${post.content ? `<img src="${post.content}" class="post-media">` : ''}
+        
+        <div style="padding:5px 12px; display:flex; gap:10px; color:var(--hr-secondary); font-size:13px;">
+            <span>${post.reactionCount || 0} Reactions</span> • <span>Comments</span>
+        </div>
+
+        <div style="padding:5px 12px; border-top:1px solid var(--hr-divider); display:flex;">
+            <div class="post-action-btn">
+                <span>${post.myReaction || '👍 Like'}</span>
+                <div class="reactions-box">
+                    <span onclick="react('${pid}', '👍')">👍</span>
+                    <span onclick="react('${pid}', '❤️')">❤️</span>
+                    <span onclick="react('${pid}', '🥰')">🥰</span>
+                    <span onclick="react('${pid}', '😂')">😂</span>
+                    <span onclick="react('${pid}', '😮')">😮</span>
+                    <span onclick="react('${pid}', '😢')">😢</span>
+                    <span onclick="react('${pid}', '😡')">😡</span>
+                </div>
+            </div>
             <div class="post-action-btn" onclick="toggleComments('${pid}')"><i class="fa-regular fa-comment"></i> Comment</div>
         </div>
-        <div id="comments-${pid}" class="comment-section" style="display:none; padding:10px;"><div id="list-${pid}"></div><input id="input-${pid}" placeholder="Comment..." style="width:80%; background:var(--hr-hover); color:white; border:none; padding:8px; border-radius:15px;"> <button onclick="addComment('${pid}')" style="color:var(--fb-blue); border:none; background:none; font-weight:bold;">Post</button></div>`;
+        <div id="comments-${pid}" class="comment-section" style="display:none;">
+            <div id="list-${pid}"></div>
+            <div style="display:flex; gap:10px; padding-top:10px;">
+                <input id="input-${pid}" placeholder="Write a comment..." style="flex:1; background:var(--hr-hover); border:none; padding:10px; border-radius:20px; color:white;">
+                <button onclick="addComment('${pid}')" style="background:none; border:none; color:var(--fb-blue); font-weight:bold;">Post</button>
+            </div>
+        </div>
+    `;
     container.appendChild(card);
     loadComments(pid);
 }
 
-// --- 4. REELS ---
-window.loadReels = () => {
-    const container = $('#reels-container');
-    if (!container) return;
-    onSnapshot(query(collection(db, 'posts'), orderBy('timestamp', 'desc'), limit(15)), snap => {
-        container.innerHTML = '';
-        snap.forEach(d => {
-            const p = d.data();
-            if(p.content && p.content.includes('video')) {
-                container.innerHTML += `<div class="reel-video-container" style="background:#000; height:calc(100vh - 70px); scroll-snap-align: start;"><video src="${p.content}" autoplay loop muted style="width:100%; height:100%; object-fit:contain;"></video></div>`;
-            }
-        });
-        ['5S0_9W8G28', 'D4X9_qL0G33'].forEach(id => {
-            container.innerHTML += `<div class="reel-video-container" style="height:calc(100vh - 70px); scroll-snap-align: start;"><iframe width="100%" height="100%" src="https://www.youtube.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}" frameborder="0"></iframe></div>`;
-        });
+// --- 5. COMMENT & REPLY LOGIC ---
+window.addComment = async (pid) => {
+    const text = $(`#input-${pid}`).value;
+    if(!text) return;
+    await addDoc(collection(db, 'posts', pid, 'comments'), {
+        uid: currentUser.uid,
+        userName: currentProfile.name,
+        userPic: currentProfile.profilePic,
+        text: text,
+        timestamp: serverTimestamp()
     });
+    $(`#input-${pid}`).value = '';
 };
 
-// --- 5. NOTIFICATIONS & FRIENDS ---
-window.sendFriendRequest = async (targetUid) => {
-    await addDoc(collection(db, 'notifications'), { to: targetUid, from: currentUser.uid, fromName: currentProfile.name, fromPic: currentProfile.profilePic, type: 'friend_request', timestamp: serverTimestamp() });
-    alert("Friend Request Sent!");
-};
-
-function loadNotifications() {
-    onSnapshot(query(collection(db, 'notifications'), where('to', '==', currentUser.uid)), snap => {
-        const list = $('#notifications-list'); if(!list) return; list.innerHTML = '';
+function loadComments(pid) {
+    const q = query(collection(db, 'posts', pid, 'comments'), orderBy('timestamp', 'asc'));
+    onSnapshot(q, snap => {
+        const list = $(`#list-${pid}`);
+        if(!list) return;
+        list.innerHTML = '';
         snap.forEach(d => {
-            const n = d.data();
+            const c = d.data();
+            const commId = d.id;
             const div = document.createElement('div');
-            div.style = "padding:12px; background:var(--hr-card); margin-bottom:8px; display:flex; align-items:center; gap:10px; border-radius:8px;";
-            div.innerHTML = `<img src="${n.fromPic}" style="width:45px; height:45px; border-radius:50%;"><div style="flex:1;"><b>${n.fromName}</b></div><button class="bg-blue" style="padding:6px; border-radius:5px; border:none; color:white;" onclick="acceptFriend('${n.from}', '${d.id}')">Confirm</button>`;
+            div.style.marginBottom = '12px';
+            div.innerHTML = `
+                <div style="display:flex; gap:8px;">
+                    <img src="${c.userPic}" style="width:32px; height:32px; border-radius:50%;">
+                    <div>
+                        <div class="comment-bubble"><b>${c.userName}</b><br>${c.text}</div>
+                        <div style="margin-left:10px; font-size:11px; color:var(--hr-secondary); margin-top:4px;">
+                            <span style="font-weight:bold; cursor:pointer;" onclick="replyTo('${pid}', '${commId}', '${c.userName}')">Reply</span>
+                        </div>
+                        <div id="replies-${commId}" class="reply-line"></div>
+                    </div>
+                </div>`;
             list.appendChild(div);
+            loadReplies(pid, commId);
         });
     });
 }
 
-window.acceptFriend = async (fUid, nid) => {
-    await updateDoc(doc(db, 'users', currentUser.uid), { friends: arrayUnion(fUid) });
-    await updateDoc(doc(db, 'users', fUid), { friends: arrayUnion(currentUser.uid) });
-    await deleteDoc(doc(db, 'notifications', nid));
-    alert("Friends now!");
+window.replyTo = async (pid, cid, name) => {
+    const txt = prompt(`Reply to ${name}:`);
+    if(!txt) return;
+    await addDoc(collection(db, 'posts', pid, 'comments', cid, 'replies'), {
+        uid: currentUser.uid,
+        userName: currentProfile.name,
+        text: txt,
+        timestamp: serverTimestamp()
+    });
 };
 
-// --- 6. PROFILE EDITS & UI ---
-window.saveProfileEdits = async () => {
-    const up = { name: $('#edit-name').value, bio: $('#edit-bio').value, phone: $('#edit-phone').value, waLink: $('#edit-wa').value, state: $('#edit-state').value, country: $('#edit-country').value };
-    await updateDoc(doc(db, 'users', currentUser.uid), up);
-    closeEditModal();
-};
-
-function syncUI(p) {
-    if ($('#profile-name')) $('#profile-name').innerText = p.name;
-    if ($('#menu-user-name')) $('#menu-user-name').innerText = p.name;
-    if ($('#p-location')) $('#p-location').innerText = `${p.state || ''}, ${p.country || 'Earth'}`;
-    const pic = p.profilePic || 'images/default_profile.png';
-    $$('.user-avatar-sync').forEach(img => img.src = pic);
-    if ($('#profile-pic-preview')) $('#profile-pic-preview').src = pic;
-    if ($('#cover-pic-preview')) $('#cover-pic-preview').src = p.coverPic || 'images/HEALING_ROOT_BANNER.jpg';
+function loadReplies(pid, cid) {
+    const q = query(collection(db, 'posts', pid, 'comments', cid, 'replies'), orderBy('timestamp', 'asc'));
+    onSnapshot(q, snap => {
+        const box = $(`#replies-${cid}`);
+        if(!box) return;
+        box.innerHTML = '';
+        snap.forEach(d => {
+            const r = d.data();
+            box.innerHTML += `<div style="font-size:12px; margin-top:5px;"><b>${r.userName}</b> ${r.text}</div>`;
+        });
+    });
 }
+
+// --- 6. ACTIONS & ADMIN TOOLS ---
+window.react = async (pid, emoji) => {
+    await updateDoc(doc(db, 'posts', pid), { 
+        myReaction: emoji,
+        reactionCount: increment(1) 
+    });
+};
+
+window.viewUserProfile = async (targetUid) => {
+    const userDoc = await getDoc(doc(db, 'users', targetUid));
+    if(!userDoc.exists()) return;
+    const u = userDoc.data();
+    showView('user-profile');
+    $('#external-profile-content').innerHTML = `
+        <div style="text-align:center; padding:20px;">
+            <img src="${u.profilePic}" style="width:120px; height:120px; border-radius:50%; border:3px solid var(--fb-blue);">
+            <h2>${u.name}</h2>
+            <p>${u.bio || ''}</p>
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <button class="btn-full bg-blue" style="width:auto; padding:10px 30px;">Add Friend</button>
+                <button class="btn-full bg-gray" style="width:auto; padding:10px 30px;">Follow</button>
+            </div>
+        </div>
+        <div id="external-posts"></div>
+    `;
+    const q = query(collection(db, 'posts'), where('uid', '==', targetUid), orderBy('timestamp', 'desc'));
+    onSnapshot(q, s => {
+        $('#external-posts').innerHTML = '';
+        s.forEach(d => renderPost($('#external-posts'), d.data(), d.id));
+    });
+};
+
+window.showPostMenu = async (pid, isOwner) => {
+    const choice = confirm(isOwner ? "Edit or Delete your post?" : "Admin: Delete this post?");
+    if (choice) {
+        if(confirm("Confirm deletion?")) await deleteDoc(doc(db, 'posts', pid));
+    }
+};
+
+window.adminManageUsers = async () => {
+    const uidToDelete = prompt("Enter the User ID to delete account:");
+    if(uidToDelete && confirm("Permanently delete this user account?")) {
+        await deleteDoc(doc(db, 'users', uidToDelete));
+        alert("User removed from database.");
+    }
+};
+
+window.submitPost = async () => {
+    const t = $('#post-text').value;
+    const f = $('#post-file-input').files[0];
+    const url = f ? await uploadToCloudinary(f) : "";
+    if(!t && !url) return;
+    await addDoc(collection(db, 'posts'), {
+        uid: currentUser.uid,
+        userName: currentProfile.name,
+        userPic: currentProfile.profilePic,
+        text: t,
+        content: url,
+        timestamp: serverTimestamp(),
+        reactionCount: 0
+    });
+    $('#post-text').value = '';
+    window.closePostModal();
+};
 
 async function uploadToCloudinary(file) {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', CLOUDINARY_PRESET);
     const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
-    const d = await res.json(); return d.secure_url;
+    const d = await res.json();
+    return d.secure_url;
 }
 
-window.submitPost = async () => {
-    const t = $('#post-text').value; const f = $('#post-file-input').files[0];
-    const url = f ? await uploadToCloudinary(f) : "";
-    if(!t && !url) return;
-    await addDoc(collection(db, 'posts'), { uid: currentUser.uid, userName: currentProfile.name, userPic: currentProfile.profilePic, text: t, content: url, reactions: {}, timestamp: serverTimestamp() });
-    $('#post-text').value = ''; closePostModal();
-};
-
-// --- BOILERPLATE RE-ADDED ---
-window.handleReaction = async (pid, emoji) => { await updateDoc(doc(db, 'posts', pid), { [`reactions.${currentUser.uid}`]: emoji }); };
-window.toggleComments = (pid) => { const s = $(`#comments-${pid}`); s.style.display = s.style.display === 'none' ? 'block' : 'none'; };
-window.addComment = async (pid) => {
-    const i = $(`#input-${pid}`); if(!i.value.trim()) return;
-    await addDoc(collection(db, 'posts', pid, 'comments'), { uid: currentUser.uid, userName: currentProfile.name, userPic: currentProfile.profilePic, text: i.value, timestamp: serverTimestamp() });
-    i.value = '';
-};
-function loadComments(pid) {
-    onSnapshot(query(collection(db, 'posts', pid, 'comments'), orderBy('timestamp', 'asc')), snap => {
-        const l = $(`#list-${pid}`); if(!l) return; l.innerHTML = '';
-        snap.forEach(d => { const c = d.data(); l.innerHTML += `<div style="margin-bottom:8px; display:flex; gap:8px;"><img src="${c.userPic}" style="width:30px; height:30px; border-radius:50%;"><div style="background:var(--hr-hover); padding:8px; border-radius:12px; font-size:13px;"><b>${c.userName}</b><br>${c.text}</div></div>`; });
-    });
-}
-window.uploadNewProfilePic = async (input) => { const url = await uploadToCloudinary(input.files[0]); await updateDoc(doc(db, 'users', currentUser.uid), { profilePic: url }); };
-window.uploadCoverPic = async (input) => { const url = await uploadToCloudinary(input.files[0]); await updateDoc(doc(db, 'users', currentUser.uid), { coverPic: url }); };
 $('#site-refresh-btn').onclick = () => location.reload();
