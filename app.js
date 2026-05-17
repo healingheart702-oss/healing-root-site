@@ -44,13 +44,13 @@ function formatTimeAgo(timestamp) {
     
     if (seconds < 60) return "Just now";
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
+    if (minutes < 60) return `${minutes}m`;
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
+    if (hours < 24) return `${hours}h`;
     const days = Math.floor(hours / 24);
-    if (days < 7) return `${days}d ago`;
+    if (days < 7) return `${days}d`;
     
-    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
 // --- 1. AUTHENTICATION LOGIC ---
@@ -180,6 +180,25 @@ window.openEditModal = () => {
     $('#edit-country').value = currentProfile.country || "";
 };
 
+// --- PHOTO EDITING AND CLOUDINARY STORAGE UPDATES ---
+window.uploadNewProfilePic = async (input) => {
+    const file = input.files[0];
+    if (!file) return;
+    try {
+        const url = await uploadToCloudinary(file);
+        await updateDoc(doc(db, 'users', currentUser.uid), { profilePic: url });
+    } catch (e) { alert("Upload failed: " + e.message); }
+};
+
+window.uploadCoverPic = async (input) => {
+    const file = input.files[0];
+    if (!file) return;
+    try {
+        const url = await uploadToCloudinary(file);
+        await updateDoc(doc(db, 'users', currentUser.uid), { coverPic: url });
+    } catch (e) { alert("Upload failed: " + e.message); }
+};
+
 // --- 3. REELS (FUNNY COMEDY FOCUS) ---
 window.loadReels = () => {
     const container = $('#reels-container');
@@ -246,7 +265,7 @@ function renderPost(container, post, pid) {
         ${post.content ? `<img src="${post.content}" class="post-media">` : ''}
         
         <div style="padding:5px 12px; display:flex; gap:10px; color:var(--hr-secondary); font-size:13px;">
-            <span>${post.reactionCount || 0} Reactions</span> • <span>Comments</span>
+            <span>${post.reactionCount || 0} Reactions</span> • <span style="cursor:pointer;" onclick="toggleComments('${pid}')">Comments</span>
         </div>
 
         <div style="padding:5px 12px; border-top:1px solid var(--hr-divider); display:flex;">
@@ -266,9 +285,10 @@ function renderPost(container, post, pid) {
         </div>
         <div id="comments-${pid}" class="comment-section" style="display:none;">
             <div id="list-${pid}"></div>
-            <div style="display:flex; gap:10px; padding-top:10px;">
-                <input id="input-${pid}" placeholder="Write a comment..." style="flex:1; background:var(--hr-hover); border:none; padding:10px; border-radius:20px; color:white;">
-                <button onclick="addComment('${pid}')" style="background:none; border:none; color:var(--fb-blue); font-weight:bold;">Post</button>
+            <div style="display:flex; gap:10px; padding-top:10px; align-items:center;">
+                <img class="user-avatar-sync" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">
+                <input id="input-${pid}" placeholder="Write a comment..." style="flex:1; background:var(--hr-hover); border:none; padding:10px; border-radius:20px; color:white; outline:none;">
+                <button onclick="addComment('${pid}')" style="background:none; border:none; color:var(--fb-blue); font-weight:bold; cursor:pointer;">Post</button>
             </div>
         </div>
     `;
@@ -316,17 +336,26 @@ function loadComments(pid) {
             const c = d.data();
             const commId = d.id;
             const div = document.createElement('div');
+            div.style.display = 'flex';
+            div.style.gap = '8px';
             div.style.marginBottom = '12px';
+            div.style.alignItems = 'flex-start';
+            
+            const commentTimeDisplay = formatTimeAgo(c.timestamp);
+            
             div.innerHTML = `
-                <div style="display:flex; gap:8px;">
-                    <img src="${c.userPic}" style="width:32px; height:32px; border-radius:50%;">
-                    <div>
-                        <div class="comment-bubble"><b>${c.userName}</b><br>${c.text}</div>
-                        <div style="margin-left:10px; font-size:11px; color:var(--hr-secondary); margin-top:4px;">
-                            <span style="font-weight:bold; cursor:pointer;" onclick="replyTo('${pid}', '${commId}', '${c.userName}')">Reply</span>
-                        </div>
-                        <div id="replies-${commId}" class="reply-line"></div>
+                <img src="${c.userPic || 'images/default_profile.png'}" style="width:32px; height:32px; border-radius:50%; object-fit:cover; margin-top:2px;">
+                <div style="flex:1;">
+                    <div class="comment-bubble">
+                        <span style="font-weight:700; font-size:13px; color:white; cursor:pointer;" onclick="viewUserProfile('${c.uid}')">${c.userName}</span>
+                        <span style="font-size:14px; color:var(--hr-text); margin-top:2px; white-space:pre-wrap;">${c.text}</span>
                     </div>
+                    <div class="comment-meta-actions">
+                        <span>${commentTimeDisplay}</span>
+                        <span onclick="alert('Liked comment!')">Like</span>
+                        <span onclick="replyTo('${pid}', '${commId}', '${c.userName}')">Reply</span>
+                    </div>
+                    <div id="replies-${commId}" class="reply-line" style="display:none;"></div>
                 </div>`;
             list.appendChild(div);
             loadReplies(pid, commId);
@@ -350,10 +379,15 @@ function loadReplies(pid, cid) {
     onSnapshot(q, snap => {
         const box = $(`#replies-${cid}`);
         if(!box) return;
+        if(snap.empty) {
+            box.style.display = 'none';
+            return;
+        }
+        box.style.display = 'block';
         box.innerHTML = '';
         snap.forEach(d => {
             const r = d.data();
-            box.innerHTML += `<div style="font-size:12px; margin-top:5px;"><b>${r.userName}</b> ${r.text}</div>`;
+            box.innerHTML += `<div style="font-size:13px; margin-top:6px; background:var(--hr-hover); padding:6px 10px; border-radius:14px; display:inline-block; max-width:90%;"><b style="cursor:pointer;" onclick="viewUserProfile('${r.uid}')">${r.userName}</b> ${r.text}</div>`;
         });
     });
 }
@@ -386,26 +420,46 @@ window.react = async (pid, emoji) => {
 };
 
 window.viewUserProfile = async (targetUid) => {
+    if (currentUser && targetUid === currentUser.uid) {
+        showView('profile');
+        return;
+    }
     const userDoc = await getDoc(doc(db, 'users', targetUid));
     if(!userDoc.exists()) return;
     const u = userDoc.data();
     showView('user-profile');
+    
+    const bannerImg = u.coverPic || 'images/HEALING_ROOT_BANNER.jpg';
+    const profileImg = u.profilePic || 'images/default_profile.png';
+    
     $('#external-profile-content').innerHTML = `
-        <div style="text-align:center; padding:20px;">
-            <img src="${u.profilePic}" style="width:120px; height:120px; border-radius:50%; border:3px solid var(--fb-blue);">
-            <h2>${u.name}</h2>
-            <p>${u.bio || ''}</p>
-            <div style="display:flex; gap:10px; justify-content:center;">
-                <button class="btn-full bg-blue" style="width:auto; padding:10px 30px;">Add Friend</button>
-                <button class="btn-full bg-gray" style="width:auto; padding:10px 30px;">Follow</button>
+        <div style="background:var(--hr-card); padding-bottom:15px;">
+            <div style="height:180px; background:#333; position:relative;">
+                <img src="${bannerImg}" style="width:100%; height:100%; object-fit:cover; cursor:pointer;" onclick="openMediaLightbox(this.src)">
+            </div>
+            <div style="margin-top:-50px; padding:0 15px;">
+                <img src="${profileImg}" style="width:110px; height:110px; border-radius:50%; border:4px solid black; object-fit: cover; cursor:pointer;" onclick="openMediaLightbox(this.src)">
+                <h2 style="margin:10px 0 5px 0;">${u.name}</h2>
+                <p style="color:var(--hr-secondary); margin:0;临">${u.bio || 'No bio yet'}</p>
+            </div>
+            <div class="profile-info-grid" style="margin-top:10px;">
+                <div class="info-item"><i class="fa-solid fa-location-dot"></i> <span>${u.state || ''}, ${u.country || 'Earth'}</span></div>
+                ${u.phone ? `<div class="info-item"><i class="fa-solid fa-phone"></i> <a href="tel:${u.phone}" style="color:var(--fb-blue); text-decoration:none;">${u.phone}</a></div>` : ''}
+                ${u.whatsapp ? `<div class="info-item"><i class="fa-brands fa-whatsapp"></i> <a href="${u.whatsapp}" target="_blank" style="color:#25d366; text-decoration:none;">WhatsApp Chat</a></div>` : ''}
+            </div>
+            <div style="padding: 0 15px; display:flex; gap:10px; margin-top:15px;">
+                <button class="btn-full bg-blue" style="margin:0;">Add Friend</button>
+                <button class="btn-full bg-gray" style="margin:0;">Message</button>
             </div>
         </div>
         <div id="external-posts"></div>
     `;
     const q = query(collection(db, 'posts'), where('uid', '==', targetUid), orderBy('timestamp', 'desc'));
     onSnapshot(q, s => {
-        $('#external-posts').innerHTML = '';
-        s.forEach(d => renderPost($('#external-posts'), d.data(), d.id));
+        const targetContainer = $('#external-posts');
+        if (!targetContainer) return;
+        targetContainer.innerHTML = '';
+        s.forEach(d => renderPost(targetContainer, d.data(), d.id));
     });
 };
 
