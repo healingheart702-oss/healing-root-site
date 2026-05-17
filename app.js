@@ -210,7 +210,6 @@ window.loadReels = () => {
     const container = $('#reels-container');
     if (!container) return;
     
-    // Live public MP4 video assets to bypass YouTube embed cross-site blockers entirely
     const publicVideos = [
         'https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-sign-light-watching-her-phone-42240-large.mp4',
         'https://assets.mixkit.co/videos/preview/mixkit-funny-cat-with-a-toy-48766-large.mp4',
@@ -220,13 +219,24 @@ window.loadReels = () => {
 
     container.innerHTML = publicVideos.map((url, idx) => `
         <div class="reel-video-container">
-            <video src="${url}" autoplay loop muted playsinline controls></video>
+            <video src="${url}" loop muted playsinline webkit-playsinline controls style="width:100%; height:100%; object-fit:cover;"></video>
             <div style="position:absolute; bottom:80px; left:15px; text-shadow: 2px 2px 4px #000; pointer-events:none; z-index:10;">
                 <b style="font-size:18px;">@FunnyHealing</b>
                 <p>Healing Comedy Feed 😂</p>
             </div>
         </div>
     `).join('');
+
+    // Playback safety policy trigger loop
+    setTimeout(() => {
+        container.querySelectorAll('video').forEach(vid => {
+            vid.play().catch(() => {
+                // Autoplay handler retry rule sequence
+                vid.muted = true;
+                vid.play();
+            });
+        });
+    }, 300);
 };
 
 // --- 4. FEED, REACTIONS & CLICKABLE PROFILES ---
@@ -332,7 +342,8 @@ window.addComment = async (pid) => {
         userName: currentProfile.name,
         userPic: currentProfile.profilePic,
         text: text,
-        timestamp: serverTimestamp()
+        timestamp: serverTimestamp(),
+        likeCount: 0
     });
     $(`#input-${pid}`).value = '';
 };
@@ -363,16 +374,47 @@ function loadComments(pid) {
                     </div>
                     <div class="comment-meta-actions">
                         <span>${commentTimeDisplay}</span>
-                        <span onclick="alert('Liked comment!')">Like</span>
+                        <span id="comm-like-btn-${commId}" onclick="reactComment('${pid}', '${commId}')" style="font-weight:bold;">Like</span>
+                        <span id="comm-like-count-${commId}" style="color:var(--hr-secondary); pointer-events:none;">${c.likeCount || 0} Likes</span>
                         <span onclick="replyTo('${pid}', '${commId}', '${c.userName}')">Reply</span>
                     </div>
                     <div id="replies-${commId}" class="reply-line" style="display:none;"></div>
                 </div>`;
             list.appendChild(div);
             loadReplies(pid, commId);
+
+            // Active tracking rule monitoring individual comment engagement states
+            if (currentUser) {
+                onSnapshot(doc(db, 'posts', pid, 'comments', commId, 'commentLikes', currentUser.uid), (lSnap) => {
+                    const lBtn = $(`#comm-like-btn-${commId}`);
+                    if (lBtn) {
+                        if (lSnap.exists()) {
+                            lBtn.innerText = "Liked";
+                            lBtn.style.color = "var(--fb-blue)";
+                        } else {
+                            lBtn.innerText = "Like";
+                            lBtn.style.color = "var(--hr-secondary)";
+                        }
+                    }
+                });
+            }
         });
     });
 }
+
+window.reactComment = async (pid, cid) => {
+    if (!currentUser) return;
+    const clRef = doc(db, 'posts', pid, 'comments', cid, 'commentLikes', currentUser.uid);
+    const clSnap = await getDoc(clRef);
+
+    if (clSnap.exists()) {
+        await deleteDoc(clRef);
+        await updateDoc(doc(db, 'posts', pid, 'comments', cid), { likeCount: increment(-1) });
+    } else {
+        await setDoc(clRef, { liked: true, timestamp: serverTimestamp() });
+        await updateDoc(doc(db, 'posts', pid, 'comments', cid), { likeCount: increment(1) });
+    }
+};
 
 window.replyTo = async (pid, cid, name) => {
     const txt = prompt(`Reply to ${name}:`);
