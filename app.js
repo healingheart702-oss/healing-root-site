@@ -35,6 +35,24 @@ let currentUser = null;
 let currentProfile = null;
 let isSignUpMode = false;
 
+// Helper function to calculate real-time human-readable stamps
+function formatTimeAgo(timestamp) {
+    if (!timestamp) return "Just now";
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const now = new Date();
+    const seconds = Math.floor((now - date) / 1000);
+    
+    if (seconds < 60) return "Just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 // --- 1. AUTHENTICATION LOGIC ---
 onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -210,13 +228,16 @@ function renderPost(container, post, pid) {
     card.style.background = 'var(--hr-card)';
     card.style.marginBottom = '10px';
     
+    // Calculate real-time human readable time stamp
+    const timeDisplay = formatTimeAgo(post.timestamp);
+    
     card.innerHTML = `
         <div style="padding:12px; display:flex; justify-content:space-between; align-items:center;">
             <div style="display:flex; gap:10px; align-items:center; cursor:pointer;" onclick="viewUserProfile('${post.uid}')">
                 <img src="${post.userPic}" class="avatar-small">
                 <div>
                     <b>${post.userName}</b><br>
-                    <small style="color:var(--hr-secondary);">Just now</small>
+                    <small style="color:var(--hr-secondary);">${timeDisplay}</small>
                 </div>
             </div>
             ${(isAdmin || isOwner) ? `<i class="fa-solid fa-ellipsis" onclick="showPostMenu('${pid}', ${isOwner})" style="cursor:pointer; color:gray;"></i>` : ''}
@@ -230,7 +251,7 @@ function renderPost(container, post, pid) {
 
         <div style="padding:5px 12px; border-top:1px solid var(--hr-divider); display:flex;">
             <div class="post-action-btn">
-                <span>${post.myReaction || '👍 Like'}</span>
+                <span id="my-react-display-${pid}">👍 Like</span>
                 <div class="reactions-box">
                     <span onclick="react('${pid}', '👍')">👍</span>
                     <span onclick="react('${pid}', '❤️')">❤️</span>
@@ -253,6 +274,22 @@ function renderPost(container, post, pid) {
     `;
     container.appendChild(card);
     loadComments(pid);
+
+    // Dynamic UI listener to check if current logged-in user already left a specific reaction on this post
+    if (currentUser) {
+        onSnapshot(doc(db, 'posts', pid, 'reactions', currentUser.uid), (snap) => {
+            const displayBtn = $(`#my-react-display-${pid}`);
+            if (displayBtn) {
+                if (snap.exists()) {
+                    displayBtn.innerText = `${snap.data().type}`;
+                    displayBtn.style.color = 'var(--fb-blue)';
+                } else {
+                    displayBtn.innerText = '👍 Like';
+                    displayBtn.style.color = 'var(--hr-secondary)';
+                }
+            }
+        });
+    }
 }
 
 // --- 5. COMMENT & REPLY LOGIC ---
@@ -323,10 +360,29 @@ function loadReplies(pid, cid) {
 
 // --- 6. ACTIONS & ADMIN TOOLS ---
 window.react = async (pid, emoji) => {
-    await updateDoc(doc(db, 'posts', pid), { 
-        myReaction: emoji,
-        reactionCount: increment(1) 
-    });
+    if (!currentUser) return;
+    const reactDocRef = doc(db, 'posts', pid, 'reactions', currentUser.uid);
+    const reactSnap = await getDoc(reactDocRef);
+
+    if (reactSnap.exists()) {
+        const currentReactionType = reactSnap.data().type;
+        if (currentReactionType === emoji) {
+            // User clicked the exact same reaction icon: remove it entirely
+            await deleteDoc(reactDocRef);
+            await updateDoc(doc(db, 'posts', pid), {
+                reactionCount: increment(-1)
+            });
+        } else {
+            // User changed to a completely different reaction element: swap it out without increasing count
+            await setDoc(reactDocRef, { type: emoji, timestamp: serverTimestamp() });
+        }
+    } else {
+        // First time reacting to this post: write single entry and safely increment overall metric
+        await setDoc(reactDocRef, { type: emoji, timestamp: serverTimestamp() });
+        await updateDoc(doc(db, 'posts', pid), { 
+            reactionCount: increment(1) 
+        });
+    }
 };
 
 window.viewUserProfile = async (targetUid) => {
@@ -396,3 +452,7 @@ async function uploadToCloudinary(file) {
 }
 
 $('#site-refresh-btn').onclick = () => location.reload();
+window.toggleComments = (pid) => {
+    const el = $(`#comments-${pid}`);
+    if(el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+};
