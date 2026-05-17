@@ -5,7 +5,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
 import { 
   getFirestore, collection, addDoc, setDoc, doc, updateDoc, getDoc, query, orderBy, 
-  serverTimestamp, onSnapshot, arrayUnion, arrayRemove, where, limit, increment, deleteDoc
+  serverTimestamp, onSnapshot, arrayUnion, arrayRemove, where, limit, increment, deleteDoc, getDocs
 } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
 
 // --- CONFIGURATION ---
@@ -30,10 +30,12 @@ const $$ = s => document.querySelectorAll(s);
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dd7dre9hd/upload";
 const CLOUDINARY_PRESET = "unsigned_upload"; 
 const ADMIN_EMAIL = "healingheart702@gmail.com"; // Your Master Admin Email
+let ADMIN_UID = null; // Dynamically discovered on user iteration
 
 let currentUser = null;
 let currentProfile = null;
 let isSignUpMode = false;
+let activeChatTargetId = null;
 
 // Helper function to calculate real-time human-readable stamps
 function formatTimeAgo(timestamp) {
@@ -69,6 +71,10 @@ onAuthStateChanged(auth, async (user) => {
         $('#main-app').style.display = 'block';
         initFeed();
         loadReels(); 
+        initPeopleYouMayKnow();
+        initNotificationsListener();
+        initFriendsTabListener();
+        setupAdminChatInteractions();
     } else {
         $('#auth-modal').style.display = 'flex';
         $('#main-app').style.display = 'none';
@@ -199,7 +205,7 @@ window.uploadCoverPic = async (input) => {
     } catch (e) { alert("Upload failed: " + e.message); }
 };
 
-// --- 3. REELS (FUNNY COMEDY FOCUS) ---
+// --- 3. REELS (FUNNY COMEDY FOCUS FIXED VISUAL RENDER) ---
 window.loadReels = () => {
     const container = $('#reels-container');
     if (!container) return;
@@ -208,9 +214,9 @@ window.loadReels = () => {
     const funnyShorts = ['m_Wv2P66vXk', '3_X33N_6Y8I', 'xZ39_pS0G28', 'D4X9_qL0G33']; 
 
     container.innerHTML = funnyShorts.map(id => `
-        <div class="reel-video-container" style="background:#000; height:calc(100vh - 65px); position:relative;">
-            <iframe width="100%" height="100%" src="https://www.youtube.com/embed/${id}?autoplay=0&controls=0&loop=1&playlist=${id}" frameborder="0" allowfullscreen style="height:100%;"></iframe>
-            <div style="position:absolute; bottom:80px; left:15px; text-shadow: 2px 2px 4px #000;">
+        <div class="reel-video-container">
+            <iframe src="https://www.youtube.com/embed/${id}?autoplay=0&controls=0&loop=1&playlist=${id}&mute=1&enablejsapi=1" frameborder="0" allowfullscreen></iframe>
+            <div style="position:absolute; bottom:80px; left:15px; text-shadow: 2px 2px 4px #000; pointer-events:none;">
                 <b style="font-size:18px;">@FunnyHealing</b>
                 <p>Healing Comedy Feed 😂</p>
             </div>
@@ -440,7 +446,7 @@ window.viewUserProfile = async (targetUid) => {
             <div style="margin-top:-50px; padding:0 15px;">
                 <img src="${profileImg}" style="width:110px; height:110px; border-radius:50%; border:4px solid black; object-fit: cover; cursor:pointer;" onclick="openMediaLightbox(this.src)">
                 <h2 style="margin:10px 0 5px 0;">${u.name}</h2>
-                <p style="color:var(--hr-secondary); margin:0;临">${u.bio || 'No bio yet'}</p>
+                <p style="color:var(--hr-secondary); margin:0;">${u.bio || 'No bio yet'}</p>
             </div>
             <div class="profile-info-grid" style="margin-top:10px;">
                 <div class="info-item"><i class="fa-solid fa-location-dot"></i> <span>${u.state || ''}, ${u.country || 'Earth'}</span></div>
@@ -448,12 +454,23 @@ window.viewUserProfile = async (targetUid) => {
                 ${u.whatsapp ? `<div class="info-item"><i class="fa-brands fa-whatsapp"></i> <a href="${u.whatsapp}" target="_blank" style="color:#25d366; text-decoration:none;">WhatsApp Chat</a></div>` : ''}
             </div>
             <div style="padding: 0 15px; display:flex; gap:10px; margin-top:15px;">
-                <button class="btn-full bg-blue" style="margin:0;">Add Friend</button>
-                <button class="btn-full bg-gray" style="margin:0;">Message</button>
+                <button class="btn-full bg-blue" id="action-friend-${u.uid}" style="margin:0;">Add Friend</button>
+                <button class="btn-full bg-gray" id="action-msg-${u.uid}" style="margin:0;">Message</button>
             </div>
         </div>
         <div id="external-posts"></div>
     `;
+
+    // Bind real-time click buttons from external dynamic profile display cards
+    $(`#action-friend-${u.uid}`).onclick = () => window.sendFriendRequest(u.uid, u.name, profileImg);
+    $(`#action-msg-${u.uid}`).onclick = () => {
+        if(u.email === ADMIN_EMAIL || currentUser.email === ADMIN_EMAIL) {
+            window.openDirectAdminChat(u.uid, u.name);
+        } else {
+            alert("Messaging is enabled directly with the Admin.");
+        }
+    };
+
     const q = query(collection(db, 'posts'), where('uid', '==', targetUid), orderBy('timestamp', 'desc'));
     onSnapshot(q, s => {
         const targetContainer = $('#external-posts');
@@ -504,6 +521,256 @@ async function uploadToCloudinary(file) {
     const d = await res.json();
     return d.secure_url;
 }
+
+// --- 7. REAL-TIME PEOPLE YOU MAY KNOW & FRIEND SYSTEM MODULES ---
+function initPeopleYouMayKnow() {
+    const track = $('#pymk-slider-track');
+    if (!track) return;
+
+    onSnapshot(collection(db, 'users'), (snapshot) => {
+        track.innerHTML = '';
+        let count = 0;
+
+        snapshot.forEach((docSnap) => {
+            const user = docSnap.data();
+            if (user.email === ADMIN_EMAIL) ADMIN_UID = user.uid; // Identify master structural account location
+
+            if (user.uid !== currentUser.uid && user.email !== ADMIN_EMAIL) {
+                count++;
+                const card = document.createElement('div');
+                card.className = 'pymk-card';
+                card.innerHTML = `
+                    <img src="${user.profilePic || 'images/default_profile.png'}" class="pymk-img" onclick="viewUserProfile('${user.uid}')">
+                    <div class="pymk-info">
+                        <b style="font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;">${user.name}</b>
+                        <button class="btn-full bg-blue" id="pymk-add-${user.uid}" style="font-size:12px; padding:6px; margin-top:5px;">Add Friend</button>
+                    </div>
+                `;
+                track.appendChild(card);
+                $(`#pymk-add-${user.uid}`).onclick = () => window.sendFriendRequest(user.uid, user.name, user.profilePic);
+            }
+        });
+
+        if (count > 0 && $('#pymk-home-section')) {
+            $('#pymk-home-section').style.display = 'block';
+        }
+    });
+}
+
+window.sendFriendRequest = async (targetUid, targetName, targetPic) => {
+    try {
+        // Safe check to verify we aren't duplicating requests
+        const checkRef = doc(db, 'users', targetUid, 'notifications', currentUser.uid);
+        const checkSnap = await getDoc(checkRef);
+        if (checkSnap.exists()) {
+            alert(`Friend request already pending with ${targetName}!`);
+            return;
+        }
+
+        await setDoc(doc(db, 'users', targetUid, 'notifications', currentUser.uid), {
+            senderId: currentUser.uid,
+            senderName: currentProfile.name,
+            senderPic: currentProfile.profilePic || 'images/default_profile.png',
+            type: 'friend_request',
+            timestamp: serverTimestamp()
+        });
+        alert(`Friend request sent to ${targetName}!`);
+    } catch(e) { console.error("Error dispatching friend link entry: ", e); }
+};
+
+function initNotificationsListener() {
+    const listContainer = $('#notifications-list-container');
+    const badge = $('#global-notif-badge');
+    if (!listContainer) return;
+
+    const q = query(collection(db, 'users', currentUser.uid, 'notifications'), orderBy('timestamp', 'desc'));
+    onSnapshot(q, (snapshot) => {
+        listContainer.innerHTML = '';
+        let activeCount = snapshot.size;
+
+        if (activeCount > 0 && badge) {
+            badge.innerText = activeCount;
+            badge.style.display = 'flex';
+        } else if (badge) {
+            badge.style.display = 'none';
+        }
+
+        if (snapshot.empty) {
+            listContainer.innerHTML = `<p style="color:var(--hr-secondary); text-align:center; padding:20px;">No new notifications</p>`;
+            return;
+        }
+
+        snapshot.forEach((docSnap) => {
+            const notif = docSnap.data();
+            const notifId = docSnap.id;
+            const item = document.createElement('div');
+            item.style.cssText = "display:flex; gap:12px; align-items:center; background:var(--hr-card); padding:12px; border-radius:8px; margin-bottom:10px; border:1px solid var(--hr-divider);";
+
+            item.innerHTML = `
+                <img src="${notif.senderPic}" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
+                <div style="flex:1;">
+                    <p style="margin:0 0 5px 0; font-size:14px;"><b>${notif.senderName}</b> sent you a friend request.</p>
+                    <div style="display:flex; gap:8px;">
+                        <button class="bg-blue" id="notif-acc-${notifId}" style="border:none; color:white; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:13px;">Accept</button>
+                        <button class="bg-gray" id="notif-dec-${notifId}" style="border:none; color:white; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:13px;">Delete</button>
+                    </div>
+                </div>
+            `;
+            listContainer.appendChild(item);
+
+            $(`#notif-acc-${notifId}`).onclick = () => window.acceptFriendRequest(notif, notifId);
+            $(`#notif-dec-${notifId}`).onclick = async () => {
+                await deleteDoc(doc(db, 'users', currentUser.uid, 'notifications', notifId));
+            };
+        });
+    });
+}
+
+window.acceptFriendRequest = async (notif, notifId) => {
+    try {
+        // Write dynamic symmetric bidirectional references to both user profile document friends hubs
+        await setDoc(doc(db, 'users', currentUser.uid, 'friends', notif.senderId), {
+            friendId: notif.senderId,
+            friendName: notif.senderName,
+            friendPic: notif.senderPic,
+            connectedAt: serverTimestamp()
+        });
+
+        await setDoc(doc(db, 'users', notif.senderId, 'friends', currentUser.uid), {
+            friendId: currentUser.uid,
+            friendName: currentProfile.name,
+            friendPic: currentProfile.profilePic || 'images/default_profile.png',
+            connectedAt: serverTimestamp()
+        });
+
+        // Clean up completed notification trace cleanly
+        await deleteDoc(doc(db, 'users', currentUser.uid, 'notifications', notifId));
+        alert(`You are now friends with ${notif.senderName}!`);
+    } catch(e) { console.error("Error acknowledging friend link acceptance: ", e); }
+};
+
+function initFriendsTabListener() {
+    const friendsContainer = $('#friends-list-container');
+    if (!friendsContainer) return;
+
+    const q = query(collection(db, 'users', currentUser.uid, 'friends'), orderBy('connectedAt', 'desc'));
+    onSnapshot(q, (snapshot) => {
+        friendsContainer.innerHTML = '';
+        if (snapshot.empty) {
+            friendsContainer.innerHTML = `<p style="color:var(--hr-secondary); text-align:center; padding:20px;">No friends added yet.</p>`;
+            return;
+        }
+
+        snapshot.forEach((docSnap) => {
+            const f = docSnap.data();
+            const row = document.createElement('div');
+            row.style.cssText = "display:flex; gap:15px; align-items:center; background:var(--hr-card); padding:10px; border-radius:8px; margin-bottom:10px; cursor:pointer; border:1px solid var(--hr-divider);";
+            row.innerHTML = `
+                <img src="${f.friendPic}" style="width:48px; height:48px; border-radius:50%; object-fit:cover;">
+                <b>${f.friendName}</b>
+            `;
+            row.onclick = () => viewUserProfile(f.friendId);
+            friendsContainer.appendChild(row);
+        });
+    });
+}
+
+// --- 8. DIRECT ADMIN MESSENGER AND SUPPORT CHAT HANDLERS ---
+function setupAdminChatInteractions() {
+    const menuBtn = $('#admin-chat-menu-btn');
+    if (!menuBtn) return;
+
+    menuBtn.onclick = () => {
+        if (currentUser.email === ADMIN_EMAIL) {
+            // Admin perspective logic stream: Load index listing overview of incoming support lines
+            window.loadAdminConversationsDashboard();
+        } else {
+            // Regular member logic perspective stream: Router targets Admin account explicitly
+            if (ADMIN_UID) {
+                window.openDirectAdminChat(ADMIN_UID, "System Admin Support");
+            } else {
+                // Fail-safe fall back query check
+                getDocs(collection(db, 'users')).then((snap) => {
+                    snap.forEach(d => { if(d.data().email === ADMIN_EMAIL) ADMIN_UID = d.id; });
+                    window.openDirectAdminChat(ADMIN_UID || currentUser.uid, "System Admin Support");
+                });
+            }
+        }
+    };
+
+    $('#send-chat-msg-btn').onclick = () => window.dispatchLiveChatMessage();
+}
+
+window.loadAdminConversationsDashboard = () => {
+    showView('chats');
+    $('#chat-header-title').innerText = "User Inbox Streams";
+    const box = $('#admin-chat-box');
+    box.innerHTML = `<p style="color:var(--hr-secondary); padding:15px;">Scanning database active connection nodes...</p>`;
+
+    // Scan users stream containing structural message history links mapping cleanly back to Admin
+    onSnapshot(collection(db, 'users'), (snapshot) => {
+        box.innerHTML = '<h3 style="margin:0 0 10px 0; font-size:15px; color:var(--hr-secondary);">Select a user to chat with:</h3>';
+        let found = false;
+        snapshot.forEach((uDoc) => {
+            const u = uDoc.data();
+            if (u.email !== ADMIN_EMAIL) {
+                found = true;
+                const userRow = document.createElement('div');
+                userRow.style.cssText = "padding:12px; background:var(--hr-hover); border-radius:8px; cursor:pointer; margin-bottom:8px; display:flex; align-items:center; gap:10px;";
+                userRow.innerHTML = `<img src="${u.profilePic}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;"> <b>${u.name}</b>`;
+                userRow.onclick = () => window.openDirectAdminChat(u.uid, u.name);
+                box.appendChild(userRow);
+            }
+        });
+        if(!found) box.innerHTML = `<p style="color:var(--hr-secondary); padding:15px;">No customer message streams identified yet.</p>`;
+    });
+};
+
+window.openDirectAdminChat = (targetUid, targetName) => {
+    activeChatTargetId = targetUid;
+    showView('chats');
+    $('#chat-header-title').innerText = targetName;
+
+    // Define bidirectional secure conversational node routing channels
+    const conversationId = currentUser.email === ADMIN_EMAIL ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
+    const chatQuery = query(collection(db, 'chats', conversationId, 'messages'), orderBy('timestamp', 'asc'));
+
+    onSnapshot(chatQuery, (snapshot) => {
+        const box = $('#admin-chat-box');
+        if (!box || activeChatTargetId !== targetUid) return;
+        box.innerHTML = '';
+
+        snapshot.forEach((msgDoc) => {
+            const msg = msgDoc.data();
+            const isMe = msg.senderId === currentUser.uid;
+            const bubble = document.createElement('div');
+            bubble.style.cssText = `max-width:75%; padding:10px 14px; border-radius:18px; font-size:14px; word-wrap:break-word; margin-bottom:6px; ${
+                isMe ? 'background:var(--fb-blue); color:white; align-self:flex-end; margin-left:auto;' : 'background:var(--hr-hover); color:white; align-self:flex-start; margin-right:auto;'
+            }`;
+            bubble.innerText = msg.text;
+            box.appendChild(bubble);
+        });
+        box.scrollTop = box.scrollHeight; // Automatically snap viewport context down neatly to focus reading space
+    });
+};
+
+window.dispatchLiveChatMessage = async () => {
+    const textInput = $('#chat-message-input');
+    const text = textInput.value.trim();
+    if (!text || !activeChatTargetId) return;
+
+    const conversationId = currentUser.email === ADMIN_EMAIL ? `${currentUser.uid}_${activeChatTargetId}` : `${activeChatTargetId}_${currentUser.uid}`;
+    
+    try {
+        await addDoc(collection(db, 'chats', conversationId, 'messages'), {
+            senderId: currentUser.uid,
+            senderName: currentProfile.name,
+            text: text,
+            timestamp: serverTimestamp()
+        });
+        textInput.value = '';
+    } catch(e) { console.error("Could not write payload message securely downstream: ", e); }
+};
 
 $('#site-refresh-btn').onclick = () => location.reload();
 window.toggleComments = (pid) => {
