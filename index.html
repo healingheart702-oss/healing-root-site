@@ -39,10 +39,10 @@
             padding: 5px 10px; display: none; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             z-index: 100; transition: all 0.2s ease;
         }
+        .reactions-box.active-panel { display: flex !important; }
         .reactions-box span { font-size: 26px; cursor: pointer; transition: transform 0.2s; }
         .reactions-box span:hover { transform: scale(1.4); }
         .post-action-btn { position: relative; flex: 1; text-align: center; padding: 10px; cursor: pointer; color: var(--hr-secondary); font-weight: 600; }
-        .post-action-btn:hover .reactions-box { display: flex; }
 
         /* Profile Style */
         .profile-info-grid { display: grid; grid-template-columns: 1fr; gap: 10px; padding: 15px; background: var(--hr-card); margin-top: 10px; }
@@ -87,7 +87,7 @@
         /* Comments */
         .comment-section { padding: 10px 12px; border-top: 1px solid var(--hr-divider); background: var(--hr-card); }
         .comment-bubble { background: var(--hr-hover); padding: 10px 14px; border-radius: 18px; color: var(--hr-text); max-width: 85%; word-wrap: break-word; display: flex; flex-direction: column; gap: 2px; }
-        .comment-meta-actions { display: flex; gap: 12px; margin-left: 12px; margin-top: 4px; font-size: 12px; color: var(--hr-secondary); align-items: center; }
+        .comment-meta-actions { display: flex; gap: 12px; margin-left: 12px; margin-top: 4px; font-size: 12px; color: var(--hr-secondary); align-items: center; position: relative; }
         .comment-meta-actions span { cursor: pointer; font-weight: 600; }
         .comment-meta-actions span:hover { text-decoration: underline; }
         .reply-line { border-left: 2px solid var(--hr-divider); margin-left: 20px; padding-left: 15px; margin-top: 5px; }
@@ -301,6 +301,13 @@
         window.closeMediaLightbox = () => {
             $('#media-preview-modal').style.display = 'none';
         };
+
+        // Single click outside management to dismiss reaction trays
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.post-action-btn') && !e.target.closest('.comment-meta-actions')) {
+                document.querySelectorAll('.reactions-box').forEach(box => box.classList.remove('active-panel'));
+            }
+        });
     </script>
 </body>
 </html>
