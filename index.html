@@ -68,6 +68,14 @@
         .reels-scroll-wrapper::-webkit-scrollbar { display: none; }
         .reel-video-container { snap-align: start; height: calc(100vh - 130px); position: relative; background: #000; }
         .reel-video-container video { width: 100%; height: 100%; object-fit: cover; pointer-events: auto; }
+        .tiktok-embed-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000; }
+
+        /* Chat Layout Classes */
+        .chat-user-item { display: flex; align-items: center; gap: 15px; padding: 12px 15px; border-bottom: 1px solid var(--hr-divider); cursor: pointer; }
+        .chat-user-item:hover { background: var(--hr-hover); }
+        .chat-user-details { flex: 1; }
+        .chat-user-name { font-weight: 600; margin: 0 0 4px 0; color: var(--hr-text); }
+        .chat-user-status { font-size: 13px; color: var(--hr-secondary); margin: 0; }
 
         /* Auth & Forms */
         #auth-modal { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #000; padding: 20px; }
@@ -146,7 +154,8 @@
         </div>
 
         <div id="reels-view" class="view">
-            <div class="reels-scroll-wrapper" id="reels-container"></div>
+            <div class="reels-scroll-wrapper" id="reels-container">
+                </div>
         </div>
 
         <div id="profile-view" class="view">
@@ -210,8 +219,9 @@
                 <i class="fa-solid fa-arrow-left" style="font-size:20px; cursor:pointer;" onclick="showView('home')"></i>
                 <h2 id="chat-header-title" style="margin:0;">Messages</h2>
             </div>
-            <div id="admin-chat-box" style="height:calc(100vh - 200px); overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:10px;"></div>
-            <div style="position:fixed; bottom:70px; width:100%; box-sizing:border-box; background:var(--hr-card); padding:10px; display:flex; gap:10px;">
+            <div id="friends-chats-list" style="display: flex; flex-direction: column;"></div>
+            <div id="admin-chat-box" style="height:calc(100vh - 200px); overflow-y:auto; padding:15px; display:none; flex-direction:column; gap:10px;"></div>
+            <div id="chat-input-area" style="position:fixed; bottom:70px; width:100%; box-sizing:border-box; background:var(--hr-card); padding:10px; display:none; gap:10px;">
                 <input id="chat-message-input" placeholder="Type a message..." style="flex:1; background:var(--hr-hover); border:none; padding:12px 15px; border-radius:25px; color:white; outline:none;">
                 <button id="send-chat-msg-btn" style="background:var(--fb-blue); border:none; width:40px; height:40px; border-radius:50%; color:white; cursor:pointer;"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
