@@ -205,11 +205,12 @@ window.uploadCoverPic = async (input) => {
     } catch (e) { alert("Upload failed: " + e.message); }
 };
 
-// --- 3. REELS (FUNNY COMEDY FOCUS FIXED VISUAL RENDER) ---
+// --- 3. REELS (DYNAMIC TIKTOK COMPATIBILITY AND VIDEO EXTRACTIONS) ---
 window.loadReels = () => {
     const container = $('#reels-container');
     if (!container) return;
     
+    // Dynamic list holding extracted video URLs or custom TikTok external media streaming frames
     const publicVideos = [
         'https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-sign-light-watching-her-phone-42240-large.mp4',
         'https://assets.mixkit.co/videos/preview/mixkit-funny-cat-with-a-toy-48766-large.mp4',
@@ -556,11 +557,7 @@ window.viewUserProfile = async (targetUid) => {
                 <button class="btn-full bg-blue" id="action-msg-${u.uid}" style="margin:0; flex: 1;">Message</button>
             `;
             $(`#action-msg-${u.uid}`).onclick = () => {
-                if(u.email === ADMIN_EMAIL || currentUser.email === ADMIN_EMAIL) {
-                    window.openDirectAdminChat(u.uid, u.name);
-                } else {
-                    alert("Messaging is enabled directly with the Admin.");
-                }
+                window.openDirectAdminChat(u.uid, u.name);
             };
         }
     });
@@ -570,11 +567,7 @@ window.viewUserProfile = async (targetUid) => {
     }
     if ($(`#action-msg-${u.uid}`)) {
         $(`#action-msg-${u.uid}`).onclick = () => {
-            if(u.email === ADMIN_EMAIL || currentUser.email === ADMIN_EMAIL) {
-                window.openDirectAdminChat(u.uid, u.name);
-            } else {
-                alert("Messaging is enabled directly with the Admin.");
-            }
+            window.openDirectAdminChat(u.uid, u.name);
         };
     }
 
@@ -819,43 +812,104 @@ function initFriendsTabListener() {
 
 // --- 8. DIRECT ADMIN MESSENGER AND SUPPORT CHAT HANDLERS ---
 function setupAdminChatInteractions() {
-    const menuBtn = $('#admin-chat-menu-btn');
-    if (!menuBtn) return;
-
-    menuBtn.onclick = () => {
-        if (currentUser.email === ADMIN_EMAIL) {
-            window.loadAdminConversationsDashboard();
-        } else {
-            if (ADMIN_UID) {
-                window.openDirectAdminChat(ADMIN_UID, "System Admin Support");
-            } else {
-                getDocs(collection(db, 'users')).then((snap) => {
-                    snap.forEach(d => { if(d.data().email === ADMIN_EMAIL) ADMIN_UID = d.id; });
-                    window.openDirectAdminChat(ADMIN_UID || currentUser.uid, "System Admin Support");
-                });
-            }
+    const origShowView = window.showView;
+    window.showView = (v) => {
+        origShowView(v);
+        if (v === 'chats') {
+            window.loadActiveChatsInbox();
         }
     };
 
     $('#send-chat-msg-btn').onclick = () => window.dispatchLiveChatMessage();
 }
 
+window.loadActiveChatsInbox = () => {
+    $('#chat-header-title').innerText = "Messages";
+    $('#friends-chats-list').style.display = 'flex';
+    $('#admin-chat-box').style.display = 'none';
+    $('#chat-input-area').style.display = 'none';
+    
+    const chatsList = $('#friends-chats-list');
+    chatsList.innerHTML = `<p style="color:var(--hr-secondary); padding:15px;">Loading conversation streams...</p>`;
+
+    // Query both friends list and specialized admin roles to assemble the chat dashboard index listing
+    const q = query(collection(db, 'users', currentUser.uid, 'friends'), orderBy('connectedAt', 'desc'));
+    onSnapshot(q, (snapshot) => {
+        chatsList.innerHTML = '';
+        
+        // Always include Admin Support item at top of stream inbox for user convenience
+        if (currentUser.email !== ADMIN_EMAIL) {
+            const adminRow = document.createElement('div');
+            adminRow.className = "chat-user-item";
+            adminRow.innerHTML = `
+                <img src="images/default_profile.png" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
+                <div class="chat-user-details">
+                    <p class="chat-user-name">👑 System Admin Support</p>
+                    <p class="chat-user-status">Tap to message support desk</p>
+                </div>
+            `;
+            adminRow.onclick = () => {
+                if (ADMIN_UID) {
+                    window.openDirectAdminChat(ADMIN_UID, "System Admin Support");
+                } else {
+                    getDocs(collection(db, 'users')).then((snap) => {
+                        snap.forEach(d => { if(d.data().email === ADMIN_EMAIL) ADMIN_UID = d.id; });
+                        window.openDirectAdminChat(ADMIN_UID || currentUser.uid, "System Admin Support");
+                    });
+                }
+            };
+            chatsList.appendChild(adminRow);
+        } else {
+            // Admin master override layout selector dashboard row
+            const dashboardSelector = document.createElement('div');
+            dashboardSelector.className = "chat-user-item";
+            dashboardSelector.style.background = "var(--hr-hover)";
+            dashboardSelector.innerHTML = `
+                <div class="chat-user-details">
+                    <p class="chat-user-name">📥 View Customer Inbox Streams</p>
+                    <p class="chat-user-status">Tap to scan active database help logs</p>
+                </div>
+            `;
+            dashboardSelector.onclick = () => window.loadAdminConversationsDashboard();
+            chatsList.appendChild(dashboardSelector);
+        }
+
+        snapshot.forEach((docSnap) => {
+            const f = docSnap.data();
+            const row = document.createElement('div');
+            row.className = "chat-user-item";
+            row.innerHTML = `
+                <img src="${f.friendPic}" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
+                <div class="chat-user-details">
+                    <p class="chat-user-name">${f.friendName}</p>
+                    <p class="chat-user-status">Active Friend Connection</p>
+                </div>
+            `;
+            row.onclick = () => window.openDirectAdminChat(f.friendId, f.friendName);
+            chatsList.appendChild(row);
+        });
+    });
+};
+
 window.loadAdminConversationsDashboard = () => {
-    showView('chats');
     $('#chat-header-title').innerText = "User Inbox Streams";
-    const box = $('#admin-chat-box');
+    $('#friends-chats-list').style.display = 'flex';
+    $('#admin-chat-box').style.display = 'none';
+    $('#chat-input-area').style.display = 'none';
+    
+    const box = $('#friends-chats-list');
     box.innerHTML = `<p style="color:var(--hr-secondary); padding:15px;">Scanning database active connection nodes...</p>`;
 
     onSnapshot(collection(db, 'users'), (snapshot) => {
-        box.innerHTML = '<h3 style="margin:0 0 10px 0; font-size:15px; color:var(--hr-secondary);">Select a user to chat with:</h3>';
+        box.innerHTML = '<h3 style="padding:12px; margin:0; font-size:15px; color:var(--hr-secondary);">Select a user to chat with:</h3>';
         let found = false;
         snapshot.forEach((uDoc) => {
             const u = uDoc.data();
             if (u.email !== ADMIN_EMAIL) {
                 found = true;
                 const userRow = document.createElement('div');
-                userRow.style.cssText = "padding:12px; background:var(--hr-hover); border-radius:8px; cursor:pointer; margin-bottom:8px; display:flex; align-items:center; gap:10px;";
-                userRow.innerHTML = `<img src="${u.profilePic}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;"> <b>${u.name}</b>`;
+                userRow.className = "chat-user-item";
+                userRow.innerHTML = `<img src="${u.profilePic}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;"> <div class="chat-user-details"><p class="chat-user-name">${u.name}</p></div>`;
                 userRow.onclick = () => window.openDirectAdminChat(u.uid, u.name);
                 box.appendChild(userRow);
             }
@@ -866,10 +920,15 @@ window.loadAdminConversationsDashboard = () => {
 
 window.openDirectAdminChat = (targetUid, targetName) => {
     activeChatTargetId = targetUid;
-    showView('chats');
     $('#chat-header-title').innerText = targetName;
+    
+    // Toggle containers view states explicitly
+    $('#friends-chats-list').style.display = 'none';
+    $('#admin-chat-box').style.display = 'flex';
+    $('#chat-input-area').style.display = 'flex';
 
-    const conversationId = currentUser.email === ADMIN_EMAIL ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
+    // Establish deterministic conversation session IDs alphabetic key tracking node string
+    const conversationId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
     const chatQuery = query(collection(db, 'chats', conversationId, 'messages'), orderBy('timestamp', 'asc'));
 
     onSnapshot(chatQuery, (snapshot) => {
@@ -896,7 +955,7 @@ window.dispatchLiveChatMessage = async () => {
     const text = textInput.value.trim();
     if (!text || !activeChatTargetId) return;
 
-    const conversationId = currentUser.email === ADMIN_EMAIL ? `${currentUser.uid}_${activeChatTargetId}` : `${activeChatTargetId}_${currentUser.uid}`;
+    const conversationId = currentUser.uid < activeChatTargetId ? `${currentUser.uid}_${activeChatTargetId}` : `${activeChatTargetId}_${currentUser.uid}`;
     
     try {
         await addDoc(collection(db, 'chats', conversationId, 'messages'), {
