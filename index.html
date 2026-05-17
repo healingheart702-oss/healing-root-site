@@ -27,6 +27,7 @@
         .header h1 { color: white; font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -1px; }
         .header-icons { display: flex; gap: 10px; }
         .circle-icon { background: var(--hr-hover); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 18px; position: relative; }
+        .notification-badge { position: absolute; top: -2px; right: -2px; background: #e41e3f; color: white; font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-weight: bold; }
 
         /* Media Size Constraints */
         .post-media { width: 100%; max-height: 450px; object-fit: cover; border-top: 1px solid var(--hr-divider); border-bottom: 1px solid var(--hr-divider); }
@@ -52,6 +53,21 @@
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
         .menu-card { background: var(--hr-card); padding: 15px; border-radius: 10px; border: 1px solid var(--hr-divider); text-align: left; cursor: pointer; }
         .menu-card i { font-size: 22px; margin-bottom: 8px; }
+
+        /* Horizontal Suggestion Slider Style */
+        .pymk-container { background: var(--hr-card); padding: 15px 0 15px 15px; margin-bottom: 10px; }
+        .pymk-header { display: flex; justify-content: space-between; align-items: center; padding-right: 15px; margin-bottom: 10px; }
+        .pymk-track { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .pymk-track::-webkit-scrollbar { display: none; }
+        .pymk-card { background: var(--hr-hover); width: 150px; border-radius: 8px; flex-shrink: 0; overflow: hidden; display: flex; flex-direction: column; }
+        .pymk-img { width: 150px; height: 150px; object-fit: cover; }
+        .pymk-info { padding: 8px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+
+        /* Reels Player Fix Container Layout */
+        .reels-scroll-wrapper { height: calc(100vh - 130px); overflow-y: scroll; snap-type: y mandatory; scrollbar-width: none; }
+        .reels-scroll-wrapper::-webkit-scrollbar { display: none; }
+        .reel-video-container { snap-align: start; height: calc(100vh - 130px); position: relative; background: #000; }
+        .reel-video-container iframe { width: 100%; height: 100%; pointer-events: auto; }
 
         /* Auth & Forms */
         #auth-modal { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #000; padding: 20px; }
@@ -107,6 +123,7 @@
             </div>
             <div class="header-icons">
                 <div class="circle-icon" onclick="openPostModal()"><i class="fa-solid fa-plus"></i></div>
+                <div class="circle-icon" onclick="toggleNotificationsView()"><i class="fa-solid fa-bell"></i><div class="notification-badge" id="global-notif-badge">0</div></div>
                 <div class="circle-icon" onclick="showView('chats')"><i class="fa-solid fa-comment"></i></div>
             </div>
         </div>
@@ -116,10 +133,21 @@
                 <img class="user-avatar-sync avatar-small" src="images/default_profile.png">
                 <div onclick="openPostModal()" style="background:var(--hr-hover); padding:10px; border-radius:20px; flex:1; color:var(--hr-secondary);">What's on your mind?</div>
             </div>
+            
+            <div class="pymk-container" id="pymk-home-section" style="display:none;">
+                <div class="pymk-header">
+                    <b style="font-size:16px;">People you may know</b>
+                    <span style="color:var(--hr-secondary); font-size:14px; cursor:pointer;" onclick="showView('menu')">See all</span>
+                </div>
+                <div class="pymk-track" id="pymk-slider-track"></div>
+            </div>
+
             <div id="feed-items"></div>
         </div>
 
-        <div id="reels-view" class="view"><div id="reels-container"></div></div>
+        <div id="reels-view" class="view">
+            <div class="reels-scroll-wrapper" id="reels-container"></div>
+        </div>
 
         <div id="profile-view" class="view">
             <div style="background:var(--hr-card);">
@@ -161,11 +189,31 @@
             <div style="padding:15px;"><h2>Menu</h2></div>
             <div class="menu-grid">
                 <div class="menu-card" onclick="showView('profile')"><i class="fa-solid fa-circle-user" style="color:var(--fb-blue);"></i><br><b>Profile</b></div>
-                <div class="menu-card"><i class="fa-solid fa-user-group" style="color:#2aa4f4;"></i><br><b>Friends</b></div>
+                <div class="menu-card" onclick="showView('friends-list-tab')"><i class="fa-solid fa-user-group" style="color:#2aa4f4;"></i><br><b>Friends</b></div>
                 <div class="menu-card" onclick="showView('reels')"><i class="fa-solid fa-video" style="color:#f3425f;"></i><br><b>Reels</b></div>
-                <div class="menu-card"><i class="fa-solid fa-users" style="color:#2aa4f4;"></i><br><b>Groups</b></div>
+                <div class="menu-card" id="admin-chat-menu-btn"><i class="fa-solid fa-user-shield" style="color:#a442f5;"></i><br><b>Admin Chat</b></div>
                 <div id="admin-delete-btn" class="menu-card bg-red" style="display:none;" onclick="adminManageUsers()"><b><i class="fa-solid fa-user-slash"></i><br>Delete User</b></div>
                 <div class="menu-card" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i><br><b>Log Out</b></div>
+            </div>
+        </div>
+
+        <div id="friends-list-tab-view" class="view">
+            <div style="padding:15px; display:flex; gap:15px; align-items:center; border-bottom:1px solid var(--hr-divider);">
+                <i class="fa-solid fa-arrow-left" style="font-size:20px; cursor:pointer;" onclick="showView('menu')"></i>
+                <h2 style="margin:0;">Your Friends</h2>
+            </div>
+            <div id="friends-list-container" style="padding:15px;"></div>
+        </div>
+
+        <div id="chats-view" class="view">
+            <div style="padding:15px; display:flex; gap:15px; align-items:center; border-bottom:1px solid var(--hr-divider);">
+                <i class="fa-solid fa-arrow-left" style="font-size:20px; cursor:pointer;" onclick="showView('home')"></i>
+                <h2 id="chat-header-title" style="margin:0;">Messages</h2>
+            </div>
+            <div id="admin-chat-box" style="height:calc(100vh - 200px); overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:10px;"></div>
+            <div style="position:fixed; bottom:70px; width:100%; box-sizing:border-box; background:var(--hr-card); padding:10px; display:flex; gap:10px;">
+                <input id="chat-message-input" placeholder="Type a message..." style="flex:1; background:var(--hr-hover); border:none; padding:12px 15px; border-radius:25px; color:white; outline:none;">
+                <button id="send-chat-msg-btn" style="background:var(--fb-blue); border:none; width:40px; height:40px; border-radius:50%; color:white; cursor:pointer;"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
 
@@ -191,6 +239,14 @@
             <label>Country</label><input id="edit-country" class="edit-input">
             <button class="btn-full bg-blue" onclick="saveProfileEdits()">Save Changes</button>
         </div>
+    </div>
+
+    <div id="notifications-overlay-modal" class="modal">
+        <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--hr-divider);">
+            <b style="font-size:18px;">Notifications</b>
+            <span onclick="toggleNotificationsView()" style="font-size:20px; cursor:pointer;">✕</span>
+        </div>
+        <div id="notifications-list-container" style="padding:15px;"></div>
     </div>
 
     <div id="post-modal" class="modal">
@@ -231,6 +287,11 @@
         window.openEditModal = () => $('#edit-modal').style.display = 'flex';
         window.closeEditModal = () => $('#edit-modal').style.display = 'none';
         
+        window.toggleNotificationsView = () => {
+            const panel = $('#notifications-overlay-modal');
+            panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+        };
+
         // Lightbox Operations Global Controls
         window.openMediaLightbox = (src) => {
             if(!src || src.includes('default_profile') || src.includes('HEALING_ROOT_BANNER')) return;
