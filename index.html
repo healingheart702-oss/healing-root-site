@@ -70,8 +70,16 @@
         
         /* Comments */
         .comment-section { padding: 10px 12px; border-top: 1px solid var(--hr-divider); background: var(--hr-card); }
-        .comment-bubble { background: var(--hr-hover); padding: 8px 12px; border-radius: 18px; display: inline-block; max-width: 85%; }
+        .comment-bubble { background: var(--hr-hover); padding: 10px 14px; border-radius: 18px; color: var(--hr-text); max-width: 85%; word-wrap: break-word; display: flex; flex-direction: column; gap: 2px; }
+        .comment-meta-actions { display: flex; gap: 12px; margin-left: 12px; margin-top: 4px; font-size: 12px; color: var(--hr-secondary); align-items: center; }
+        .comment-meta-actions span { cursor: pointer; font-weight: 600; }
+        .comment-meta-actions span:hover { text-decoration: underline; }
         .reply-line { border-left: 2px solid var(--hr-divider); margin-left: 20px; padding-left: 15px; margin-top: 5px; }
+
+        /* Lightbox Image Preview Overlay Style */
+        .lightbox-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 3000; display: none; align-items: center; justify-content: center; }
+        .lightbox-close { position: absolute; top: 20px; right: 25px; color: #fff; font-size: 35px; font-weight: bold; cursor: pointer; }
+        .lightbox-content { max-width: 90%; max-height: 85%; object-fit: contain; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -116,11 +124,16 @@
         <div id="profile-view" class="view">
             <div style="background:var(--hr-card);">
                 <div style="height:180px; background:#333; position:relative;">
-                    <img id="cover-pic-preview" style="width:100%; height:100%; object-fit:cover;">
-                    <button class="circle-icon" style="position:absolute; bottom:10px; right:10px;" onclick="$('#cover-upload').click()"><i class="fa-solid fa-camera"></i></button>
+                    <img id="cover-pic-preview" style="width:100%; height:100%; object-fit:cover; cursor:pointer;" onclick="openMediaLightbox(this.src)">
+                    <button class="circle-icon" style="position:absolute; bottom:10px; right:10px;" onclick="event.stopPropagation(); $('#cover-upload').click()"><i class="fa-solid fa-camera"></i></button>
                 </div>
-                <div style="margin-top:-50px; padding:0 15px;">
-                    <img id="profile-pic-preview" style="width:110px; height:110px; border-radius:50%; border:4px solid black; object-fit: cover;">
+                <div style="margin-top:-50px; padding:0 15px; position:relative; display:inline-block;">
+                    <div style="position:relative; width:110px; height:110px;">
+                        <img id="profile-pic-preview" style="width:100%; height:100%; border-radius:50%; border:4px solid black; object-fit: cover; cursor:pointer;" onclick="openMediaLightbox(this.src)">
+                        <button class="circle-icon" style="position:absolute; bottom:0; right:0; width:30px; height:30px; font-size:12px; background:var(--hr-hover);" onclick="event.stopPropagation(); $('#pic-upload').click()"><i class="fa-solid fa-camera"></i></button>
+                    </div>
+                </div>
+                <div style="padding:0 15px; margin-top:5px;">
                     <h2 id="profile-name" style="margin:10px 0 5px 0;">Loading...</h2>
                     <p id="profile-bio" style="color:var(--hr-secondary); margin:0;"></p>
                 </div>
@@ -190,6 +203,11 @@
         <div style="padding:15px;"><input type="file" id="post-file-input" accept="image/*"></div>
     </div>
 
+    <div id="media-preview-modal" class="lightbox-modal" onclick="closeMediaLightbox()">
+        <span class="lightbox-close" onclick="closeMediaLightbox()">&times;</span>
+        <img class="lightbox-content" id="media-preview-img">
+    </div>
+
     <input type="file" id="pic-upload" style="display:none;" onchange="uploadNewProfilePic(this)">
     <input type="file" id="cover-upload" style="display:none;" onchange="uploadCoverPic(this)">
 
@@ -212,6 +230,16 @@
         window.closePostModal = () => $('#post-modal').style.display = 'none';
         window.openEditModal = () => $('#edit-modal').style.display = 'flex';
         window.closeEditModal = () => $('#edit-modal').style.display = 'none';
+        
+        // Lightbox Operations Global Controls
+        window.openMediaLightbox = (src) => {
+            if(!src || src.includes('default_profile') || src.includes('HEALING_ROOT_BANNER')) return;
+            $('#media-preview-img').src = src;
+            $('#media-preview-modal').style.display = 'flex';
+        };
+        window.closeMediaLightbox = () => {
+            $('#media-preview-modal').style.display = 'none';
+        };
     </script>
 </body>
 </html>
