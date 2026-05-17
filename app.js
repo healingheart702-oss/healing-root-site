@@ -219,7 +219,7 @@ window.loadReels = () => {
 
     container.innerHTML = publicVideos.map((url, idx) => `
         <div class="reel-video-container">
-            <video src="${url}" loop muted playsinline webkit-playsinline controls style="width:100%; height:100%; object-fit:cover;"></video>
+            <video src="${url}" loop muted playsinline webkit-playsinline controls style="width:100%; height:100%; object-fit:cover; background:#000; display:block;"></video>
             <div style="position:absolute; bottom:80px; left:15px; text-shadow: 2px 2px 4px #000; pointer-events:none; z-index:10;">
                 <b style="font-size:18px;">@FunnyHealing</b>
                 <p>Healing Comedy Feed 😂</p>
@@ -233,7 +233,7 @@ window.loadReels = () => {
             vid.play().catch(() => {
                 // Autoplay handler retry rule sequence
                 vid.muted = true;
-                vid.play();
+                vid.play().catch(err => console.log("Video playback active fallback trigger."));
             });
         });
     }, 300);
@@ -290,16 +290,16 @@ function renderPost(container, post, pid) {
         </div>
 
         <div style="padding:5px 12px; border-top:1px solid var(--hr-divider); display:flex;">
-            <div class="post-action-btn">
+            <div class="post-action-btn" onclick="toggleReactionPanel(event, '${pid}')">
                 <span id="my-react-display-${pid}">👍 Like</span>
-                <div class="reactions-box">
-                    <span onclick="react('${pid}', '👍')">👍</span>
-                    <span onclick="react('${pid}', '❤️')">❤️</span>
-                    <span onclick="react('${pid}', '🥰')">🥰</span>
-                    <span onclick="react('${pid}', '😂')">😂</span>
-                    <span onclick="react('${pid}', '😮')">😮</span>
-                    <span onclick="react('${pid}', '😢')">😢</span>
-                    <span onclick="react('${pid}', '😡')">😡</span>
+                <div class="reactions-box" id="react-box-${pid}">
+                    <span onclick="react(event, '${pid}', '👍')">👍</span>
+                    <span onclick="react(event, '${pid}', '❤️')">❤️</span>
+                    <span onclick="react(event, '${pid}', '🥰')">🥰</span>
+                    <span onclick="react(event, '${pid}', '😂')">😂</span>
+                    <span onclick="react(event, '${pid}', '😮')">😮</span>
+                    <span onclick="react(event, '${pid}', '😢')">😢</span>
+                    <span onclick="react(event, '${pid}', '😡')">😡</span>
                 </div>
             </div>
             <div class="post-action-btn" onclick="toggleComments('${pid}')"><i class="fa-regular fa-comment"></i> Comment</div>
@@ -332,6 +332,30 @@ function renderPost(container, post, pid) {
         });
     }
 }
+
+window.toggleReactionPanel = (e, pid) => {
+    e.stopPropagation();
+    const targetBox = $(`#react-box-${pid}`);
+    const isCurrentlyActive = targetBox.classList.contains('active-panel');
+    
+    document.querySelectorAll('.reactions-box').forEach(box => box.classList.remove('active-panel'));
+    
+    if (!isCurrentlyActive) {
+        targetBox.classList.add('active-panel');
+    }
+};
+
+window.toggleCommentReactionPanel = (e, cid) => {
+    e.stopPropagation();
+    const targetBox = $(`#comm-react-box-${cid}`);
+    const isCurrentlyActive = targetBox.classList.contains('active-panel');
+    
+    document.querySelectorAll('.reactions-box').forEach(box => box.classList.remove('active-panel'));
+    
+    if (!isCurrentlyActive) {
+        targetBox.classList.add('active-panel');
+    }
+};
 
 // --- 5. COMMENT & REPLY LOGIC ---
 window.addComment = async (pid) => {
@@ -374,7 +398,16 @@ function loadComments(pid) {
                     </div>
                     <div class="comment-meta-actions">
                         <span>${commentTimeDisplay}</span>
-                        <span id="comm-like-btn-${commId}" onclick="reactComment('${pid}', '${commId}')" style="font-weight:bold;">Like</span>
+                        <span id="comm-like-btn-${commId}" onclick="toggleCommentReactionPanel(event, '${commId}')" style="font-weight:bold; position:relative;">👍 Like</span>
+                        <div class="reactions-box" id="comm-react-box-${commId}" style="bottom: 25px;">
+                            <span onclick="reactComment(event, '${pid}', '${commId}', '👍')">👍</span>
+                            <span onclick="reactComment(event, '${pid}', '${commId}', '❤️')">❤️</span>
+                            <span onclick="reactComment(event, '${pid}', '${commId}', '🥰')">🥰</span>
+                            <span onclick="reactComment(event, '${pid}', '${commId}', '😂')">😂</span>
+                            <span onclick="reactComment(event, '${pid}', '${commId}', '😮')">😮</span>
+                            <span onclick="reactComment(event, '${pid}', '${commId}', '😢')">😢</span>
+                            <span onclick="reactComment(event, '${pid}', '${commId}', '😡')">😡</span>
+                        </div>
                         <span id="comm-like-count-${commId}" style="color:var(--hr-secondary); pointer-events:none;">${c.likeCount || 0} Likes</span>
                         <span onclick="replyTo('${pid}', '${commId}', '${c.userName}')">Reply</span>
                     </div>
@@ -389,10 +422,10 @@ function loadComments(pid) {
                     const lBtn = $(`#comm-like-btn-${commId}`);
                     if (lBtn) {
                         if (lSnap.exists()) {
-                            lBtn.innerText = "Liked";
+                            lBtn.innerText = `${lSnap.data().type || 'Liked'}`;
                             lBtn.style.color = "var(--fb-blue)";
                         } else {
-                            lBtn.innerText = "Like";
+                            lBtn.innerText = "👍 Like";
                             lBtn.style.color = "var(--hr-secondary)";
                         }
                     }
@@ -402,16 +435,25 @@ function loadComments(pid) {
     });
 }
 
-window.reactComment = async (pid, cid) => {
+window.reactComment = async (e, pid, cid, emoji) => {
+    e.stopPropagation();
     if (!currentUser) return;
+    
+    document.querySelectorAll('.reactions-box').forEach(box => box.classList.remove('active-panel'));
+    
     const clRef = doc(db, 'posts', pid, 'comments', cid, 'commentLikes', currentUser.uid);
     const clSnap = await getDoc(clRef);
 
     if (clSnap.exists()) {
-        await deleteDoc(clRef);
-        await updateDoc(doc(db, 'posts', pid, 'comments', cid), { likeCount: increment(-1) });
+        const existingReact = clSnap.data().type;
+        if (existingReact === emoji) {
+            await deleteDoc(clRef);
+            await updateDoc(doc(db, 'posts', pid, 'comments', cid), { likeCount: increment(-1) });
+        } else {
+            await setDoc(clRef, { type: emoji, timestamp: serverTimestamp() });
+        }
     } else {
-        await setDoc(clRef, { liked: true, timestamp: serverTimestamp() });
+        await setDoc(clRef, { type: emoji, timestamp: serverTimestamp() });
         await updateDoc(doc(db, 'posts', pid, 'comments', cid), { likeCount: increment(1) });
     }
 };
@@ -425,6 +467,30 @@ window.replyTo = async (pid, cid, name) => {
         text: txt,
         timestamp: serverTimestamp()
     });
+};
+
+// --- 6. ACTIONS & ADMIN TOOLS ---
+window.react = async (e, pid, emoji) => {
+    e.stopPropagation();
+    if (!currentUser) return;
+    
+    document.querySelectorAll('.reactions-box').forEach(box => box.classList.remove('active-panel'));
+    
+    const reactDocRef = doc(db, 'posts', pid, 'reactions', currentUser.uid);
+    const reactSnap = await getDoc(reactDocRef);
+
+    if (reactSnap.exists()) {
+        const currentReactionType = reactSnap.data().type;
+        if (currentReactionType === emoji) {
+            await deleteDoc(reactDocRef);
+            await updateDoc(doc(db, 'posts', pid), { reactionCount: increment(-1) });
+        } else {
+            await setDoc(reactDocRef, { type: emoji, timestamp: serverTimestamp() });
+        }
+    } else {
+        await setDoc(reactDocRef, { type: emoji, timestamp: serverTimestamp() });
+        await updateDoc(doc(db, 'posts', pid), { reactionCount: increment(1) });
+    }
 };
 
 function loadReplies(pid, cid) {
@@ -444,33 +510,6 @@ function loadReplies(pid, cid) {
         });
     });
 }
-
-// --- 6. ACTIONS & ADMIN TOOLS ---
-window.react = async (pid, emoji) => {
-    if (!currentUser) return;
-    const reactDocRef = doc(db, 'posts', pid, 'reactions', currentUser.uid);
-    const reactSnap = await getDoc(reactDocRef);
-
-    if (reactSnap.exists()) {
-        const currentReactionType = reactSnap.data().type;
-        if (currentReactionType === emoji) {
-            // User clicked the exact same reaction icon: remove it entirely
-            await deleteDoc(reactDocRef);
-            await updateDoc(doc(db, 'posts', pid), {
-                reactionCount: increment(-1)
-            });
-        } else {
-            // User changed to a completely different reaction element: swap it out without increasing count
-            await setDoc(reactDocRef, { type: emoji, timestamp: serverTimestamp() });
-        }
-    } else {
-        // First time reacting to this post: write single entry and safely increment overall metric
-        await setDoc(reactDocRef, { type: emoji, timestamp: serverTimestamp() });
-        await updateDoc(doc(db, 'posts', pid), { 
-            reactionCount: increment(1) 
-        });
-    }
-};
 
 window.viewUserProfile = async (targetUid) => {
     if (currentUser && targetUid === currentUser.uid) {
@@ -500,7 +539,7 @@ window.viewUserProfile = async (targetUid) => {
                 ${u.phone ? `<div class="info-item"><i class="fa-solid fa-phone"></i> <a href="tel:${u.phone}" style="color:var(--fb-blue); text-decoration:none;">${u.phone}</a></div>` : ''}
                 ${u.whatsapp ? `<div class="info-item"><i class="fa-brands fa-whatsapp"></i> <a href="${u.whatsapp}" target="_blank" style="color:#25d366; text-decoration:none;">WhatsApp Chat</a></div>` : ''}
             </div>
-            <div style="padding: 0 15px; display:flex; gap:10px; margin-top:15px;">
+            <div id="profile-action-container-${u.uid}" style="padding: 0 15px; display:flex; gap:10px; margin-top:15px; align-items:center;">
                 <button class="btn-full bg-blue" id="action-friend-${u.uid}" style="margin:0;">Add Friend</button>
                 <button class="btn-full bg-gray" id="action-msg-${u.uid}" style="margin:0;">Message</button>
             </div>
@@ -508,15 +547,36 @@ window.viewUserProfile = async (targetUid) => {
         <div id="external-posts"></div>
     `;
 
-    // Bind real-time click buttons from external dynamic profile display cards
-    $(`#action-friend-${u.uid}`).onclick = () => window.sendFriendRequest(u.uid, u.name, profileImg);
-    $(`#action-msg-${u.uid}`).onclick = () => {
-        if(u.email === ADMIN_EMAIL || currentUser.email === ADMIN_EMAIL) {
-            window.openDirectAdminChat(u.uid, u.name);
-        } else {
-            alert("Messaging is enabled directly with the Admin.");
+    // Dynamic verification matching relationship layouts
+    onSnapshot(doc(db, 'users', currentUser.uid, 'friends', targetUid), (friendSnap) => {
+        const actionArea = $(`#profile-action-container-${u.uid}`);
+        if (actionArea && friendSnap.exists()) {
+            actionArea.innerHTML = `
+                <div style="background: var(--hr-hover); color: var(--hr-text); border-radius: 8px; padding: 12px; font-weight: bold; flex: 1; text-align: center; font-size: 14px;"><i class="fa-solid fa-user-check" style="margin-right:6px; color:#25d366;"></i> Friend</div>
+                <button class="btn-full bg-blue" id="action-msg-${u.uid}" style="margin:0; flex: 1;">Message</button>
+            `;
+            $(`#action-msg-${u.uid}`).onclick = () => {
+                if(u.email === ADMIN_EMAIL || currentUser.email === ADMIN_EMAIL) {
+                    window.openDirectAdminChat(u.uid, u.name);
+                } else {
+                    alert("Messaging is enabled directly with the Admin.");
+                }
+            };
         }
-    };
+    });
+
+    if ($(`#action-friend-${u.uid}`)) {
+        $(`#action-friend-${u.uid}`).onclick = () => window.sendFriendRequest(u.uid, u.name, profileImg);
+    }
+    if ($(`#action-msg-${u.uid}`)) {
+        $(`#action-msg-${u.uid}`).onclick = () => {
+            if(u.email === ADMIN_EMAIL || currentUser.email === ADMIN_EMAIL) {
+                window.openDirectAdminChat(u.uid, u.name);
+            } else {
+                alert("Messaging is enabled directly with the Admin.");
+            }
+        };
+    }
 
     const q = query(collection(db, 'posts'), where('uid', '==', targetUid), orderBy('timestamp', 'desc'));
     onSnapshot(q, s => {
@@ -581,16 +641,14 @@ function initPeopleYouMayKnow() {
         snapshot.forEach((docSnap) => {
             const user = docSnap.data();
             
-            // Strict filter condition to stop deleted, null, or undefined accounts from loading
             if (!user || !user.uid || !user.name) return;
 
-            if (user.email === ADMIN_EMAIL) ADMIN_UID = user.uid; // Identify master structural account location
+            if (user.email === ADMIN_EMAIL) ADMIN_UID = user.uid; 
 
             if (user.uid !== currentUser.uid && user.email !== ADMIN_EMAIL) {
                 count++;
                 const card = document.createElement('div');
                 card.className = 'pymk-card';
-                // Added structural layout support to make entire profile frame context clickable via viewUserProfile
                 card.innerHTML = `
                     <div onclick="viewUserProfile('${user.uid}')" style="cursor:pointer; width:100%; display:flex; flex-direction:column;">
                         <img src="${user.profilePic || 'images/default_profile.png'}" class="pymk-img">
@@ -604,7 +662,6 @@ function initPeopleYouMayKnow() {
                 `;
                 track.appendChild(card);
                 
-                // Keep friend tracking linked smoothly without propagation intercepting the clickable frame click action
                 const btn = $(`#pymk-add-${user.uid}`);
                 if (btn) {
                     btn.onclick = (e) => {
@@ -625,7 +682,6 @@ function initPeopleYouMayKnow() {
 
 window.sendFriendRequest = async (targetUid, targetName, targetPic) => {
     try {
-        // Safe check to verify we aren't duplicating requests
         const checkRef = doc(db, 'users', targetUid, 'notifications', currentUser.uid);
         const checkSnap = await getDoc(checkRef);
         if (checkSnap.exists()) {
@@ -672,29 +728,41 @@ function initNotificationsListener() {
             const item = document.createElement('div');
             item.style.cssText = "display:flex; gap:12px; align-items:center; background:var(--hr-card); padding:12px; border-radius:8px; margin-bottom:10px; border:1px solid var(--hr-divider);";
 
-            item.innerHTML = `
-                <img src="${notif.senderPic}" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
-                <div style="flex:1;">
-                    <p style="margin:0 0 5px 0; font-size:14px;"><b>${notif.senderName}</b> sent you a friend request.</p>
-                    <div style="display:flex; gap:8px;">
-                        <button class="bg-blue" id="notif-acc-${notifId}" style="border:none; color:white; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:13px;">Accept</button>
-                        <button class="bg-gray" id="notif-dec-${notifId}" style="border:none; color:white; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:13px;">Delete</button>
+            if (notif.type === 'request_accepted') {
+                item.innerHTML = `
+                    <img src="${notif.senderPic}" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
+                    <div style="flex:1;">
+                        <p style="margin:0; font-size:14px;"><b>${notif.senderName}</b> accepted your friend request 🎉</p>
                     </div>
-                </div>
-            `;
-            listContainer.appendChild(item);
-
-            $(`#notif-acc-${notifId}`).onclick = () => window.acceptFriendRequest(notif, notifId);
-            $(`#notif-dec-${notifId}`).onclick = async () => {
-                await deleteDoc(doc(db, 'users', currentUser.uid, 'notifications', notifId));
-            };
+                    <i class="fa-solid fa-trash" style="color:var(--hr-secondary); cursor:pointer; padding:6px;" id="notif-del-${notifId}"></i>
+                `;
+                listContainer.appendChild(item);
+                $(`#notif-del-${notifId}`).onclick = async () => {
+                    await deleteDoc(doc(db, 'users', currentUser.uid, 'notifications', notifId));
+                };
+            } else {
+                item.innerHTML = `
+                    <img src="${notif.senderPic}" style="width:45px; height:45px; border-radius:50%; object-fit:cover;">
+                    <div style="flex:1;">
+                        <p style="margin:0 0 5px 0; font-size:14px;"><b>${notif.senderName}</b> sent you a friend request.</p>
+                        <div style="display:flex; gap:8px;">
+                            <button class="bg-blue" id="notif-acc-${notifId}" style="border:none; color:white; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:13px;">Accept</button>
+                            <button class="bg-gray" id="notif-dec-${notifId}" style="border:none; color:white; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:13px;">Delete</button>
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(item);
+                $(`#notif-acc-${notifId}`).onclick = () => window.acceptFriendRequest(notif, notifId);
+                $(`#notif-dec-${notifId}`).onclick = async () => {
+                    await deleteDoc(doc(db, 'users', currentUser.uid, 'notifications', notifId));
+                };
+            }
         });
     });
 }
 
 window.acceptFriendRequest = async (notif, notifId) => {
     try {
-        // Write dynamic symmetric bidirectional references to both user profile document friends hubs
         await setDoc(doc(db, 'users', currentUser.uid, 'friends', notif.senderId), {
             friendId: notif.senderId,
             friendName: notif.senderName,
@@ -709,7 +777,15 @@ window.acceptFriendRequest = async (notif, notifId) => {
             connectedAt: serverTimestamp()
         });
 
-        // Clean up completed notification trace cleanly
+        // Real-time confirmation dispatch notification tracking entry back to original sender's bucket node
+        await addDoc(collection(db, 'users', notif.senderId, 'notifications'), {
+            senderId: currentUser.uid,
+            senderName: currentProfile.name,
+            senderPic: currentProfile.profilePic || 'images/default_profile.png',
+            type: 'request_accepted',
+            timestamp: serverTimestamp()
+        });
+
         await deleteDoc(doc(db, 'users', currentUser.uid, 'notifications', notifId));
         alert(`You are now friends with ${notif.senderName}!`);
     } catch(e) { console.error("Error acknowledging friend link acceptance: ", e); }
@@ -748,14 +824,11 @@ function setupAdminChatInteractions() {
 
     menuBtn.onclick = () => {
         if (currentUser.email === ADMIN_EMAIL) {
-            // Admin perspective logic stream: Load index listing overview of incoming support lines
             window.loadAdminConversationsDashboard();
         } else {
-            // Regular member logic perspective stream: Router targets Admin account explicitly
             if (ADMIN_UID) {
                 window.openDirectAdminChat(ADMIN_UID, "System Admin Support");
             } else {
-                // Fail-safe fall back query check
                 getDocs(collection(db, 'users')).then((snap) => {
                     snap.forEach(d => { if(d.data().email === ADMIN_EMAIL) ADMIN_UID = d.id; });
                     window.openDirectAdminChat(ADMIN_UID || currentUser.uid, "System Admin Support");
@@ -773,7 +846,6 @@ window.loadAdminConversationsDashboard = () => {
     const box = $('#admin-chat-box');
     box.innerHTML = `<p style="color:var(--hr-secondary); padding:15px;">Scanning database active connection nodes...</p>`;
 
-    // Scan users stream containing structural message history links mapping cleanly back to Admin
     onSnapshot(collection(db, 'users'), (snapshot) => {
         box.innerHTML = '<h3 style="margin:0 0 10px 0; font-size:15px; color:var(--hr-secondary);">Select a user to chat with:</h3>';
         let found = false;
@@ -797,7 +869,6 @@ window.openDirectAdminChat = (targetUid, targetName) => {
     showView('chats');
     $('#chat-header-title').innerText = targetName;
 
-    // Define bidirectional secure conversational node routing channels
     const conversationId = currentUser.email === ADMIN_EMAIL ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
     const chatQuery = query(collection(db, 'chats', conversationId, 'messages'), orderBy('timestamp', 'asc'));
 
@@ -816,7 +887,7 @@ window.openDirectAdminChat = (targetUid, targetName) => {
             bubble.innerText = msg.text;
             box.appendChild(bubble);
         });
-        box.scrollTop = box.scrollHeight; // Automatically snap viewport context down neatly to focus reading space
+        box.scrollTop = box.scrollHeight; 
     });
 };
 
