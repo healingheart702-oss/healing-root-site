@@ -59,7 +59,7 @@
         .pymk-header { display: flex; justify-content: space-between; align-items: center; padding-right: 15px; margin-bottom: 10px; }
         .pymk-track { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
         .pymk-track::-webkit-scrollbar { display: none; }
-        .pymk-card { background: var(--hr-hover); width: 150px; border-radius: 8px; flex-shrink: 0; overflow: hidden; display: flex; flex-direction: column; }
+        .pymk-card { background: var(--hr-hover); width: 150px; border-radius: 8px; flex-shrink: 0; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; }
         .pymk-img { width: 150px; height: 150px; object-fit: cover; }
         .pymk-info { padding: 8px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
 
@@ -67,7 +67,7 @@
         .reels-scroll-wrapper { height: calc(100vh - 130px); overflow-y: scroll; snap-type: y mandatory; scrollbar-width: none; }
         .reels-scroll-wrapper::-webkit-scrollbar { display: none; }
         .reel-video-container { snap-align: start; height: calc(100vh - 130px); position: relative; background: #000; }
-        .reel-video-container iframe { width: 100%; height: 100%; pointer-events: auto; }
+        .reel-video-container video { width: 100%; height: 100%; object-fit: cover; pointer-events: auto; }
 
         /* Auth & Forms */
         #auth-modal { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #000; padding: 20px; }
@@ -255,7 +255,7 @@
             <b>Create Post</b>
             <button class="bg-blue" onclick="submitPost()" style="color:white; border:none; padding:8px 15px; border-radius:5px;">Post</button>
         </div>
-        <textarea id="post-text" placeholder="What's on your mind?" style="width:100%; height:150px; background:transparent; color:white; border:none; padding:15px; font-size:18px; outline:none;"></textarea>
+        <textarea id="post-text" placeholder="What's on your mind?" style="width:100%; height:150px; background:transparent; color:white; border:none; padding:15px; font-size:18px; outline:none("></textarea>
         <div style="padding:15px;"><input type="file" id="post-file-input" accept="image/*"></div>
     </div>
 
