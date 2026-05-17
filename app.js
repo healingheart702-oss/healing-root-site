@@ -210,13 +210,18 @@ window.loadReels = () => {
     const container = $('#reels-container');
     if (!container) return;
     
-    // Extracted Funny/Comedy Shorts
-    const funnyShorts = ['m_Wv2P66vXk', '3_X33N_6Y8I', 'xZ39_pS0G28', 'D4X9_qL0G33']; 
+    // Live public MP4 video assets to bypass YouTube embed cross-site blockers entirely
+    const publicVideos = [
+        'https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-sign-light-watching-her-phone-42240-large.mp4',
+        'https://assets.mixkit.co/videos/preview/mixkit-funny-cat-with-a-toy-48766-large.mp4',
+        'https://assets.mixkit.co/videos/preview/mixkit-womans-feet-splashing-in-a-swimming-pool-43033-large.mp4',
+        'https://assets.mixkit.co/videos/preview/mixkit-skater-doing-tricks-in-a-skatepark-42247-large.mp4'
+    ]; 
 
-    container.innerHTML = funnyShorts.map(id => `
+    container.innerHTML = publicVideos.map((url, idx) => `
         <div class="reel-video-container">
-            <iframe src="https://www.youtube.com/embed/${id}?autoplay=0&controls=0&loop=1&playlist=${id}&mute=1&enablejsapi=1" frameborder="0" allowfullscreen></iframe>
-            <div style="position:absolute; bottom:80px; left:15px; text-shadow: 2px 2px 4px #000; pointer-events:none;">
+            <video src="${url}" autoplay loop muted playsinline controls></video>
+            <div style="position:absolute; bottom:80px; left:15px; text-shadow: 2px 2px 4px #000; pointer-events:none; z-index:10;">
                 <b style="font-size:18px;">@FunnyHealing</b>
                 <p>Healing Comedy Feed 😂</p>
             </div>
@@ -533,26 +538,45 @@ function initPeopleYouMayKnow() {
 
         snapshot.forEach((docSnap) => {
             const user = docSnap.data();
+            
+            // Strict filter condition to stop deleted, null, or undefined accounts from loading
+            if (!user || !user.uid || !user.name) return;
+
             if (user.email === ADMIN_EMAIL) ADMIN_UID = user.uid; // Identify master structural account location
 
             if (user.uid !== currentUser.uid && user.email !== ADMIN_EMAIL) {
                 count++;
                 const card = document.createElement('div');
                 card.className = 'pymk-card';
+                // Added structural layout support to make entire profile frame context clickable via viewUserProfile
                 card.innerHTML = `
-                    <img src="${user.profilePic || 'images/default_profile.png'}" class="pymk-img" onclick="viewUserProfile('${user.uid}')">
-                    <div class="pymk-info">
-                        <b style="font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;">${user.name}</b>
-                        <button class="btn-full bg-blue" id="pymk-add-${user.uid}" style="font-size:12px; padding:6px; margin-top:5px;">Add Friend</button>
+                    <div onclick="viewUserProfile('${user.uid}')" style="cursor:pointer; width:100%; display:flex; flex-direction:column;">
+                        <img src="${user.profilePic || 'images/default_profile.png'}" class="pymk-img">
+                        <div class="pymk-info">
+                            <b style="font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;">${user.name}</b>
+                        </div>
+                    </div>
+                    <div style="padding:0 8px 8px 8px;">
+                        <button class="btn-full bg-blue" id="pymk-add-${user.uid}" style="font-size:12px; padding:6px; margin-top:5px; width:100%;">Add Friend</button>
                     </div>
                 `;
                 track.appendChild(card);
-                $(`#pymk-add-${user.uid}`).onclick = () => window.sendFriendRequest(user.uid, user.name, user.profilePic);
+                
+                // Keep friend tracking linked smoothly without propagation intercepting the clickable frame click action
+                const btn = $(`#pymk-add-${user.uid}`);
+                if (btn) {
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        window.sendFriendRequest(user.uid, user.name, user.profilePic);
+                    };
+                }
             }
         });
 
         if (count > 0 && $('#pymk-home-section')) {
             $('#pymk-home-section').style.display = 'block';
+        } else if ($('#pymk-home-section')) {
+            $('#pymk-home-section').style.display = 'none';
         }
     });
 }
